@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { getAssetPath } from '../utils/assets';
 
-// NASA Jezero Crater Science Mission Targets
+// NASA Jezero Crater Science Mission Targets (Mars)
 export const MARS_SAMPLE_TARGETS = [
   {
     id: 'seitah',
@@ -13,9 +13,8 @@ export const MARS_SAMPLE_TARGETS = [
     type: 'Basalto Volcánico Rico en Olivino',
     x: 28,
     z: 22,
-    color: '#34d399', // Emerald
+    color: '#34d399',
     tubeId: '#08 (Séítah Core)',
-    elevationOffset: 0.1,
     summary: 'Roca ígnea enfriada de magma primigenio en el lecho del cráter Jezero. Sus cristales de olivino preservan burbujas de la atmósfera primordial marciana y revelan interacción histórica con agua subterránea.',
     mineralogy: 'Olivino (42%), Piroxeno (35%), Plagioclasa (18%), Sulfatos hidratados',
     scienceValue: 'Permite datar con precisión cronológica la edad geológica del cráter Jezero.',
@@ -27,9 +26,8 @@ export const MARS_SAMPLE_TARGETS = [
     type: 'Conglomerado Lacustre Sedimentario',
     x: -32,
     z: 34,
-    color: '#38bdf8', // Cyan
+    color: '#38bdf8',
     tubeId: '#14 (Delta Belva Core)',
-    elevationOffset: 0.1,
     summary: 'Láminas finas de arcilla y lodo depositadas por el antiguo río marciano Neretva al desembocar en el lago Jezero hace 3.500 millones de años. Entorno ideal para la preservación de microfósiles y biofirmas.',
     mineralogy: 'Esmectitas arcillosas (48%), Sílice hidratada (28%), Carbonatos (14%)',
     scienceValue: 'Máxima prioridad astrobiológica de la NASA: capacidad excepcional de atrapar materia orgánica.',
@@ -41,9 +39,8 @@ export const MARS_SAMPLE_TARGETS = [
     type: 'Roca Pizarrosa con Pátina Eólica',
     x: -24,
     z: -32,
-    color: '#fbbf24', // Amber
+    color: '#fbbf24',
     tubeId: '#21 (Máaz Surface Core)',
-    elevationOffset: 0.1,
     summary: 'Afloramiento de roca basáltica expuesto al viento marciano. SuperCam disparó pulsos de láser infrarrojo a 1.064 nm vaporizando la corteza exterior para medir espectros de emisión atómica de plasma (LIBS).',
     mineralogy: 'Basalto toleítico (55%), Óxidos de hierro/hematita (25%), Titanomagnetita',
     scienceValue: 'Estudio de la meteorización química y la transición de Marte hacia un desierto frío.',
@@ -51,17 +48,68 @@ export const MARS_SAMPLE_TARGETS = [
   }
 ];
 
-// Ingenuity Helicopter Aerial Survey Waypoints
+// NASA Apollo 11 Lunar EVA Historical Objectives (Moon)
+export const MOON_APOLLO_TARGETS = [
+  {
+    id: 'apollo_flag',
+    name: 'Plantar Bandera de EE.UU.',
+    type: 'Lunar Flag Assembly',
+    x: 10,
+    z: 8,
+    color: '#ef4444',
+    tubeId: 'Bandera Lunar Desplegada',
+    summary: 'Diseñada con una varilla horizontal superior para que se mantuviera desplegada y ondeando en el vacío del espacio sin atmósfera ni viento.',
+    mineralogy: 'Estructura de aluminio anodizado y tejido de nylon reforzado.',
+    scienceValue: 'Símbolo pacífico de exploración de la humanidad: colocada a 8 metros del módulo lunar.',
+    tool: 'Mástil con pestillo telescópico horizontal'
+  },
+  {
+    id: 'apollo_easep',
+    name: 'Desplegar Experimento EASEP',
+    type: 'Sismómetro Pasivo y Retrorreflector Láser (LRRR)',
+    x: -16,
+    z: 14,
+    color: '#38bdf8',
+    tubeId: 'Estación Científica EASEP Activa',
+    summary: 'El único experimento científico del Apolo 11 que sigue operativo hoy en día. Observatorios terrestres disparan rayos láser a sus 100 prismas de cuarzo para medir la distancia exacta a la Luna al milímetro.',
+    mineralogy: 'Prismas de cuarzo suprasil de alta pureza y sensores térmicos de berilio.',
+    scienceValue: 'Confirmó que la Luna se aleja de la Tierra 3.8 cm por año y detectó los primeros terremotos lunares.',
+    tool: 'Conjunto de 100 prismas retrorreflectores'
+  },
+  {
+    id: 'apollo_samples',
+    name: 'Muestra de Contingencia (Rocas Lunares)',
+    type: 'Anortosita y Regolito Lunar',
+    x: -10,
+    z: -16,
+    color: '#e2e8f0',
+    tubeId: 'Muestra Lunar Sellada (21.5 kg)',
+    summary: 'Neil Armstrong recogió 21.55 kg de material lunar antes de cualquier otra actividad para asegurar muestras científicas ante un eventual despegue de emergencia.',
+    mineralogy: 'Armalcolita (mineral inédito en la Tierra), Ilmenita, Anortosita y Basalto de titanio.',
+    scienceValue: 'Permitió datar el Mar de la Tranquilidad en 3.700 millones de años.',
+    tool: 'Pinzas de muestreo y contenedor sellado al vacío'
+  },
+  {
+    id: 'apollo_plaque',
+    name: 'Placa Conmemorativa del LEM',
+    type: 'Placa de Acero Inoxidable en la Escalera',
+    x: 0,
+    z: 2.2,
+    color: '#fbbf24',
+    tubeId: 'Placa Histórica Conmemorativa',
+    summary: '"HERE MEN FROM THE PLANET EARTH FIRST SET FOOT UPON THE MOON. JULY 1969, A.D. WE CAME IN PEACE FOR ALL MANKIND."',
+    mineralogy: 'Grabado en acero inoxidable con mapa de los dos hemisferios terrestres.',
+    scienceValue: 'Firma de Neil Armstrong, Buzz Aldrin, Michael Collins y el presidente Richard Nixon fijada permanentemente en la base de descenso.',
+    tool: 'Inspección visual de inscripción histórica'
+  }
+];
+
 export const INGENUITY_AERIAL_WAYPOINTS = [
   { id: 'wp1', name: 'Waypoint Alpha (Dunas Séítah)', x: 22, y: 5.2, z: 20, color: '#34d399', desc: 'Reconocimiento aéreo de dunas para trazar ruta segura' },
   { id: 'wp2', name: 'Waypoint Beta (Cresta Delta)', x: -26, y: 6.5, z: 28, color: '#38bdf8', desc: 'Topografía del frente deltaico para navegación del rover' },
   { id: 'wp3', name: 'Waypoint Gamma (Cañón Máaz)', x: -20, y: 5.5, z: -26, color: '#fbbf24', desc: 'Inspección de alta resolución con cámara RTE' }
 ];
 
-/**
- * Creates 100% solid, watertight Martian boulder geometry without tearing.
- * Uses continuous spherical harmonic distortion based strictly on vertex directions.
- */
 function createMartianRockGeometry(baseRadius, seed = 0) {
   const geo = new THREE.DodecahedronGeometry(baseRadius, 1);
   const pos = geo.attributes.position;
@@ -75,14 +123,11 @@ function createMartianRockGeometry(baseRadius, seed = 0) {
     const ny = p.y / len;
     const nz = p.z / len;
 
-    // Harmonic deformation purely as a function of spherical normal direction
-    // (guaranteed identical for all duplicated/coincident vertices -> NO TEARING!)
     const h1 = Math.sin(nx * 3.6 + seed) * Math.cos(nz * 3.6 + seed) * 0.22;
     const h2 = Math.sin(ny * 5.2 + seed * 1.7) * 0.15;
     const h3 = Math.cos(nx * 2.1 + ny * 2.8 + seed * 0.5) * 0.12;
     const deformation = 1.0 + (h1 + h2 + h3);
 
-    // Natural flattening on the bottom so rocks embed solidly in Martian sand
     const flatten = ny < -0.1 ? (1.0 + ny * 0.35) : 1.0;
     const finalRadius = len * deformation * flatten;
 
@@ -94,6 +139,34 @@ function createMartianRockGeometry(baseRadius, seed = 0) {
   return geo;
 }
 
+// Procedural Canvas Texture for Apollo 11 American Flag
+function createAmericanFlagTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 320;
+  const ctx = canvas.getContext('2d');
+
+  const stripeH = canvas.height / 13;
+  for (let i = 0; i < 13; i++) {
+    ctx.fillStyle = i % 2 === 0 ? '#b91c1c' : '#ffffff';
+    ctx.fillRect(0, i * stripeH, canvas.width, stripeH);
+  }
+
+  ctx.fillStyle = '#1e3a8a';
+  ctx.fillRect(0, 0, canvas.width * 0.42, stripeH * 7);
+
+  ctx.fillStyle = '#ffffff';
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 6; c++) {
+      ctx.beginPath();
+      ctx.arc(18 + c * 33, 16 + r * 30, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  return new THREE.CanvasTexture(canvas);
+}
+
 export default function SurfaceMap3D({
   artifact,
   onTelemetryChange,
@@ -101,30 +174,38 @@ export default function SurfaceMap3D({
   collectedSampleIds = [],
   clearedWaypointIds = [],
   isSamplingActive = false,
-  samplingTarget = null
+  samplingTarget = null,
+  onApolloTouchdown,
+  onFirstStep,
+  apolloLandingDone = false
 }) {
   const mountRef = useRef(null);
   const keysDown = useRef({});
   const rocksRef = useRef([]);
 
   const isMars = !artifact || artifact.body === 'Marte' || ['perseverance', 'ingenuity', 'opportunity', 'viking'].includes(artifact.id);
-  const isFlying = artifact?.id === 'ingenuity';
+  const isApollo = artifact?.id === 'apollo11';
+  const isFlying = artifact?.id === 'ingenuity' || (isApollo && !apolloLandingDone);
 
-  // Physical State for Ground Rover or Flying Drone
+  const activeMissionTargets = isMars ? MARS_SAMPLE_TARGETS : MOON_APOLLO_TARGETS;
+
+  // Physical State for Rover, Drone, LEM Descent or Astronaut Walk
   const craftState = useRef({
     x: 0,
     z: 0,
-    altitude: isFlying ? 4.5 : 0,
+    altitude: isApollo ? (apolloLandingDone ? 0 : 16.0) : (isFlying ? 4.5 : 0),
     heading: 0,
     speed: 0,
-    maxSpeed: isFlying ? 0.38 : 0.22,
-    accel: isFlying ? 0.018 : 0.012,
+    maxSpeed: isApollo ? (apolloLandingDone ? 0.16 : 0.28) : (isFlying ? 0.38 : 0.22),
+    accel: 0.014,
     turnSpeed: 0.038,
     friction: 0.94,
-    prevPos: new THREE.Vector3(0, 0, 0)
+    prevPos: new THREE.Vector3(0, 0, 0),
+    hasWalkedFirstStep: false,
+    hasLanded: apolloLandingDone
   });
 
-  // Elevation function for broad Martian desert dunes and crater ridges
+  // Elevation function for broad Martian dunes or Lunar crater landscape
   const getElevation = (x, z) => {
     if (isMars) {
       const d1 = Math.sin(x * 0.045) * Math.cos(z * 0.045) * 2.2;
@@ -132,27 +213,33 @@ export default function SurfaceMap3D({
       const ridges = Math.sin(x * 0.15 + z * 0.12) * 0.35;
       return d1 + d2 + ridges;
     }
-    const c1 = Math.sin(x * 0.04) * Math.cos(z * 0.04) * 2.2;
-    const c2 = Math.cos(x * 0.02) * Math.sin(z * 0.02) * 1.5;
-    return c1 + c2;
+    // Lunar Sea of Tranquility (rolling crater rim ridges)
+    const c1 = Math.sin(x * 0.035) * Math.cos(z * 0.035) * 1.6;
+    const c2 = Math.cos(x * 0.015) * Math.sin(z * 0.02) * 1.1;
+    const bumps = Math.sin(x * 0.12 + z * 0.14) * 0.25;
+    return c1 + c2 + bumps;
   };
 
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return undefined;
 
-    // 1. Scene & Atmosphere (Martian Butterscotch Sky & Dusty Fog)
+    // 1. Scene & Environment
     const scene = new THREE.Scene();
-    const skyColor = isMars ? '#8f411b' : '#030712';
-    const fogColor = isMars ? '#994721' : '#030712';
-    scene.background = new THREE.Color(skyColor);
-    scene.fog = new THREE.FogExp2(fogColor, isMars ? 0.008 : 0.004);
+    if (isMars) {
+      scene.background = new THREE.Color('#8f411b');
+      scene.fog = new THREE.FogExp2('#994721', 0.008);
+    } else {
+      // Lunar vacuum: black space with zero fog
+      scene.background = new THREE.Color('#020408');
+      scene.fog = null;
+    }
 
-    // 2. Camera (3rd Person Chase Camera with 360° Mouse Orbit)
+    // 2. Camera (3rd Person Orbit Camera)
     const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.2, 800);
-    camera.position.set(0, isFlying ? 6.5 : 4.5, isFlying ? 11.0 : 8.5);
+    camera.position.set(0, isFlying ? 7.0 : 4.5, isFlying ? 12.0 : 8.5);
 
-    // 3. WebGL Renderer with Soft PCF Shadows
+    // 3. WebGL Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -160,25 +247,25 @@ export default function SurfaceMap3D({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    // 4. OrbitControls centered on the craft
+    // 4. OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
-    controls.minDistance = 2.2;
-    controls.maxDistance = 50.0;
+    controls.minDistance = 2.0;
+    controls.maxDistance = 55.0;
     controls.maxPolarAngle = Math.PI / 2 - 0.04;
     controls.target.set(0, 1.2, 0);
 
-    // 5. Lighting: Warm Martian Sunlight & Ambient Scatter
+    // 5. Lighting: Sun and Ambient
     const hemiLight = new THREE.HemisphereLight(
-      isMars ? '#ffd2b3' : '#e0e7ff',
-      isMars ? '#3b160b' : '#111827',
-      isMars ? 1.9 : 1.2
+      isMars ? '#ffd2b3' : '#cbd5e1',
+      isMars ? '#3b160b' : '#090d16',
+      isMars ? 1.9 : 1.4
     );
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(isMars ? '#fff0dc' : '#ffffff', 2.8);
-    sunLight.position.set(50, 65, 40);
+    const sunLight = new THREE.DirectionalLight(isMars ? '#fff0dc' : '#ffffff', isMars ? 2.8 : 3.2);
+    sunLight.position.set(50, 70, 40);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
@@ -190,8 +277,39 @@ export default function SurfaceMap3D({
     sunLight.shadow.camera.bottom = -60;
     scene.add(sunLight);
 
-    // 6. Expanded Terrain Generation (150 x 150 units - Vast Exploration Zone)
     const textureLoader = new THREE.TextureLoader();
+
+    // LUNAR SKY: Stars Skybox and Earth floating in the lunar sky
+    if (!isMars) {
+      const starGeo = new THREE.SphereGeometry(350, 32, 32);
+      const starTex = textureLoader.load(getAssetPath('/textures/stars.jpg'));
+      starTex.wrapS = THREE.RepeatWrapping;
+      starTex.wrapT = THREE.RepeatWrapping;
+      starTex.repeat.set(4, 4);
+      const starMat = new THREE.MeshBasicMaterial({ map: starTex, side: THREE.BackSide });
+      scene.add(new THREE.Mesh(starGeo, starMat));
+
+      // Earth visible in the Lunar sky
+      const earthGeo = new THREE.SphereGeometry(12, 32, 32);
+      const earthTex = textureLoader.load(getAssetPath('/textures/earth.jpg'));
+      const earthMat = new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.8, metalness: 0.1 });
+      const earthMesh = new THREE.Mesh(earthGeo, earthMat);
+      earthMesh.position.set(55, 65, -120);
+      scene.add(earthMesh);
+
+      // Earth atmospheric blue rim glow
+      const earthGlowGeo = new THREE.SphereGeometry(12.8, 32, 32);
+      const earthGlowMat = new THREE.MeshBasicMaterial({
+        color: '#60a5fa',
+        transparent: true,
+        opacity: 0.35,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide
+      });
+      earthMesh.add(new THREE.Mesh(earthGlowGeo, earthGlowMat));
+    }
+
+    // 6. Terrain Generation (160 x 160 units)
     const terrainTex = textureLoader.load(getAssetPath(isMars ? '/textures/mars.jpg' : '/textures/moon.jpg'));
     terrainTex.wrapS = THREE.RepeatWrapping;
     terrainTex.wrapT = THREE.RepeatWrapping;
@@ -210,7 +328,7 @@ export default function SurfaceMap3D({
 
     const terrainMat = new THREE.MeshStandardMaterial({
       map: terrainTex,
-      color: isMars ? '#b34d22' : '#94a3b8',
+      color: isMars ? '#b34d22' : '#9ca3af',
       roughness: 0.94,
       metalness: 0.05
     });
@@ -219,22 +337,20 @@ export default function SurfaceMap3D({
     terrainMesh.receiveShadow = true;
     scene.add(terrainMesh);
 
-    // 7. ROCK GENERATION: 100% Solid Martian Basalt & Sedimentary Boulders (Zero Tearing)
-    const rockMatBasalt = new THREE.MeshStandardMaterial({
-      color: isMars ? '#2d1d16' : '#334155',
+    // 7. ROCK GENERATION: Watertight Boulders
+    const rockMat1 = new THREE.MeshStandardMaterial({
+      color: isMars ? '#2d1d16' : '#475569',
       roughness: 0.96,
       metalness: 0.05,
       flatShading: true
     });
-
-    const rockMatSedimentary = new THREE.MeshStandardMaterial({
-      color: isMars ? '#5c3422' : '#475569',
+    const rockMat2 = new THREE.MeshStandardMaterial({
+      color: isMars ? '#5c3422' : '#334155',
       roughness: 0.92,
       metalness: 0.04,
       flatShading: true
     });
-
-    const rockMatWeathered = new THREE.MeshStandardMaterial({
+    const rockMat3 = new THREE.MeshStandardMaterial({
       color: isMars ? '#42281a' : '#1e293b',
       roughness: 0.95,
       metalness: 0.06,
@@ -244,7 +360,6 @@ export default function SurfaceMap3D({
     const rockGroup = new THREE.Group();
     rocksRef.current = [];
 
-    // Pre-create 6 solid procedural geometries with distinct seeds for variety
     const boulderGeometries = [
       createMartianRockGeometry(1.0, 1.2),
       createMartianRockGeometry(1.0, 2.7),
@@ -254,17 +369,15 @@ export default function SurfaceMap3D({
       createMartianRockGeometry(1.0, 8.9)
     ];
 
-    // Spawn 70 organic boulders distributed naturally across the desert dunes
-    const rockCount = isMars ? 70 : 40;
+    const rockCount = isMars ? 70 : 45;
     for (let i = 0; i < rockCount; i++) {
       const rx = (Math.random() - 0.5) * 140;
       const rz = (Math.random() - 0.5) * 140;
-      if (Math.hypot(rx, rz) < 6.5) continue; // Keep landing spawn area clear
+      if (Math.hypot(rx, rz) < 7.5) continue; // Keep center landing zone clear
 
-      // Avoid placing right on top of mission target rocks
       let overlapsMission = false;
-      for (const t of MARS_SAMPLE_TARGETS) {
-        if (Math.hypot(rx - t.x, rz - t.z) < 4.0) {
+      for (const t of activeMissionTargets) {
+        if (Math.hypot(rx - t.x, rz - t.z) < 4.5) {
           overlapsMission = true;
           break;
         }
@@ -272,25 +385,22 @@ export default function SurfaceMap3D({
       if (overlapsMission) continue;
 
       const geoIdx = i % boulderGeometries.length;
-      const mat = (i % 3 === 0) ? rockMatBasalt : (i % 3 === 1) ? rockMatSedimentary : rockMatWeathered;
+      const mat = (i % 3 === 0) ? rockMat1 : (i % 3 === 1) ? rockMat2 : rockMat3;
       const rock = new THREE.Mesh(boulderGeometries[geoIdx], mat);
 
-      // Varying sizes: small stones, medium boulders, large landmark rocks
       const rBaseSize = (i < 5) ? (2.2 + Math.random() * 1.2) : (0.6 + Math.random() * 1.3);
       const scaleX = rBaseSize * (1.1 + Math.random() * 0.4);
-      const scaleY = rBaseSize * (0.55 + Math.random() * 0.3); // Flatter rock profile
+      const scaleY = rBaseSize * (0.55 + Math.random() * 0.3);
       const scaleZ = rBaseSize * (1.0 + Math.random() * 0.4);
       rock.scale.set(scaleX, scaleY, scaleZ);
 
       const ry = getElevation(rx, rz);
-      // Embed bottom into the terrain sand
       rock.position.set(rx, ry + scaleY * 0.35, rz);
       rock.rotation.set(Math.random() * 0.2, Math.random() * Math.PI * 2, Math.random() * 0.2);
       rock.castShadow = true;
       rock.receiveShadow = true;
       rockGroup.add(rock);
 
-      // Register collision cylinder
       const colRadius = Math.max(scaleX, scaleZ) * 0.85;
       rocksRef.current.push({
         x: rx,
@@ -302,78 +412,126 @@ export default function SurfaceMap3D({
     }
     scene.add(rockGroup);
 
-    // 8. MISSION TARGET ROCKS & SCIENTIFIC BEACONS
+    // 8. MISSION TARGETS & SCIENTIFIC BEACONS
     const missionBeacons = [];
     const missionRings = [];
 
-    if (isMars) {
-      MARS_SAMPLE_TARGETS.forEach((target, idx) => {
-        const isCollected = collectedSampleIds.includes(target.id);
-        const tx = target.x;
-        const tz = target.z;
-        const ty = getElevation(tx, tz);
+    activeMissionTargets.forEach((target, idx) => {
+      const isCollected = collectedSampleIds.includes(target.id);
+      const tx = target.x;
+      const tz = target.z;
+      const ty = getElevation(tx, tz);
 
-        // A. Target Rock Formation (Prominent & Distinct)
+      // Target landmark mesh
+      let targetMesh;
+      if (target.id === 'apollo_flag') {
+        // 3D American Flag Assembly
+        const flagGroup = new THREE.Group();
+        const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, 2.4, 16);
+        const poleMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', metalness: 0.9, roughness: 0.2 });
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+        pole.position.y = 1.2;
+        flagGroup.add(pole);
+
+        const crossbarGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 16);
+        crossbarGeo.rotateZ(Math.PI / 2);
+        const crossbar = new THREE.Mesh(crossbarGeo, poleMat);
+        crossbar.position.set(0.6, 2.38, 0);
+        flagGroup.add(crossbar);
+
+        const bannerGeo = new THREE.PlaneGeometry(1.2, 0.75);
+        bannerGeo.rotateY(Math.PI);
+        const bannerMat = new THREE.MeshStandardMaterial({
+          map: createAmericanFlagTexture(),
+          side: THREE.DoubleSide,
+          roughness: 0.6
+        });
+        const banner = new THREE.Mesh(bannerGeo, bannerMat);
+        banner.position.set(0.6, 2.0, 0);
+        flagGroup.add(banner);
+
+        targetMesh = flagGroup;
+        targetMesh.position.set(tx, ty, tz);
+      } else if (target.id === 'apollo_easep') {
+        // EASEP Laser Retroreflector Package
+        const easepGroup = new THREE.Group();
+        const baseBox = new THREE.Mesh(
+          new THREE.BoxGeometry(0.8, 0.35, 0.8),
+          new THREE.MeshStandardMaterial({ color: '#f8fafc', metalness: 0.7, roughness: 0.3 })
+        );
+        baseBox.position.y = 0.18;
+        easepGroup.add(baseBox);
+
+        // Laser Retroreflector Beam to Earth
+        const laserBeamGeo = new THREE.CylinderGeometry(0.04, 0.04, 60, 16);
+        const laserBeamMat = new THREE.MeshBasicMaterial({
+          color: '#10b981',
+          transparent: true,
+          opacity: 0.6,
+          blending: THREE.AdditiveBlending
+        });
+        const laserLine = new THREE.Mesh(laserBeamGeo, laserBeamMat);
+        laserLine.position.set(0, 30, 0);
+        laserLine.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0.3, 0.9, -0.2).normalize());
+        easepGroup.add(laserLine);
+
+        targetMesh = easepGroup;
+        targetMesh.position.set(tx, ty, tz);
+      } else {
+        // Scientific Rock / Outcrop
         const targetGeo = createMartianRockGeometry(1.6, idx * 3.7 + 1);
         const targetMat = new THREE.MeshStandardMaterial({
-          color: isCollected ? '#10b981' : (idx === 0 ? '#1f2937' : idx === 1 ? '#451a03' : '#312e81'),
+          color: isCollected ? '#10b981' : (isMars ? (idx === 0 ? '#1f2937' : idx === 1 ? '#451a03' : '#312e81') : '#e2e8f0'),
           roughness: 0.85,
           metalness: 0.15,
           flatShading: true
         });
-        const targetMesh = new THREE.Mesh(targetGeo, targetMat);
+        targetMesh = new THREE.Mesh(targetGeo, targetMat);
         targetMesh.scale.set(1.4, 0.75, 1.3);
         targetMesh.position.set(tx, ty + 0.5, tz);
-        targetMesh.castShadow = true;
-        targetMesh.receiveShadow = true;
-        scene.add(targetMesh);
+      }
 
-        // Register collision for target rock
-        rocksRef.current.push({
-          x: tx,
-          z: tz,
-          y: ty,
-          height: 1.8,
-          radius: 1.6
-        });
+      targetMesh.castShadow = true;
+      targetMesh.receiveShadow = true;
+      scene.add(targetMesh);
 
-        // B. Ground Targeting Reticle Ring
-        const ringGeo = new THREE.RingGeometry(1.8, 2.2, 32);
-        ringGeo.rotateX(-Math.PI / 2);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color: isCollected ? '#10b981' : target.color,
-          transparent: true,
-          opacity: 0.8,
-          side: THREE.DoubleSide
-        });
-        const groundRing = new THREE.Mesh(ringGeo, ringMat);
-        groundRing.position.set(tx, ty + 0.1, tz);
-        scene.add(groundRing);
-        missionRings.push(groundRing);
+      rocksRef.current.push({ x: tx, z: tz, y: ty, height: 1.8, radius: 1.6 });
 
-        // C. Sci-Fi Holographic Sky Beacon (Light Pillar Visible from afar)
-        const beaconGeo = new THREE.CylinderGeometry(0.08, 0.08, 30, 16);
-        const beaconMat = new THREE.MeshBasicMaterial({
-          color: isCollected ? '#10b981' : target.color,
-          transparent: true,
-          opacity: isCollected ? 0.3 : 0.75,
-          blending: THREE.AdditiveBlending
-        });
-        const beacon = new THREE.Mesh(beaconGeo, beaconMat);
-        beacon.position.set(tx, ty + 15, tz);
-        scene.add(beacon);
-        missionBeacons.push({ mesh: beacon, isCollected });
-
-        // Beacon pulsing light
-        const beaconLight = new THREE.PointLight(isCollected ? '#10b981' : target.color, isCollected ? 1.0 : 3.0, 18);
-        beaconLight.position.set(tx, ty + 3.0, tz);
-        scene.add(beaconLight);
+      // Ground Targeting Reticle Ring
+      const ringGeo = new THREE.RingGeometry(1.8, 2.2, 32);
+      ringGeo.rotateX(-Math.PI / 2);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: isCollected ? '#10b981' : target.color,
+        transparent: true,
+        opacity: 0.8,
+        side: THREE.DoubleSide
       });
-    }
+      const groundRing = new THREE.Mesh(ringGeo, ringMat);
+      groundRing.position.set(tx, ty + 0.1, tz);
+      scene.add(groundRing);
+      missionRings.push(groundRing);
 
-    // 8B. INGENUITY FLIGHT WAYPOINTS (Holographic Torus Rings)
+      // Sci-Fi Holographic Sky Beacon
+      const beaconGeo = new THREE.CylinderGeometry(0.08, 0.08, 30, 16);
+      const beaconMat = new THREE.MeshBasicMaterial({
+        color: isCollected ? '#10b981' : target.color,
+        transparent: true,
+        opacity: isCollected ? 0.3 : 0.75,
+        blending: THREE.AdditiveBlending
+      });
+      const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+      beacon.position.set(tx, ty + 15, tz);
+      scene.add(beacon);
+      missionBeacons.push({ mesh: beacon, isCollected });
+
+      const beaconLight = new THREE.PointLight(isCollected ? '#10b981' : target.color, isCollected ? 1.0 : 3.0, 18);
+      beaconLight.position.set(tx, ty + 3.0, tz);
+      scene.add(beaconLight);
+    });
+
+    // 8B. INGENUITY FLIGHT WAYPOINTS
     const aerialRings = [];
-    if (isFlying) {
+    if (isFlying && !isApollo) {
       INGENUITY_AERIAL_WAYPOINTS.forEach((wp) => {
         const isCleared = clearedWaypointIds.includes(wp.id);
         const torusGeo = new THREE.TorusGeometry(1.6, 0.14, 16, 32);
@@ -391,10 +549,10 @@ export default function SurfaceMap3D({
       });
     }
 
-    // 8C. Dynamic Sampling Laser / Robotic Beam
+    // 8C. Sampling Beam Effect
     const laserGeo = new THREE.CylinderGeometry(0.04, 0.04, 1, 8);
     const laserMat = new THREE.MeshBasicMaterial({
-      color: '#38bdf8',
+      color: isMars ? '#38bdf8' : '#fbbf24',
       transparent: true,
       opacity: 0.9,
       blending: THREE.AdditiveBlending
@@ -403,68 +561,137 @@ export default function SurfaceMap3D({
     laserBeam.visible = false;
     scene.add(laserBeam);
 
-    // 9. Load Real 3D Model (Perseverance, Ingenuity, Opportunity, Viking, Apollo)
+    // 9. Craft / Astronaut Scene Groups
     const craftGroup = new THREE.Group();
     scene.add(craftGroup);
+
+    // Permanent Lunar Module Descent Stage (When Apollo lands)
+    let staticLemMesh = null;
+    let astronautGroup = null;
+
+    // Rocket Thrust Flame for Apollo LEM Descent Engine
+    const flameGeo = new THREE.ConeGeometry(0.45, 2.2, 16);
+    flameGeo.rotateX(Math.PI);
+    const flameMat = new THREE.MeshBasicMaterial({
+      color: '#38bdf8',
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+    const thrustFlame = new THREE.Mesh(flameGeo, flameMat);
+    thrustFlame.position.set(0, -1.2, 0);
+    thrustFlame.visible = isApollo && !craftState.current.hasLanded;
+    craftGroup.add(thrustFlame);
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
 
-    const modelPath = artifact?.id === 'opportunity'
-      ? '/models/opportunity-rover.glb'
-      : artifact?.id === 'viking'
-      ? '/models/viking-lander.glb'
-      : artifact?.id === 'ingenuity'
-      ? '/models/ingenuity-mars-helicopter.glb'
-      : artifact?.id === 'apollo11'
-      ? '/models/apollo-lunar-module.glb'
-      : '/models/perseverance-rover.glb';
+    if (isApollo) {
+      // 1. Load Apollo 11 Lunar Module
+      loader.load(getAssetPath('/models/apollo-lunar-module.glb'), (gltf) => {
+        const lem = gltf.scene;
+        const box = new THREE.Box3().setFromObject(lem);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const scale = 3.6 / maxDim;
+        lem.scale.set(scale, scale, scale);
 
-    loader.load(getAssetPath(modelPath), (gltf) => {
-      const model = gltf.scene;
-      const box = new THREE.Box3().setFromObject(model);
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      const targetScale = isFlying ? 1.6 : 2.5;
-      const scale = targetScale / maxDim;
-      model.scale.set(scale, scale, scale);
+        const center = box.getCenter(new THREE.Vector3());
+        lem.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
 
-      // Center model base
-      const center = box.getCenter(new THREE.Vector3());
-      model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+        lem.traverse((c) => {
+          if (c.isMesh) {
+            c.castShadow = true;
+            c.receiveShadow = true;
+          }
+        });
 
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+        if (craftState.current.hasLanded) {
+          // If already landed, place permanently at (0, groundY, 0)
+          lem.position.set(0, getElevation(0, 0), 0);
+          scene.add(lem);
+          staticLemMesh = lem;
+        } else {
+          craftGroup.add(lem);
         }
       });
 
-      craftGroup.add(model);
-    }, undefined, (err) => {
-      console.warn('Fallback craft model:', err);
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(1.6, 0.45, 2.2),
-        new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.4, metalness: 0.6 })
-      );
-      base.position.y = 0.5;
-      craftGroup.add(base);
-    });
+      // 2. Load Astronaut Neil Armstrong
+      loader.load(getAssetPath('/models/astronaut.glb'), (gltf) => {
+        astronautGroup = new THREE.Group();
+        const astro = gltf.scene;
+        const box = new THREE.Box3().setFromObject(astro);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const scale = 1.7 / maxDim; // ~1.8 meters tall
+        astro.scale.set(scale, scale, scale);
 
-    // Initial craft placement
+        const center = box.getCenter(new THREE.Vector3());
+        astro.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+
+        astro.traverse((c) => {
+          if (c.isMesh) {
+            c.castShadow = true;
+            c.receiveShadow = true;
+          }
+        });
+
+        astronautGroup.add(astro);
+
+        if (craftState.current.hasLanded) {
+          astronautGroup.visible = true;
+          craftGroup.add(astronautGroup);
+        } else {
+          astronautGroup.visible = false;
+          craftGroup.add(astronautGroup);
+        }
+      });
+    } else {
+      // Load Rover / Helicopter models
+      const modelPath = artifact?.id === 'opportunity'
+        ? '/models/opportunity-rover.glb'
+        : artifact?.id === 'viking'
+        ? '/models/viking-lander.glb'
+        : artifact?.id === 'ingenuity'
+        ? '/models/ingenuity-mars-helicopter.glb'
+        : '/models/perseverance-rover.glb';
+
+      loader.load(getAssetPath(modelPath), (gltf) => {
+        const model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const targetScale = isFlying ? 1.6 : 2.5;
+        const scale = targetScale / maxDim;
+        model.scale.set(scale, scale, scale);
+
+        const center = box.getCenter(new THREE.Vector3());
+        model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        craftGroup.add(model);
+      });
+    }
+
+    // Initial placement
     const initY = getElevation(0, 0);
-    craftState.current.altitude = isFlying ? 4.5 : 0;
     craftGroup.position.set(0, initY + craftState.current.altitude, 0);
     craftState.current.prevPos.copy(craftGroup.position);
 
-    // 10. Flight / Drive Shadow beneath Craft
-    const shadowGeo = new THREE.RingGeometry(0.1, isFlying ? 0.9 : 1.3, 32);
+    // 10. Shadow beneath craft
+    const shadowGeo = new THREE.RingGeometry(0.1, 1.3, 32);
     shadowGeo.rotateX(-Math.PI / 2);
     const shadowMat = new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.45 });
     const groundShadow = new THREE.Mesh(shadowGeo, shadowMat);
     scene.add(groundShadow);
 
-    // 11. Keyboard Event Listeners
+    // 11. Listeners
     const handleKeyDown = (e) => {
       keysDown.current[e.code] = true;
     };
@@ -474,7 +701,6 @@ export default function SurfaceMap3D({
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
-    // 12. Resize Observer
     const handleResize = () => {
       if (!container) return;
       const w = Math.max(container.clientWidth, 10);
@@ -486,7 +712,7 @@ export default function SurfaceMap3D({
     const observer = new ResizeObserver(handleResize);
     observer.observe(container);
 
-    // 13. 60 FPS Physics & 3rd Person Follow Loop
+    // 12. 60 FPS Physics Loop
     let animId;
     let clockTime = 0;
     const animate = () => {
@@ -496,7 +722,6 @@ export default function SurfaceMap3D({
       const state = craftState.current;
       const keys = keysDown.current;
 
-      // Inputs
       const isForward = keys['KeyW'] || keys['ArrowUp'];
       const isReverse = keys['KeyS'] || keys['ArrowDown'];
       const isLeft = keys['KeyA'] || keys['ArrowLeft'];
@@ -504,34 +729,88 @@ export default function SurfaceMap3D({
       const isAscend = keys['KeyR'] || keys['Space'];
       const isDescend = keys['KeyF'] || keys['ShiftLeft'] || keys['ShiftRight'];
 
-      // If active sampling is in progress, stop movement temporarily
       if (isSamplingActive) {
         state.speed = 0;
       } else {
-        // Speed control
-        if (isForward) {
-          state.speed = Math.min(state.speed + state.accel, state.maxSpeed);
-        } else if (isReverse) {
-          state.speed = Math.max(state.speed - state.accel, -state.maxSpeed * 0.55);
-        } else {
-          state.speed *= state.friction;
-          if (Math.abs(state.speed) < 0.001) state.speed = 0;
-        }
+        // A. APOLLO LEM MANUAL DESCENT PHASE
+        if (isApollo && !state.hasLanded) {
+          // Horizontal maneuvering with RCS
+          if (isForward) state.speed = Math.min(state.speed + state.accel * 0.7, state.maxSpeed);
+          else if (isReverse) state.speed = Math.max(state.speed - state.accel * 0.7, -state.maxSpeed * 0.6);
+          else state.speed *= state.friction;
 
-        // Steering
-        if (isLeft) {
-          state.heading += state.turnSpeed * (state.speed >= 0 ? 1 : -1);
-        }
-        if (isRight) {
-          state.heading -= state.turnSpeed * (state.speed >= 0 ? 1 : -1);
-        }
+          if (isLeft) state.heading += state.turnSpeed;
+          if (isRight) state.heading -= state.turnSpeed;
 
-        // Flight Altitude Control (If Ingenuity Helicopter)
-        if (isFlying) {
-          if (isAscend) {
-            state.altitude = Math.min(state.altitude + 0.07, 14.0);
-          } else if (isDescend) {
-            state.altitude = Math.max(state.altitude - 0.07, 0.4);
+          // Vertical descent and DPS thruster
+          let vertSpeed = -0.06; // Constant gentle gravity descent
+          if (isAscend) vertSpeed += 0.12; // DPS counter-thrust to slow descent or climb
+          if (isDescend) vertSpeed -= 0.08; // Increase descent rate
+
+          state.altitude = Math.max(0, state.altitude + vertSpeed);
+
+          // Animate thrust flame
+          if (thrustFlame) {
+            thrustFlame.visible = true;
+            const flicker = 0.8 + Math.sin(clockTime * 30) * 0.25;
+            thrustFlame.scale.set(1, flicker * (isAscend ? 1.5 : 0.9), 1);
+          }
+
+          // TOUCHDOWN CHECK!
+          if (state.altitude <= 0.2) {
+            state.altitude = 0;
+            state.hasLanded = true;
+            state.speed = 0;
+            if (thrustFlame) thrustFlame.visible = false;
+
+            if (onApolloTouchdown) {
+              onApolloTouchdown();
+            }
+
+            // Transfer LEM to permanent ground monument
+            if (astronautGroup) {
+              astronautGroup.visible = true;
+            }
+          }
+        }
+        // B. ASTRONAUT NEIL ARMSTRONG WALK ON MOON
+        else if (isApollo && state.hasLanded) {
+          state.maxSpeed = 0.15; // Walking speed
+          if (isForward) state.speed = Math.min(state.speed + state.accel, state.maxSpeed);
+          else if (isReverse) state.speed = Math.max(state.speed - state.accel, -state.maxSpeed * 0.7);
+          else state.speed *= state.friction;
+
+          if (isLeft) state.heading += state.turnSpeed * 1.2;
+          if (isRight) state.heading -= state.turnSpeed * 1.2;
+
+          // Lunar gravity bounce while walking
+          if (Math.abs(state.speed) > 0.01) {
+            state.altitude = Math.abs(Math.sin(clockTime * 6.5)) * 0.14;
+
+            // Check first steps away from the LEM
+            const distFromLem = Math.hypot(state.x, state.z);
+            if (distFromLem > 3.2 && !state.hasWalkedFirstStep) {
+              state.hasWalkedFirstStep = true;
+              if (onFirstStep) {
+                onFirstStep();
+              }
+            }
+          } else {
+            state.altitude = 0;
+          }
+        }
+        // C. MARS ROVER OR INGENUITY DRONE
+        else {
+          if (isForward) state.speed = Math.min(state.speed + state.accel, state.maxSpeed);
+          else if (isReverse) state.speed = Math.max(state.speed - state.accel, -state.maxSpeed * 0.55);
+          else state.speed *= state.friction;
+
+          if (isLeft) state.heading += state.turnSpeed * (state.speed >= 0 ? 1 : -1);
+          if (isRight) state.heading -= state.turnSpeed * (state.speed >= 0 ? 1 : -1);
+
+          if (isFlying) {
+            if (isAscend) state.altitude = Math.min(state.altitude + 0.07, 14.0);
+            else if (isDescend) state.altitude = Math.max(state.altitude - 0.07, 0.4);
           }
         }
       }
@@ -540,70 +819,67 @@ export default function SurfaceMap3D({
       const nextX = state.x + Math.sin(state.heading) * state.speed;
       const nextZ = state.z + Math.cos(state.heading) * state.speed;
 
-      // COLLISION DETECTION WITH ROCKS:
+      // Rock collision
       const currentTerrainY = getElevation(nextX, nextZ);
       const craftBottomY = currentTerrainY + state.altitude;
-      const craftCollisionRadius = isFlying ? 0.9 : 1.35;
+      const craftCollisionRadius = (isApollo && state.hasLanded) ? 0.6 : (isFlying ? 0.9 : 1.35);
 
       let collided = false;
       for (const rock of rocksRef.current) {
         const dist = Math.hypot(nextX - rock.x, nextZ - rock.z);
-        const minDist = rock.radius + craftCollisionRadius;
-
-        if (dist < minDist) {
-          const rockTopY = rock.y + rock.height;
-          // If flying high above rock top, allow flight over
-          if (isFlying && craftBottomY > rockTopY + 0.2) {
+        if (dist < rock.radius + craftCollisionRadius) {
+          if ((isFlying || (isApollo && !state.hasLanded)) && craftBottomY > rock.y + rock.height + 0.2) {
             continue;
           }
-          // Physical collision: craft stops at rock perimeter
           collided = true;
           state.speed = 0;
           break;
         }
       }
 
-      // Apply movement if no collision
       if (!collided) {
         state.x = Math.max(-72, Math.min(72, nextX));
         state.z = Math.max(-72, Math.min(72, nextZ));
       }
 
-      // Terrain elevation and slope
       const groundY = getElevation(state.x, state.z);
-      const totalY = groundY + state.altitude + (isFlying ? Math.sin(clockTime * 3.5) * 0.06 : 0);
+      const totalY = groundY + state.altitude;
       craftGroup.position.set(state.x, totalY, state.z);
 
-      // Compute ground slope
-      const dx = (getElevation(state.x + 0.6, state.z) - getElevation(state.x - 0.6, state.z)) / 1.2;
-      const dz = (getElevation(state.x, state.z + 0.6) - getElevation(state.x, state.z - 0.6)) / 1.2;
-
-      // Apply craft orientation
+      // Orientation
       craftGroup.rotation.y = state.heading;
-      if (isFlying) {
-        const forwardTilt = state.speed * 1.8;
-        const turnRoll = isLeft ? 0.15 : isRight ? -0.15 : 0;
-        craftGroup.rotation.x = forwardTilt;
-        craftGroup.rotation.z = turnRoll;
+      if (isFlying && !isApollo) {
+        craftGroup.rotation.x = state.speed * 1.8;
+        craftGroup.rotation.z = isLeft ? 0.15 : isRight ? -0.15 : 0;
+      } else if (isApollo && !state.hasLanded) {
+        // LEM tilts gently towards flight direction
+        craftGroup.rotation.x = state.speed * 0.8;
+        craftGroup.rotation.z = isLeft ? 0.08 : isRight ? -0.08 : 0;
+      } else if (isApollo && state.hasLanded) {
+        // Astronaut walking straight upright with slight forward lean
+        craftGroup.rotation.x = Math.abs(state.speed) * 0.4;
+        craftGroup.rotation.z = 0;
       } else {
+        const dx = (getElevation(state.x + 0.6, state.z) - getElevation(state.x - 0.6, state.z)) / 1.2;
+        const dz = (getElevation(state.x, state.z + 0.6) - getElevation(state.x, state.z - 0.6)) / 1.2;
         craftGroup.rotation.x = -dz * 0.7;
         craftGroup.rotation.z = dx * 0.7;
       }
 
-      // Update ground shadow directly below craft
+      // Ground shadow
       groundShadow.position.set(state.x, groundY + 0.05, state.z);
       const shadowScale = Math.max(0.3, 1.0 - state.altitude * 0.05);
       groundShadow.scale.set(shadowScale, shadowScale, shadowScale);
 
-      // 3rd Person Follow Camera: keep user-controlled angle while chasing craft
+      // 3rd Person Camera Follow
       const deltaPos = new THREE.Vector3().subVectors(craftGroup.position, state.prevPos);
       camera.position.add(deltaPos);
-      controls.target.copy(craftGroup.position).add(new THREE.Vector3(0, isFlying ? 0.5 : 1.1, 0));
+      controls.target.copy(craftGroup.position).add(new THREE.Vector3(0, (isApollo && state.hasLanded) ? 1.0 : (isFlying ? 0.6 : 1.1), 0));
       controls.update();
 
       state.prevPos.copy(craftGroup.position);
 
-      // Rotate ground target rings and sky beacons
+      // Rotate ground target rings
       missionRings.forEach((ring, idx) => {
         ring.rotation.z = clockTime * 0.5 * (idx % 2 === 0 ? 1 : -1);
       });
@@ -613,29 +889,21 @@ export default function SurfaceMap3D({
         }
       });
 
-      // Animate aerial waypoints
-      aerialRings.forEach((ar) => {
-        ar.mesh.rotation.y = clockTime * 1.2;
-        ar.mesh.rotation.x = Math.sin(clockTime * 2.0) * 0.1;
-      });
-
-      // CHECK PROXIMITY TO MISSION TARGETS
+      // Target proximity
       let nearestTarget = null;
       let minTargetDist = Infinity;
       let targetInRange = false;
 
-      if (isMars) {
-        MARS_SAMPLE_TARGETS.forEach((target) => {
-          const dist = Math.hypot(state.x - target.x, state.z - target.z);
-          if (dist < minTargetDist) {
-            minTargetDist = dist;
-            nearestTarget = { ...target, distance: dist.toFixed(1) };
-          }
-          if (dist <= 4.2 && !collectedSampleIds.includes(target.id)) {
-            targetInRange = true;
-          }
-        });
-      }
+      activeMissionTargets.forEach((target) => {
+        const dist = Math.hypot(state.x - target.x, state.z - target.z);
+        if (dist < minTargetDist) {
+          minTargetDist = dist;
+          nearestTarget = { ...target, distance: dist.toFixed(1) };
+        }
+        if (dist <= 4.2 && !collectedSampleIds.includes(target.id)) {
+          targetInRange = true;
+        }
+      });
 
       if (onTargetProximity) {
         onTargetProximity({
@@ -645,7 +913,7 @@ export default function SurfaceMap3D({
         });
       }
 
-      // DYNAMIC SAMPLING BEAM EFFECT
+      // Dynamic sampling laser / tool ray
       if (isSamplingActive && samplingTarget) {
         laserBeam.visible = true;
         const startPoint = new THREE.Vector3(state.x, totalY + 0.8, state.z);
@@ -660,7 +928,7 @@ export default function SurfaceMap3D({
         laserBeam.visible = false;
       }
 
-      // Telemetry output to HUD
+      // Telemetry output
       if (onTelemetryChange) {
         onTelemetryChange({
           speedKmh: (Math.abs(state.speed) * 45).toFixed(1),
@@ -669,7 +937,9 @@ export default function SurfaceMap3D({
           elevation: totalY.toFixed(1),
           altitude: state.altitude.toFixed(1),
           headingDeg: Math.round(((state.heading * 180) / Math.PI) % 360),
-          isFlying
+          isFlying,
+          isApollo,
+          hasLanded: state.hasLanded
         });
       }
 
@@ -702,7 +972,7 @@ export default function SurfaceMap3D({
       }
       renderer.dispose();
     };
-  }, [artifact, collectedSampleIds, clearedWaypointIds, isSamplingActive, samplingTarget]);
+  }, [artifact, collectedSampleIds, clearedWaypointIds, isSamplingActive, samplingTarget, apolloLandingDone]);
 
   return (
     <div className="w-full h-full relative cursor-grab active:cursor-grabbing select-none">

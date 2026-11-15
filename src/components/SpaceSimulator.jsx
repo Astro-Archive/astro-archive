@@ -183,16 +183,29 @@ export default function SpaceSimulator({
       scene.add(mesh);
       planetMeshes.current[body.id] = { mesh, data: body };
 
-      // Sun Corona Glow
+      // Sun Corona Glow (Radiant Solar Corona with Additive Blending - Eliminates Dark Rings)
       if (body.id === 'sun') {
-        const coronaGeo = new THREE.SphereGeometry(body.radius * 1.15, 32, 32);
+        const coronaGeo = new THREE.SphereGeometry(body.radius * 1.10, 32, 32);
         const coronaMat = new THREE.MeshBasicMaterial({
-          color: '#f59e0b',
+          color: '#fbbf24',
           transparent: true,
-          opacity: 0.2,
+          opacity: 0.5,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
           side: THREE.BackSide,
         });
         mesh.add(new THREE.Mesh(coronaGeo, coronaMat));
+
+        const outerFlareGeo = new THREE.SphereGeometry(body.radius * 1.25, 32, 32);
+        const outerFlareMat = new THREE.MeshBasicMaterial({
+          color: '#f97316',
+          transparent: true,
+          opacity: 0.22,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          side: THREE.BackSide,
+        });
+        mesh.add(new THREE.Mesh(outerFlareGeo, outerFlareMat));
       }
 
       // Saturn 3D Rings
