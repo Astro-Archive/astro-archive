@@ -1,0 +1,52 @@
+/*
+ * Sci-fi UI Kit (Free) — Loader
+ * Figma: 1:21 — 8 barras radiales, giro en 8 pasos (steps), opacidad decreciente.
+ */
+
+.sf-loader-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+}
+
+.sf-loader {
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--sf-size, 20px);
+  height: var(--sf-size, 20px);
+  animation: sf-loader-spin 0.9s steps(8, end) infinite;
+}
+
+.sf-loader i {
+  position: absolute;
+  top: 0;
+  left: calc(50% - var(--sf-bar, 2px) / 2);
+  display: block;
+  width: var(--sf-bar, 2px);
+  height: calc(var(--sf-size, 20px) / 2 - 2px);
+  background-color: currentColor;
+  border-radius: 1px;
+  transform-origin: 50% calc(100% + 2px);
+  transform: rotate(calc(var(--i, 0) * 45deg + var(--sf-dir, 0deg)));
+}
+
+.sf-loader__label {
+  font-family: 'Exo 2', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+@keyframes sf-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-loader {
+    animation-duration: 3s;
+  }
+}

@@ -1,0 +1,103 @@
+@import './styles/sci-fi-tokens.css';
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: #050608;
+  color: #e5e7eb;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.06) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+.kit {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.kit__head h1 {
+  margin: 0 0 4px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kit__head p {
+  margin: 0 0 32px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.kit__head code {
+  color: #00f0ff;
+}
+
+section h2 {
+  margin: 32px 0 12px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.kit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #14161b;
+}
+
+.kit-row__label {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  width: 170px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.kit-row__size {
+  color: #4b5563;
+}
+
+.kit-cell {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  padding: 4px;
+}
+
+/* Estados forzados para poder verlos en estático */
+.kit-cell--hover .sf-btn {
+  --sf-fill: #d4d4d4 !important;
+}
+
+.kit-cell--pressed .sf-btn {
+  --sf-fill: #a3a3a3 !important;
+}
+
+.kit-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+/* Fondo claro para las variantes on-light */
+.kit-inline--light {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 6px;
+}

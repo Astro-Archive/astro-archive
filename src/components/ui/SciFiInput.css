@@ -1,0 +1,117 @@
+/*
+ * Sci-fi UI Kit (Free) — Text field
+ * Figma: 1:7
+ *
+ * Borde #A3A3A3 (2px en los laterales, 1px arriba/abajo), foco #000,
+ * error #E6004C. Título #171717, placeholder y ayuda #A3A3A3.
+ */
+
+.sf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 248px;
+  font-family: 'Exo 2', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+}
+
+.sf-field__title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #171717;
+}
+
+.sf-field__required {
+  margin-left: 2px;
+  color: #e6004c;
+}
+
+.sf-field__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #a3a3a3;
+  border-right-width: 2px;
+  border-left-width: 2px;
+  background-color: transparent;
+}
+
+.sf-field--lg .sf-field__box {
+  height: 42px;
+  padding: 0 12px;
+}
+
+.sf-field__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: #a3a3a3;
+}
+
+.sf-field__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  color: #171717;
+}
+
+.sf-field--lg .sf-field__input {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.sf-field__input::placeholder {
+  color: #a3a3a3;
+}
+
+.sf-field__hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: #a3a3a3;
+}
+
+/* --- Estados ------------------------------------------------------------- */
+
+.sf-field[data-state='hover'] .sf-field__box {
+  border-color: #737373;
+}
+
+.sf-field[data-state='focus'] .sf-field__box,
+.sf-field[data-state='active'] .sf-field__box,
+.sf-field__box:focus-within {
+  border-color: #000000;
+}
+
+.sf-field[data-state='error'] .sf-field__box {
+  border-color: #e6004c;
+}
+
+.sf-field[data-state='error'] .sf-field__hint {
+  color: #e6004c;
+}
+
+.sf-field[data-state='disable'] .sf-field__title,
+.sf-field[data-state='disable'] .sf-field__hint {
+  color: #d4d4d4;
+}
+
+.sf-field[data-state='disable'] .sf-field__box {
+  border-color: #a3a3a3;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.sf-field[data-state='disable'] .sf-field__input {
+  color: #a3a3a3;
+  cursor: not-allowed;
+}

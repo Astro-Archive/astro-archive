@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import CuriosityPanel from './CuriosityPanel';
+import SciFiButton from './ui/SciFiButton';
+import SciFiTag from './ui/SciFiTag';
+import SciFiLoader from './ui/SciFiLoader';
 
 export default function SpaceXHUD({
   selectedTarget,
@@ -64,17 +67,21 @@ export default function SpaceXHUD({
     <div className="absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-2 sm:p-4 select-none font-mono">
       
       {/* 1. TOP BAR: Sharp Sci-Fi Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+      <div className="relative z-40 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
         
         {/* Brand & Tracking Status (Renamed from SIMULADOR ESPACIAL to ASTRO ARCHIVE) */}
-        <div className="flex items-center space-x-3 bg-black/90 backdrop-blur-md border border-cyan-500/50 px-4 py-2 rounded-none shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+        <div className="flex items-center gap-3 bg-black/90 backdrop-blur-md border border-cyan-500/50 px-4 py-2 rounded-none shadow-[0_0_15px_rgba(0,240,255,0.2)]">
           <div className="w-2.5 h-2.5 rounded-none bg-cyan-400 animate-ping"></div>
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <span className="font-bold text-sm sm:text-base tracking-widest text-cyan-300">ASTRO ARCHIVE</span>
-              <span className="text-[10px] bg-cyan-950 border border-cyan-500/60 text-cyan-300 px-2 py-0.5 rounded-none font-mono">
-                {isFlightMode ? 'PILOTO NAVE' : 'ORBITAL LOCK'}
-              </span>
+              <SciFiTag
+                type={isFlightMode ? 'success' : 'information'}
+                shape="cut-edge"
+                showArrow={false}
+              >
+                {isFlightMode ? 'Piloto nave' : 'Orbital lock'}
+              </SciFiTag>
             </div>
             <div className="text-[11px] text-slate-300 mt-0.5">
               OBJETIVO: <span className="text-cyan-300 font-bold">{activeTitle.toUpperCase()}</span>
@@ -83,51 +90,38 @@ export default function SpaceXHUD({
         </div>
 
         {/* Center Mode Controls */}
-        <div className="flex items-center space-x-2 bg-black/90 backdrop-blur-md p-1 border border-slate-700 rounded-none text-xs sm:text-sm">
-          
-          <button
+        <div className="flex items-center gap-2 bg-black/90 backdrop-blur-md p-1 border border-slate-700 rounded-none">
+
+          <SciFiButton
+            variant={isFlightMode ? 'secondary' : 'primary'}
             onClick={() => onSelectTarget('OVERVIEW')}
-            className={`px-3 py-2 rounded-none transition-all flex items-center space-x-1.5 ${
-              selectedTarget === 'OVERVIEW' && !isFlightMode
-                ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/80 shadow-[0_0_10px_rgba(0,240,255,0.3)]'
-                : 'text-slate-300 hover:text-white'
-            }`}
+            showArrow={false}
+            className="hidden sm:inline-flex"
           >
-            <Eye className="w-4 h-4" />
-            <span className="font-bold hidden sm:inline">Sistema completo</span>
-            <span className="font-bold sm:hidden">Sistema</span>
-          </button>
+            Sistema
+          </SciFiButton>
 
           {/* SPACESHIP FLIGHT MODE TOGGLE */}
-          <button
+          <SciFiButton
+            variant={isFlightMode ? 'primary' : 'secondary'}
             onClick={onToggleFlightMode}
-            className={`px-3.5 py-2 rounded-none transition-all flex items-center space-x-2 font-bold text-xs sm:text-sm ${
-              isFlightMode
-                ? 'bg-emerald-500 text-black border border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.6)] animate-pulse'
-                : 'bg-space-900 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-950/40'
-            }`}
+            showArrow={false}
           >
-            <Plane className="w-4 h-4" />
-            <span>{isFlightMode ? 'Pilotando nave' : 'Pilotar nave'}</span>
-          </button>
+            {isFlightMode ? 'Pilotando' : 'Pilotar nave'}
+          </SciFiButton>
 
         </div>
 
         {/* Cadet Log / Badges Button */}
-        <button
-          onClick={onOpenBadges}
-          className="flex items-center space-x-2 text-xs sm:text-sm bg-black/90 hover:bg-cyan-950/50 backdrop-blur-md border border-cyan-500/40 px-3 py-2 rounded-none text-cyan-300 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]"
-        >
-          <Award className="w-4 h-4 text-amber-400" />
-          <span className="hidden sm:inline">Bitácora:</span>
-          <span className="font-bold text-amber-400">{scannedCount}/{artifacts.length}</span>
-        </button>
+        <SciFiButton onClick={onOpenBadges} showArrow={false}>
+          <span className="hidden sm:inline">Bitácora&nbsp;</span>{scannedCount}/{artifacts.length}
+        </SciFiButton>
 
       </div>
 
       {/* 2. CENTER: SPACE ENGINE FLIGHT HUD (When Flight Mode Active - Clean Separation, NO Overlaps!) */}
       {isFlightMode ? (
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between pt-16 sm:pt-20 pb-16 px-3 sm:px-6">
+        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between pt-28 sm:pt-20 pb-16 px-3 sm:px-6">
           
           {/* Top Compass Heading Tape (Space Engine Style - Dynamic & Functional) */}
           <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 bg-black/90 border border-emerald-500/50 px-4 py-1.5 text-xs text-emerald-300 flex items-center space-x-3 sm:space-x-5 backdrop-blur-md font-mono hidden md:flex shadow-[0_0_20px_rgba(0,0,0,0.9)]">
@@ -310,156 +304,127 @@ export default function SpaceXHUD({
 
         {/* Custom Interactive Destino Menu Trigger Button */}
         <div className="relative">
-          <button
+          <SciFiButton
+            variant="secondary"
             onClick={() => setIsDestinoMenuOpen(!isDestinoMenuOpen)}
-            className="flex items-center space-x-2 bg-black/95 hover:bg-slate-900 border border-cyan-500/60 px-3.5 py-2 text-xs sm:text-sm text-cyan-300 transition-all shadow-[0_0_15px_rgba(0,0,0,0.8)] font-bold"
+            showArrow={false}
+            icon={isDestinoMenuOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           >
-            <Navigation className="w-4 h-4 text-cyan-400" />
-            <span>DESTINO:</span>
-            <span className="text-white underline">{activeTitle}</span>
-            {isDestinoMenuOpen ? <ChevronDown className="w-4 h-4 text-cyan-400" /> : <ChevronUp className="w-4 h-4 text-cyan-400" />}
-          </button>
+            Destino: {activeTitle}
+          </SciFiButton>
 
           {/* ELEVATED CUSTOM DROPDOWN MENU */}
           {isDestinoMenuOpen && (
             <div className="absolute bottom-12 left-0 w-80 sm:w-96 max-h-[72vh] overflow-y-auto bg-black/95 backdrop-blur-xl border border-cyan-500/70 p-3 shadow-2xl z-50 pointer-events-auto space-y-3">
               
               {/* Menu Header */}
-              <div className="flex items-center justify-between border-b border-cyan-500/40 pb-2">
-                <span className="font-bold uppercase tracking-wider text-cyan-300 text-xs flex items-center space-x-1.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/40 pb-2">
+                <span className="font-bold uppercase tracking-wider text-cyan-300 text-xs flex items-center gap-1.5">
                   <Compass className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Navegación del Sistema</span>
                 </span>
-                <button
-                  onClick={() => setIsDestinoMenuOpen(false)}
-                  className="text-slate-400 hover:text-white px-1 font-bold text-xs"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2">
+                  <SciFiTag type="information" shape="cut-edge" showArrow={false}>
+                    {activeTitle}
+                  </SciFiTag>
+                  <button
+                    onClick={() => setIsDestinoMenuOpen(false)}
+                    className="text-slate-400 hover:text-white px-1 font-bold text-xs"
+                    aria-label="Cerrar menú"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
-              {/* Vista General */}
-              <button
+              {/* Vista General — acción principal */}
+              <SciFiButton
                 onClick={() => { onSelectTarget('OVERVIEW'); setIsDestinoMenuOpen(false); }}
-                className={`w-full text-left px-3 py-2 border transition-all flex items-center space-x-2 text-xs font-bold ${
-                  selectedTarget === 'OVERVIEW'
-                    ? 'bg-cyan-500/30 text-cyan-300 border-cyan-400'
-                    : 'border-slate-800 bg-space-950 text-slate-300 hover:text-white hover:border-slate-600'
-                }`}
               >
-                <Eye className="w-4 h-4 text-cyan-400" />
-                <span>🌌 Sistema Completo (Vista Panorámica)</span>
-              </button>
+                Sistema completo
+              </SciFiButton>
 
-              {/* 1. Astros del Sistema Solar (with colored square boxes) */}
+              {/* 1. Astros del Sistema Solar — variante transparent / secondary */}
               <div>
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 flex items-center space-x-1">
-                  <span>🪐 Astros & Cuerpos Celestes</span>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 flex items-center gap-1">
+                  <span>🪐 Astros &amp; Cuerpos Celestes</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <div className="grid grid-cols-2 gap-1.5">
                   {SOLAR_BODIES.map((body) => {
                     const isSelected = selectedTarget.toUpperCase() === body.id.toUpperCase();
                     return (
-                      <button
+                      <SciFiButton
                         key={body.id}
+                        variant={isSelected ? 'secondary' : 'transparent'}
+                        showArrow={false}
+                        className="w-full"
                         onClick={() => { onSelectTarget(body.id.toUpperCase()); setIsDestinoMenuOpen(false); }}
-                        className={`p-2 border transition-all flex items-center space-x-2 text-left ${
-                          isSelected
-                            ? 'bg-cyan-500/30 text-cyan-300 border-cyan-400 font-bold shadow-[0_0_8px_rgba(0,240,255,0.3)]'
-                            : 'border-slate-800 bg-black/60 text-slate-300 hover:border-cyan-500/40 hover:text-white'
-                        }`}
                       >
-                        <span
-                          className="w-3 h-3 rounded-none flex-shrink-0"
-                          style={{ backgroundColor: body.color, boxShadow: `0 0 6px ${body.color}80` }}
-                        />
-                        <span className="truncate">{body.shortName || body.name}</span>
-                      </button>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className="inline-block h-2 w-2 flex-none"
+                            style={{ backgroundColor: body.color }}
+                          />
+                          {body.shortName || body.name}
+                        </span>
+                      </SciFiButton>
                     );
                   })}
                 </div>
               </div>
 
-              {/* 2. Sondas Interestelares, Observatorios y Estación (with tech boxes) */}
+              {/* 2. Sondas, telescopios y estación — variante single-stroke */}
               <div>
-                <div className="text-[10px] uppercase font-bold text-amber-400 tracking-wider mb-1.5 flex items-center space-x-1">
+                <div className="text-[10px] uppercase font-bold text-amber-400 tracking-wider mb-1.5 flex items-center gap-1">
                   <span>🛰️ Sondas, Telescopios y Estación</span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-xs">
-                  <button
-                    onClick={() => { onSelectTarget('HUBBLE'); setIsDestinoMenuOpen(false); }}
-                    className={`p-2 border transition-all text-center font-bold ${
-                      selectedTarget === 'HUBBLE'
-                        ? 'bg-cyan-500/40 text-cyan-200 border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.5)]'
-                        : 'border-cyan-500/50 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-950/60 hover:border-cyan-400'
-                    }`}
-                  >
-                    🔭 Hubble (HST)
-                  </button>
-                  <button
-                    onClick={() => { onSelectTarget('ISS'); setIsDestinoMenuOpen(false); }}
-                    className={`p-2 border transition-all text-center font-bold ${
-                      selectedTarget === 'ISS'
-                        ? 'bg-blue-500/30 text-blue-300 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.4)]'
-                        : 'border-blue-500/40 bg-blue-950/20 text-blue-300/90 hover:bg-blue-950/40 hover:border-blue-400'
-                    }`}
-                  >
-                    ISS (LEO)
-                  </button>
-                  <button
-                    onClick={() => { onSelectTarget('HALLEY'); setIsDestinoMenuOpen(false); }}
-                    className={`p-2 border transition-all text-center font-bold ${
-                      selectedTarget === 'HALLEY'
-                        ? 'bg-teal-500/30 text-teal-300 border-teal-400 shadow-[0_0_8px_rgba(20,184,166,0.4)]'
-                        : 'border-teal-500/40 bg-teal-950/20 text-teal-300/90 hover:bg-teal-950/40 hover:border-teal-400'
-                    }`}
-                  >
-                    ☄️ C. Halley
-                  </button>
-                  <button
-                    onClick={() => { onSelectTarget('VOYAGER1'); setIsDestinoMenuOpen(false); }}
-                    className={`p-2 border transition-all text-center font-bold ${
-                      selectedTarget === 'VOYAGER1'
-                        ? 'bg-amber-500/30 text-amber-300 border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-                        : 'border-amber-500/40 bg-amber-950/20 text-amber-300/90 hover:bg-amber-950/40 hover:border-amber-400'
-                    }`}
-                  >
-                    Voyager 1
-                  </button>
-                  <button
-                    onClick={() => { onSelectTarget('VOYAGER2'); setIsDestinoMenuOpen(false); }}
-                    className={`p-2 border transition-all text-center font-bold ${
-                      selectedTarget === 'VOYAGER2'
-                        ? 'bg-amber-500/30 text-amber-300 border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-                        : 'border-amber-500/40 bg-amber-950/20 text-amber-300/90 hover:bg-amber-950/40 hover:border-amber-400'
-                    }`}
-                  >
-                    Voyager 2
-                  </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'HUBBLE', label: 'Hubble' },
+                    { id: 'ISS', label: 'ISS (LEO)' },
+                    { id: 'HALLEY', label: 'C. Halley' },
+                    { id: 'VOYAGER1', label: 'Voyager 1' },
+                    { id: 'VOYAGER2', label: 'Voyager 2' },
+                  ].map((probe) => {
+                    const isSelected = selectedTarget.toUpperCase() === probe.id;
+                    return (
+                      <SciFiButton
+                        key={probe.id}
+                        variant={isSelected ? 'secondary' : 'single-stroke'}
+                        showArrow={false}
+                        className="w-full"
+                        onClick={() => { onSelectTarget(probe.id); setIsDestinoMenuOpen(false); }}
+                      >
+                        {probe.label}
+                      </SciFiButton>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* 3. Tecnologías y Reliquias en Superficie (with boxed chips) */}
+              {/* 3. Reliquias históricas — variante transparent con la superficie */}
               <div>
-                <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider mb-1.5 flex items-center space-x-1">
+                <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider mb-1.5 flex items-center gap-1">
                   <span>🚀 Reliquias Históricas en Superficie</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <div className="space-y-1.5">
                   {artifacts.map((artifact) => {
                     const isSelected = selectedTarget === artifact.id.toUpperCase();
                     return (
-                      <button
+                      <SciFiButton
                         key={artifact.id}
+                        variant={isSelected ? 'secondary' : 'transparent'}
+                        showArrow={false}
+                        className="w-full"
                         onClick={() => { onSelectTarget(artifact.id.toUpperCase()); setIsDestinoMenuOpen(false); }}
-                        className={`p-2 border transition-all flex flex-col items-start text-left ${
-                          isSelected
-                            ? 'bg-emerald-500/30 text-emerald-300 border-emerald-400 font-bold shadow-[0_0_8px_rgba(16,185,129,0.4)]'
-                            : 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300/90 hover:bg-emerald-950/40 hover:border-emerald-400'
-                        }`}
                       >
-                        <span className="font-bold text-xs truncate w-full">{artifact.name.split(' (')[0]}</span>
-                        <span className="text-[10px] text-slate-400">{artifact.body}</span>
-                      </button>
+                        <span className="flex w-full items-center justify-between gap-2">
+                          <span className="truncate">{artifact.name.split(' (')[0]}</span>
+                          <span className="flex-none text-[10px] uppercase tracking-wider opacity-60">
+                            {artifact.body}
+                          </span>
+                        </span>
+                      </SciFiButton>
                     );
                   })}
                 </div>
@@ -470,56 +435,46 @@ export default function SpaceXHUD({
         </div>
 
         {/* Audio, Telemetry & Settings Controls (Right Side) */}
-        <div className="flex items-center space-x-2 bg-black/95 backdrop-blur-md p-1.5 border border-cyan-500/40 rounded-none shadow-[0_0_15px_rgba(0,0,0,0.8)] flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-end gap-2 bg-black/95 backdrop-blur-md p-1.5 border border-cyan-500/40 rounded-none shadow-[0_0_15px_rgba(0,0,0,0.8)] max-w-[calc(100vw-1rem)]">
           
-          <button
+          <SciFiButton
+            variant={isPlayingAudio ? 'primary' : 'secondary'}
             onClick={onToggleAudio}
-            className={`p-2 rounded-none text-xs sm:text-sm border transition-all flex items-center space-x-1.5 ${
-              isPlayingAudio
-                ? 'bg-rose-500/30 text-rose-300 border-rose-500/60 shadow-[0_0_12px_rgba(244,63,94,0.4)]'
-                : 'bg-space-900 text-cyan-300 border-slate-700 hover:border-cyan-400'
-            }`}
+            showArrow={false}
+            icon={isPlayingAudio ? <SciFiLoader size="sm" /> : <Volume2 className="w-4 h-4" />}
             title="Audio histórico de la NASA"
           >
-            {isPlayingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            <span className="font-bold hidden sm:inline">{isPlayingAudio ? 'Silenciar' : 'Audio NASA'}</span>
-          </button>
+            {isPlayingAudio ? 'Silenciar' : 'Audio NASA'}
+          </SciFiButton>
 
           {currentArtifact && ['Moon', 'Mars'].includes(currentArtifact.body) && (
-            <button
+            <SciFiButton
               onClick={onOpenSurface}
-              className="p-2 rounded-none text-xs sm:text-sm border transition-all flex items-center space-x-1.5 border-emerald-400 bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-pulse"
+              showArrow={false}
               title="Explorar Superficie 3D con Rover o Dron"
             >
-              <Map className="w-4 h-4 text-emerald-400" />
-              <span className="font-bold hidden sm:inline">Explorar Superficie</span>
-            </button>
+              Explorar superficie
+            </SciFiButton>
           )}
 
           {(selectedTarget.toUpperCase() === 'HUBBLE' || currentArtifact?.id === 'hubble' || currentProbe?.id === 'hubble') && (
-            <button
+            <SciFiButton
               onClick={onOpenHubble}
-              className="p-2 rounded-none text-xs sm:text-sm border transition-all flex items-center space-x-1.5 border-cyan-400 bg-cyan-950/80 text-cyan-200 hover:bg-cyan-900 shadow-[0_0_15px_rgba(0,240,255,0.6)] animate-pulse"
+              showArrow={false}
               title="Operar Telescopio Hubble y apuntar a astros de espacio profundo"
             >
-              <Eye className="w-4 h-4 text-cyan-300" />
-              <span className="font-bold hidden sm:inline">Operar Telescopio</span>
-              <span className="font-bold sm:hidden">Telescopio</span>
-            </button>
+              Telescopio
+            </SciFiButton>
           )}
 
-          <button
+          <SciFiButton
+            variant={isTelemetryOpen ? 'secondary' : 'transparent'}
             onClick={() => setIsTelemetryOpen(!isTelemetryOpen)}
-            className={`p-2 rounded-none text-xs sm:text-sm border transition-all flex items-center space-x-1.5 ${
-              isTelemetryOpen
-                ? 'bg-cyan-500/30 text-cyan-300 border-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
-                : 'border-slate-700 bg-space-900 text-slate-300 hover:text-white hover:border-cyan-400'
-            }`}
+            showArrow={false}
             title="Ficha y Curiosidades"
           >
-            <Info className="w-4 h-4 text-amber-400" />
-            <span className="font-bold hidden sm:inline">{isTelemetryOpen ? 'Ocultar' : 'Curiosidades'}</span>
-          </button>
+            {isTelemetryOpen ? 'Ocultar' : 'Curiosidades'}
+          </SciFiButton>
 
           <button
             onClick={() => setIsSettingsOpen((value) => !value)}

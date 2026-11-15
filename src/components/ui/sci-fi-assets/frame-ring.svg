@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="92" height="32" viewBox="0 0 92 32" preserveAspectRatio="none">
+  <!-- Contorno de la variante Secondary: rectángulo 1px con las esquinas
+       superior-derecha e inferior-izquierda biseladas. -->
+  <path d="M0.5 0.5 H86 L91.5 5.5 V31.5 H5.5 L0.5 26.5 Z"
+        fill="none" stroke="#fff" stroke-width="1" stroke-linejoin="miter"/>
+</svg>

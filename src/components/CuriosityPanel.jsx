@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ExternalLink, Image, Map, RotateCw, X } from 'lucide-react';
 import { CURIOSITIES } from '../data/curiositiesData';
 import ArtifactModel3D from './ArtifactModel3D';
+import SciFiButton from './ui/SciFiButton';
 import { getAssetPath } from '../utils/assets';
 
 export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenSurface, onOpenHubble }) {
@@ -64,15 +65,15 @@ export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenS
           </div>
 
           {onOpenSurface && ['Moon', 'Mars'].includes(artifact.body) && (
-            <button onClick={onOpenSurface} className="mb-4 flex w-full items-center justify-center gap-2 border border-emerald-400/50 bg-emerald-950/50 px-3 py-2.5 font-bold text-emerald-300 hover:bg-emerald-900/60">
-              <Map className="w-4 h-4" /> Entrar al mapa de superficie
-            </button>
+            <SciFiButton onClick={onOpenSurface} className="mb-4 w-full">
+              Entrar al mapa de superficie
+            </SciFiButton>
           )}
 
           {onOpenHubble && (artifact?.id === 'hubble' || probe?.id === 'hubble') && (
-            <button onClick={onOpenHubble} className="mb-4 flex w-full items-center justify-center gap-2 border border-cyan-400/60 bg-cyan-950/80 px-3 py-2.5 font-bold text-cyan-200 hover:bg-cyan-900 shadow-[0_0_15px_rgba(0,240,255,0.4)] animate-pulse">
-              <Eye className="w-4 h-4 text-cyan-300" /> 🔭 Operar Telescopio Hubble (Modo Observatorio)
-            </button>
+            <SciFiButton onClick={onOpenHubble} className="mb-4 w-full">
+              Operar telescopio Hubble
+            </SciFiButton>
           )}
 
           <p className="mb-4 border-l-2 border-cyan-500/60 pl-3 font-sans text-xs leading-relaxed text-slate-200">{curiosity?.summary || artifact.theStory}</p>

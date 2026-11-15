@@ -1,0 +1,115 @@
+/*
+ * Sci-fi UI Kit (Free) — Design tokens
+ * Figma: PEse2mXAsE9al2kYhm4hzF
+ *   Colors palette   1:5
+ *   Typography       1:11
+ *   Spacing system   1:13
+ *
+ * Estos valores son la fuente de verdad del kit. Los componentes de
+ * src/components/ui los replican; para código nuevo conviene usar estas
+ * variables (o las clases Tailwind sf-* del tailwind.config.js).
+ */
+
+:root {
+  /* --- Colores ----------------------------------------------------------- */
+  --sf-primary-50: #faebeb;
+  --sf-primary-100: #efc0c0;
+  --sf-primary-200: #e7a2a2;
+  --sf-primary-300: #db7878;
+  --sf-primary-400: #d55d5d;
+  --sf-primary-500: #ca3535;
+  --sf-primary-600: #b83030;
+  --sf-primary-700: #8f2626;
+  --sf-primary-800: #6f1d1d;
+  --sf-primary-900: #551616;
+
+  --sf-neutral-50: #fafafa;
+  --sf-neutral-100: #f5f5f5;
+  --sf-neutral-200: #e5e5e5;
+  --sf-neutral-300: #d4d4d4;
+  --sf-neutral-400: #a3a3a3;
+  --sf-neutral-500: #737373;
+  --sf-neutral-600: #525252;
+  --sf-neutral-700: #404040;
+  --sf-neutral-800: #262626;
+  --sf-neutral-900: #171717;
+
+  --sf-warning-100: #fff4cc;
+  --sf-warning-300: #ffd966;
+  --sf-warning-500: #ffb800;
+  --sf-warning-700: #b85c00;
+  --sf-warning-900: #332100;
+
+  --sf-error-100: #ffd6e6;
+  --sf-error-300: #ff4d80;
+  --sf-error-500: #e6004c;
+  --sf-error-700: #7d0036;
+  --sf-error-900: #330014;
+
+  --sf-success-100: #e0ffd9;
+  --sf-success-300: #8cff66;
+  --sf-success-500: #39ff14;
+  --sf-success-700: #1e6600;
+  --sf-success-900: #0d2600;
+
+  --sf-info-100: #d6ffff;
+  --sf-info-300: #66ffff;
+  --sf-info-500: #00ffff;
+  --sf-info-700: #003366;
+  --sf-info-900: #001933;
+
+  --sf-violet-100: #f2e0ff;
+  --sf-violet-300: #d580ff;
+  --sf-violet-500: #a020f0;
+  --sf-violet-700: #4d0080;
+  --sf-violet-900: #1a0026;
+
+  /* --- Espaciado --------------------------------------------------------- */
+  --sf-space-0: 0px;
+  --sf-space-1: 2px;
+  --sf-space-2: 4px;
+  --sf-space-3: 8px;
+  --sf-space-4: 12px;
+  --sf-space-5: 16px;
+  --sf-space-6: 24px;
+  --sf-space-7: 32px;
+  --sf-space-8: 40px;
+  --sf-space-9: 48px;
+  --sf-space-10: 64px;
+  --sf-space-11: 80px;
+  --sf-space-12: 96px;
+  --sf-space-13: 160px;
+
+  /* --- Tipografía -------------------------------------------------------- */
+  --sf-font-display: 'Nippo', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  --sf-font-ui: 'Exo 2', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+
+  --sf-h1-size: 96px;
+  --sf-h1-line: 110px;
+  --sf-h1-tracking: 0.04em;
+  --sf-h2-size: 60px;
+  --sf-h2-line: 67.5px;
+  --sf-h3-size: 48px;
+  --sf-h3-line: 54px;
+  --sf-h4-size: 34px;
+  --sf-h4-line: 38.25px;
+  --sf-h5-size: 24px;
+  --sf-h5-line: 27px;
+  --sf-h6-size: 20px;
+  --sf-h6-line: 30px;
+  --sf-subtitle-1-size: 16px;
+  --sf-subtitle-1-line: 24px;
+  --sf-subtitle-2-size: 14px;
+  --sf-subtitle-2-line: 20px;
+  --sf-body-1-size: 16px;
+  --sf-body-1-line: 24px;
+  --sf-body-2-size: 14px;
+  --sf-body-2-line: 20px;
+  --sf-button-1-size: 16px;
+  --sf-button-1-line: 24px;
+  --sf-button-2-size: 14px;
+  --sf-button-2-line: 20px;
+  --sf-caption-size: 12px;
+  --sf-caption-line: 16px;
+  --sf-caption-tracking: 0.04em;
+}

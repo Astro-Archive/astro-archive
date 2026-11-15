@@ -1,0 +1,196 @@
+/*
+ * Sci-fi UI Kit (Free) — Tag
+ * Figma: 4037:8
+ *
+ * Colores por tipo (onDark=True / onDark=False) tomados del componente:
+ *   Primary      bg #B83030 (35% / 5%)  texto #FFF / #B83030  acento #FAEBEB
+ *   Neutral      bg #FFFFFF (25%) / #000 (5%)  texto #FFF / #171717  acento #FAFAFA
+ *   Error        bg #E6004C  texto #FFF / #E6004C  acento #FFEEF5
+ *   Warning      bg #B85C00  texto #FFF / #B85C00  acento #FFFAE9
+ *   Information  bg #07DADA  texto #FFF / #1DB0B8  acento #ECFCFC
+ *   Success      bg #2DC710  texto #FFF / #1E6600  acento #F1FFEE
+ */
+
+.sf-tag {
+  --sf-rgb: 184, 48, 48;
+  --sf-solid: #b83030;
+  --sf-accent: #faebeb;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 6px;
+  height: 28px;
+  padding: 0 14px 0 12px;
+  border: 0;
+  font-family: 'Exo 2', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: rgba(var(--sf-rgb), 0.35);
+}
+
+.sf-tag--lg {
+  height: 32px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* --- Tipos --------------------------------------------------------------- */
+
+.sf-tag[data-type='primary'] {
+  --sf-rgb: 184, 48, 48;
+  --sf-solid: #b83030;
+  --sf-accent: #faebeb;
+}
+
+.sf-tag[data-type='neutral'] {
+  --sf-rgb: 255, 255, 255;
+  --sf-solid: #171717;
+  --sf-accent: #fafafa;
+}
+
+.sf-tag[data-type='error'] {
+  --sf-rgb: 230, 0, 76;
+  --sf-solid: #e6004c;
+  --sf-accent: #ffeef5;
+}
+
+.sf-tag[data-type='warning'] {
+  --sf-rgb: 184, 92, 0;
+  --sf-solid: #b85c00;
+  --sf-accent: #fffae9;
+}
+
+.sf-tag[data-type='information'] {
+  --sf-rgb: 7, 218, 218;
+  --sf-solid: #1db0b8;
+  --sf-accent: #ecfcfc;
+}
+
+.sf-tag[data-type='success'] {
+  --sf-rgb: 45, 199, 16;
+  --sf-solid: #1e6600;
+  --sf-accent: #f1ffee;
+}
+
+/* Neutral sobre fondo oscuro usa blanco translúcido (25%), no negro */
+.sf-tag[data-type='neutral'][data-dark='true'] {
+  --sf-rgb: 255, 255, 255;
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* --- Modo claro (onDark=False) ------------------------------------------- */
+
+.sf-tag[data-dark='false'] {
+  background-color: rgba(var(--sf-rgb), 0.05);
+  color: var(--sf-solid);
+}
+
+.sf-tag[data-dark='false'][data-type='neutral'] {
+  --sf-rgb: 0, 0, 0;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* --- Formas -------------------------------------------------------------- */
+
+.sf-tag--cut-edge {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% 100%,
+    4px 100%,
+    0 calc(100% - 4px)
+  );
+}
+
+.sf-tag--rounded {
+  border-radius: 999px;
+}
+
+/* El borde va por dentro (la forma se recorta con clip-path) */
+.sf-tag[data-stroke='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--sf-solid);
+  pointer-events: none;
+}
+
+.sf-tag--rounded[data-stroke='true']::after {
+  border-radius: 999px;
+}
+
+/* --- Detalles del kit ---------------------------------------------------- */
+
+/* Cuadrado de 2x2 en la esquina superior izquierda */
+.sf-tag__square {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 2px;
+  height: 2px;
+  background-color: var(--sf-accent);
+}
+
+/* Guiones de 3x2 abajo a la derecha (6 guiones, paso de 3px) */
+.sf-tag__dashes {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  width: 18px;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--sf-accent) 0 2px,
+    transparent 2px 3px
+  );
+}
+
+.sf-tag--lg .sf-tag__dashes {
+  bottom: 2px;
+}
+
+.sf-tag--rounded .sf-tag__dashes {
+  right: 10px;
+}
+
+.sf-tag__label {
+  display: block;
+}
+
+.sf-tag__arrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+}
+
+.sf-tag--lg .sf-tag__arrow {
+  width: 16px;
+  height: 16px;
+}
+
+.sf-tag__arrow-icon {
+  display: block;
+  width: 55.5%;
+  height: 82.5%;
+  background-color: currentColor;
+  -webkit-mask-image: var(--sf-mask);
+  mask-image: var(--sf-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* El acento de los detalles sigue al texto en modo claro */
+.sf-tag[data-dark='false'] .sf-tag__square,
+.sf-tag[data-dark='false'] .sf-tag__dashes {
+  --sf-accent: var(--sf-solid);
+}

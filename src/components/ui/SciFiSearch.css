@@ -1,0 +1,101 @@
+/*
+ * Sci-fi UI Kit (Free) — Search bar
+ * Figma: 1:22
+ */
+
+.sf-search {
+  display: inline-flex;
+  align-items: stretch;
+  height: 32px;
+  font-family: 'Exo 2', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+}
+
+.sf-search__field {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid #a3a3a3;
+  border-right: 0;
+  border-left-width: 2px;
+  background-color: #ffffff;
+}
+
+.sf-search__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: #a3a3a3;
+}
+
+.sf-search__icon--end {
+  margin-left: auto;
+}
+
+.sf-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: #171717;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sf-search__input::placeholder {
+  color: #a3a3a3;
+}
+
+.sf-search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.sf-search__button {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 68px;
+  padding: 0 12px;
+  border: 0;
+  background-color: #171717;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Chevron decorativo en la esquina inferior derecha del botón */
+.sf-search__button::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.6;
+}
+
+.sf-search__button:hover {
+  background-color: #262626;
+}
+
+.sf-search__button:focus-visible {
+  outline: 1px solid #00f0ff;
+  outline-offset: 2px;
+}

@@ -4,6 +4,8 @@ import {
   ChevronRight, RotateCcw, Eye, Info, Volume2, VolumeX, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Layers
 } from 'lucide-react';
 import { getAssetPath } from '../utils/assets';
+import SciFiButton from './ui/SciFiButton';
+import SciFiLoader from './ui/SciFiLoader';
 
 const OBSERVATION_TARGETS = [
   {
@@ -646,26 +648,18 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             </div>
 
             {/* PRIMARY ACTION: CAPTURE EXPOSURE */}
-            <button
+            <SciFiButton
+              size="lg"
               onClick={handleCaptureExposure}
               disabled={!isLockAcquired || isCapturing}
-              className={`px-5 py-3 border font-bold text-xs sm:text-sm flex items-center space-x-2 transition-all shadow-xl ${
-                isCapturing
-                  ? 'border-amber-400 bg-amber-950/80 text-amber-300 animate-pulse'
-                  : isLockAcquired
-                  ? 'border-emerald-400 bg-emerald-600 hover:bg-emerald-500 text-black shadow-[0_0_25px_rgba(16,185,129,0.7)] animate-bounce'
-                  : 'border-slate-800 bg-slate-950 text-slate-500 cursor-not-allowed opacity-60'
-              }`}
+              icon={isCapturing ? <SciFiLoader size="sm" /> : <Camera className="h-4 w-4" />}
             >
-              <Camera className="h-4 w-4" />
-              <span>
-                {isCapturing 
-                  ? `EXPOSICIÓN EN CURSO (${captureProgress}%)...` 
-                  : isLockAcquired 
-                  ? 'TOMAR FOTOGRAFÍA (WFC3 / ACS)' 
-                  : 'ALINEA EL TELESCOPIO PARA CAPTURAR'}
-              </span>
-            </button>
+              {isCapturing
+                ? `Exposición ${captureProgress}%`
+                : isLockAcquired
+                ? 'Tomar fotografía'
+                : 'Alinea el telescopio'}
+            </SciFiButton>
 
           </div>
 
@@ -673,7 +667,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
           {isCapturing && (
             <div className="absolute inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-6 z-40">
               <div className="w-80 max-w-full bg-slate-950 border border-cyan-400 p-6 text-center space-y-4 shadow-[0_0_35px_rgba(0,240,255,0.3)]">
-                <div className="h-10 w-10 mx-auto rounded-none border-2 border-cyan-400 border-t-transparent animate-spin"></div>
+                <div className="flex justify-center text-cyan-300"><SciFiLoader size="xl" /></div>
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm text-white">RECOLECTANDO FOTONES DE ESPACIO PROFUNDO</h3>
                   <p className="text-[11px] text-slate-400">Sensor CCD refrigerado a -81°C // Filtro {activeTarget.filter}</p>
@@ -844,12 +838,9 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
 
             {/* Continue Button */}
             <div className="pt-2 flex justify-end space-x-3">
-              <button
-                onClick={() => setRevealedTarget(null)}
-                className="w-full sm:w-auto px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs sm:text-sm shadow-[0_0_15px_rgba(0,240,255,0.4)]"
-              >
-                Continuar Observaciones
-              </button>
+              <SciFiButton onClick={() => setRevealedTarget(null)} className="w-full sm:w-auto">
+                Continuar observaciones
+              </SciFiButton>
             </div>
 
           </div>

@@ -1,0 +1,371 @@
+/*
+ * Sci-fi UI Kit (Free) — Button
+ * Figma: https://www.figma.com/design/PEse2mXAsE9al2kYhm4hzF
+ * Nodos: 4034:446 (Primary md) · 4034:650 (Primary lg)
+ *        4034:854 (Secondary md) · 4034:1222 (Single Stroke) · 4034:1350 (Transparent)
+ * Estados: default / hover / pressed / disabled de cada variante (onDark)
+ *
+ * El kit dibuja el marco con rectángulos + polígonos sueltos. Acá los polígonos
+ * se usan como máscara (mask-image) para poder recolorearlos con el estado sin
+ * duplicar un SVG por color.
+ */
+
+.sf-btn {
+  --sf-fill: #ffffff; /* Button/filled-default-on-dark */
+  --sf-label: #171717; /* Text/neutral-primary */
+
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: 'Exo 2', 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sf-btn:hover:not(:disabled) {
+  --sf-fill: #d4d4d4; /* Button/filled-hover-on-dark */
+}
+
+.sf-btn:active:not(:disabled) {
+  --sf-fill: #a3a3a3; /* Button/filled-pressed-on-dark */
+}
+
+.sf-btn:disabled {
+  --sf-fill: #525252; /* Button/filled-disabled-on-dark */
+  cursor: not-allowed;
+}
+
+.sf-btn:focus-visible {
+  outline: 1px solid #00f0ff;
+  outline-offset: 3px;
+}
+
+.sf-btn--md {
+  height: 32px;
+}
+
+.sf-btn--lg {
+  height: 42px;
+}
+
+/* En las variantes sin relleno el texto y la flecha usan el color del trazo */
+.sf-btn--secondary,
+.sf-btn--single-stroke,
+.sf-btn--transparent {
+  --sf-label: var(--sf-fill);
+}
+
+.sf-btn--primary:disabled {
+  --sf-label: #a3a3a3; /* Text/neutral-tertiary */
+}
+
+/* --- Piezas del marco ---------------------------------------------------- */
+
+.sf-fill {
+  display: block;
+  background-color: var(--sf-fill);
+}
+
+.sf-shape {
+  display: block;
+  flex: none;
+  background-color: var(--sf-fill);
+  -webkit-mask-image: var(--sf-mask);
+  mask-image: var(--sf-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* --- Laterales ----------------------------------------------------------- */
+
+.sf-side {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 6px;
+}
+
+/* El kit espeja el lateral izquierdo en horizontal y el derecho en vertical */
+.sf-side--left {
+  transform: scaleX(-1);
+}
+
+.sf-side--right {
+  transform: scaleY(-1);
+}
+
+/* Espejo vertical interno que el kit aplica a los triángulos de las esquinas */
+.sf-flip-y {
+  transform: scaleY(-1);
+}
+
+.sf-side > .sf-fill {
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 1px;
+}
+
+.sf-side > .sf-shape {
+  width: 6px;
+  height: 6px;
+}
+
+.sf-wall {
+  flex: 1 1 0 !important;
+  width: 100%;
+  min-height: 1px;
+}
+
+/* --- Cuerpo -------------------------------------------------------------- */
+
+.sf-body {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  align-items: stretch;
+}
+
+.sf-top,
+.sf-bottom {
+  display: flex;
+  width: 100%;
+  flex: none;
+}
+
+.sf-top {
+  align-items: flex-start;
+}
+
+.sf-top > .sf-fill {
+  flex: 1 1 0;
+  height: 4px;
+  min-width: 1px;
+}
+
+.sf-top > .sf-shape {
+  width: 4px;
+  height: 4px;
+}
+
+/* Hueco central del borde superior: deja ver el fondo (recorte del kit) */
+.sf-gap {
+  flex: 1 1 0;
+  height: 4px;
+  min-width: 1px;
+}
+
+.sf-bottom {
+  align-items: flex-start;
+}
+
+.sf-bottom > .sf-fill {
+  flex: 1 1 0;
+  align-self: stretch;
+  min-width: 1px;
+}
+
+.sf-bottom > .sf-shape {
+  width: 3px;
+  height: 3px;
+}
+
+.sf-bottom > .sf-notch {
+  width: 8px;
+  height: 3px;
+}
+
+/* `-scale-y-100 rotate-180` del kit = espejo horizontal */
+.sf-flip {
+  display: block;
+  flex: none;
+  transform: scaleX(-1);
+}
+
+/* --- Contenido ----------------------------------------------------------- */
+
+.sf-body-fill {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 1px;
+  background-color: var(--sf-fill);
+}
+
+.sf-btn--secondary .sf-body-fill,
+.sf-btn--single-stroke .sf-body-fill,
+.sf-btn--transparent .sf-body-fill {
+  background: none;
+}
+
+.sf-btn--md .sf-body-fill {
+  gap: 6px;
+  padding: 5px 6px 6px;
+}
+
+.sf-btn--lg .sf-body-fill {
+  gap: 8px;
+  padding: 8px;
+}
+
+/* Variantes sin marco: el contenido define el ancho (12px / 14px de margen) */
+.sf-btn--md.sf-btn--secondary .sf-body-fill,
+.sf-btn--md.sf-btn--single-stroke .sf-body-fill,
+.sf-btn--md.sf-btn--transparent .sf-body-fill {
+  padding: 5px 12px 6px;
+}
+
+.sf-btn--lg.sf-btn--secondary .sf-body-fill,
+.sf-btn--lg.sf-btn--single-stroke .sf-body-fill,
+.sf-btn--lg.sf-btn--transparent .sf-body-fill {
+  padding: 8px 14px;
+}
+
+.sf-label {
+  color: var(--sf-label);
+  font-weight: 500;
+  line-height: normal;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sf-btn--md .sf-label {
+  font-size: 12px;
+}
+
+.sf-btn--lg .sf-label {
+  font-size: 16px;
+}
+
+.sf-arrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+}
+
+.sf-btn--md .sf-arrow {
+  width: 16px;
+  height: 16px;
+}
+
+.sf-btn--lg .sf-arrow {
+  width: 19px;
+  height: 19px;
+}
+
+/* El icono del kit mide 8.88566 x 13.1993 dentro de una caja de 16 x 16 */
+.sf-arrow-icon {
+  width: 55.5%;
+  height: 82.5%;
+  background-color: var(--sf-label);
+}
+
+/* --- Variante Secondary (contorno) --------------------------------------- */
+
+.sf-ring {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+/*
+ * El contorno se parte en 3 tramos con la misma máscara escalada al 300%:
+ * los laterales muestran el tercio fijo (esquinas intactas) y el central
+ * estira el tercio medio, igual que el auto-layout del kit.
+ */
+.sf-ring-cap {
+  display: block;
+  background-color: var(--sf-fill);
+  -webkit-mask-image: var(--sf-mask);
+  mask-image: var(--sf-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 300% 100%;
+  mask-size: 300% 100%;
+}
+
+.sf-ring-cap--l,
+.sf-ring-cap--r {
+  flex: none;
+}
+
+.sf-ring-cap--l {
+  width: 30px;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+}
+
+.sf-ring-cap--m {
+  flex: 1 1 0;
+  -webkit-mask-position: center center;
+  mask-position: center center;
+}
+
+.sf-ring-cap--r {
+  width: 31px;
+  -webkit-mask-position: right center;
+  mask-position: right center;
+}
+
+/* Trapecio decorativo bajo el borde superior: tamaño fijo, centrado */
+.sf-keystone {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 31px;
+  height: 3px;
+  transform: translateX(-50%);
+  background-color: var(--sf-fill);
+  -webkit-mask-image: var(--sf-mask);
+  mask-image: var(--sf-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* --- Variante Single Stroke (subrayado) ---------------------------------- */
+
+.sf-underline {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  height: 2px;
+  pointer-events: none;
+}
+
+.sf-btn--lg .sf-underline {
+  right: 14px;
+  left: 14px;
+}
+
+.sf-underline::before,
+.sf-underline::after {
+  content: '';
+  position: absolute;
+  background-color: var(--sf-fill);
+}
+
+/* línea completa abajo */
+.sf-underline::before {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+}
+
+/* la mitad derecha lleva una segunda línea encima (el "escalón" del kit) */
+.sf-underline::after {
+  right: 0;
+  bottom: 1px;
+  width: 50%;
+  height: 1px;
+}

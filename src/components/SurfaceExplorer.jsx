@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import SurfaceMap3D, { MARS_SAMPLE_TARGETS, MOON_APOLLO_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
 import { getAssetPath } from '../utils/assets';
+import SciFiButton from './ui/SciFiButton';
 
 /**
  * Web Audio API synthesizer for instant zero-latency sound effects.
@@ -412,13 +413,14 @@ export default function SurfaceExplorer({ artifact, onClose }) {
               <h3 className="text-sm sm:text-base font-bold text-white mb-2">
                 {proximityInfo.targetInRange.name}
               </h3>
-              <button
+              <SciFiButton
+                size="lg"
                 onClick={() => triggerSampling(proximityInfo.targetInRange)}
-                className="w-full px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold text-xs sm:text-sm uppercase tracking-wider border border-amber-300 shadow-lg flex items-center justify-center space-x-2"
+                className="w-full"
+                icon={<span className="text-[10px] font-bold leading-none">E</span>}
               >
-                <span>⚡ {isApollo ? 'COMPLETAR OBJETIVO LUNAR' : 'PERFORAR Y RECOLECTAR MUESTRA'}</span>
-                <span className="bg-black/30 text-white px-1.5 py-0.5 rounded-none text-[10px]">TECLA [E]</span>
-              </button>
+                {isApollo ? 'Completar objetivo lunar' : 'Perforar y recolectar'}
+              </SciFiButton>
             </div>
           )}
 
@@ -488,12 +490,9 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                   <span className="text-[11px] text-slate-400">
                     Completados: <strong className="text-white">{collectedSampleIds.length}/{activeMissionTargets.length}</strong>
                   </span>
-                  <button
-                    onClick={() => setDossierTarget(null)}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider transition-all"
-                  >
-                    CONTINUAR EXPLORACIÓN
-                  </button>
+                  <SciFiButton onClick={() => setDossierTarget(null)} showArrow={false}>
+                    Continuar exploración
+                  </SciFiButton>
                 </div>
               </div>
             </div>
