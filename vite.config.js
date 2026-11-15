@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
@@ -7,9 +8,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       input: {
-        main: new URL('./index.html', import.meta.url).pathname,
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
         // Showcase de los componentes portados desde Figma (Sci-fi UI Kit)
-        kit: new URL('./kit.html', import.meta.url).pathname,
+        kit: fileURLToPath(new URL('./kit.html', import.meta.url)),
       },
     },
   },

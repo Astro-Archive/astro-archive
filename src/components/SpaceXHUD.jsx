@@ -52,6 +52,7 @@ export default function SpaceXHUD({
   const currentProbe = SPECIAL_PROBES.find(p => p.id.toUpperCase() === selectedTarget.toUpperCase());
   const artifactTargetIds = {
     APOLLO: 'apollo11',
+    APOLLO11: 'apollo11',
     INGENUITY: 'ingenuity',
     OPPORTUNITY: 'opportunity',
     VIKING: 'viking',

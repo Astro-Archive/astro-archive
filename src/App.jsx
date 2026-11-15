@@ -64,6 +64,7 @@ export default function App() {
 
     const targetToArtifact = {
       APOLLO: 'apollo11',
+      APOLLO11: 'apollo11',
       INGENUITY: 'ingenuity',
       OPPORTUNITY: 'opportunity',
       VIKING: 'viking',
@@ -104,6 +105,7 @@ export default function App() {
 
   const artifactTargetIds = {
     APOLLO: 'apollo11',
+    APOLLO11: 'apollo11',
     INGENUITY: 'ingenuity',
     OPPORTUNITY: 'opportunity',
     VIKING: 'viking',

@@ -1146,7 +1146,8 @@ export default function SpaceSimulator({
         let currentTargetPos = null;
 
         // Prioritize specific probe/relic first so camera locks directly onto the hardware!
-        const prObj = probesMeshes.current[activeTarget.toLowerCase()];
+        const activeProbeId = activeTarget.toLowerCase() === 'apollo11' ? 'apollo' : activeTarget.toLowerCase();
+        const prObj = probesMeshes.current[activeProbeId];
         if (prObj && prObj.mesh) {
           const wp = new THREE.Vector3();
           prObj.mesh.getWorldPosition(wp);
@@ -1345,7 +1346,7 @@ export default function SpaceSimulator({
     }
 
     // Special Probes & Surface Relics (Check first so camera frames directly onto the rover/lander!)
-    const probeId = selectedTarget.toLowerCase();
+    const probeId = selectedTarget.toLowerCase() === 'apollo11' ? 'apollo' : selectedTarget.toLowerCase();
     const probeObj = probesMeshes.current[probeId];
     if (probeObj && probeObj.mesh) {
       const wp = new THREE.Vector3();
