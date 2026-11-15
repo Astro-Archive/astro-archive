@@ -297,5 +297,22 @@ export const SPECIAL_PROBES = [
       'Ha sido habitada ininterrumpidamente desde noviembre del año 2000 por astronautas de más de 20 países.',
       'Sus paneles solares cubren más de 2,400 metros cuadrados y generan 120 kilovatios de electricidad continua para los experimentos científicos.'
     ]
+  },
+  {
+    id: 'hubble',
+    shortName: 'Hubble (HST)',
+    name: 'Telescopio Espacial Hubble (HST)',
+    type: 'Gran Observatorio Orbital (LEO)',
+    launchYear: '24 de Abril de 1990 (STS-31 Discovery)',
+    altitude: '535 km (Órbita Terrestre Baja)',
+    speedKmH: '27,300 km/h (7.59 km/s)',
+    status: 'Activo / En Operación Científica',
+    modelPath: '/models/hubble.glb',
+    funFacts: [
+      'Fue el primer gran observatorio óptico puesto en órbita fuera de la distorsión atmosférica de la Tierra.',
+      'Fue reparado y actualizado por astronautas en 5 misiones de servicio del Transbordador Espacial (1993 a 2009).',
+      'Calculó con exactitud la tasa de expansión del universo, determinando su edad en 13,800 millones de años.',
+      'Sus Sensores de Guía Fina pueden apuntar a un cabello humano a 1.6 kilómetros de distancia sin perder el enfoque.'
+    ]
   }
 ];

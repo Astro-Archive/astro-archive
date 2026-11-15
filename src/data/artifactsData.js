@@ -198,5 +198,46 @@ export const ARTIFACTS = [
     ],
     theStory: 'Llegó a Marte con la maniobra SkyCrane más precisa de la historia. Viajó acompañado por el helicóptero Ingenuity y actualmente recolecta las muestras más prometedoras de la historia para buscar biofirmas pasadas.',
     legacy: 'El precursor directo de las futuras misiones humanas a Marte, probando generación de oxígeno y recolectando el tesoro geológico para Mars Sample Return.'
+  },
+  {
+    id: 'hubble',
+    name: 'Hubble Space Telescope (HST)',
+    body: 'Earth Orbit (LEO)',
+    location: 'Órbita Terrestre Baja (540 km)',
+    coordinates: 'Inclinación 28.5°, Altitud 535 km',
+    missionTime: '1990 – Presente (36+ Años Activo)',
+    status: 'Operational / Great Observatory',
+    statusType: 'green',
+    modelUrl: '/models/hubble.glb',
+    officialNasaUrl: 'https://science.nasa.gov/mission/hubble/',
+    audioSample: '/audio/space_ambient.mp3',
+    audioTitle: 'Telemetry Carrier & Orbital Radio Frequency',
+    diagnostics: {
+      altitude: '535 km (Órbita Terrestre Baja)',
+      orbitalSpeed: '27,300 km/h (7.59 km/s)',
+      pointingAccuracy: '0.007 arcosegundos (FGS Lock)',
+      primaryMirrorDiameter: '2.4 metros (Ritchey-Chrétien)',
+      observationsCount: '1.6+ Millones de exposiciones',
+      spectralCoverage: 'Ultravioleta, Visible, Infrarrojo Cercano'
+    },
+    engineeringBreakdown: [
+      {
+        title: 'Espejo Primario de 2.4 m y Óptica COSTAR',
+        specs: 'Vidrio ULE Corning + Recubrimiento Aluminio/MgF₂',
+        desc: 'Tras el lanzamiento en 1990 con una aberración esférica de 2 micrómetros en el borde del espejo, la misión STS-61 en 1993 instaló el módulo correctivo COSTAR, otorgándole la visión más nítida del cosmos jamás lograda.'
+      },
+      {
+        title: 'Sensores de Guía Fina (FGS) y Giroscopios',
+        specs: '3 FGS interferométricos + 6 giroscopios',
+        desc: 'Permiten fijar un objetivo astronómico con una precisión de 7 milésimas de segundo de arco: el equivalente a mantener un puntero láser sobre una moneda de 10 centavos a 320 kilómetros de distancia.'
+      },
+      {
+        title: 'Cámara de Gran Campo 3 (WFC3)',
+        specs: 'Detectores UVIS y de Infrarrojo Cercano',
+        desc: 'Instalada por astronautas en la misión STS-125 (2009). Captura imágenes multiespectrales que revelan galaxias a más de 13,000 millones de años luz de distancia.'
+      }
+    ],
+    theStory: 'Lanzado el 24 de abril de 1990 a bordo del transbordador espacial Discovery (STS-31), el Telescopio Espacial Hubble transformó la astronomía. Superó la turbulencia distorsionadora de la atmósfera terrestre y fue diseñado para ser reparado y mejorado en órbita por astronautas durante 5 épicas misiones de servicio del Transbordador.',
+    legacy: 'Determinó la tasa de expansión acelerada del universo y su edad (13,800 millones de años), descubrió que casi toda galaxia alberga un agujero negro supermasivo en su centro, y capturó los primeros datos atmosféricos de exoplanetas lejanos.'
   }
 ];

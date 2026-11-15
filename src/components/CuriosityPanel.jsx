@@ -4,7 +4,7 @@ import { CURIOSITIES } from '../data/curiositiesData';
 import ArtifactModel3D from './ArtifactModel3D';
 import { getAssetPath } from '../utils/assets';
 
-export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenSurface }) {
+export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenSurface, onOpenHubble }) {
   const curiosity = artifact ? CURIOSITIES[artifact.id] : null;
   const gallery = useMemo(() => curiosity?.photos || [], [curiosity]);
   const [activePhoto, setActivePhoto] = useState(0);
@@ -66,6 +66,12 @@ export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenS
           {onOpenSurface && ['Moon', 'Mars'].includes(artifact.body) && (
             <button onClick={onOpenSurface} className="mb-4 flex w-full items-center justify-center gap-2 border border-emerald-400/50 bg-emerald-950/50 px-3 py-2.5 font-bold text-emerald-300 hover:bg-emerald-900/60">
               <Map className="w-4 h-4" /> Entrar al mapa de superficie
+            </button>
+          )}
+
+          {onOpenHubble && (artifact?.id === 'hubble' || probe?.id === 'hubble') && (
+            <button onClick={onOpenHubble} className="mb-4 flex w-full items-center justify-center gap-2 border border-cyan-400/60 bg-cyan-950/80 px-3 py-2.5 font-bold text-cyan-200 hover:bg-cyan-900 shadow-[0_0_15px_rgba(0,240,255,0.4)] animate-pulse">
+              <Eye className="w-4 h-4 text-cyan-300" /> 🔭 Operar Telescopio Hubble (Modo Observatorio)
             </button>
           )}
 

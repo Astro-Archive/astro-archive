@@ -464,6 +464,164 @@ export default function SpaceSimulator({
       }
     });
 
+    // 10C. HUBBLE SPACE TELESCOPE (HST in Low Earth Orbit - 28.5° inclination)
+    loader.load(getAssetPath('/models/hubble.glb'), (gltf) => {
+      const hst = gltf.scene;
+      hst.userData.targetId = 'hubble';
+      const box = new THREE.Box3().setFromObject(hst);
+      const size = box.getSize(new THREE.Vector3()).length() || 1;
+      const scale = 1.2 / size;
+      hst.scale.set(scale, scale, scale);
+
+      const hstLight = new THREE.PointLight('#38bdf8', 2.2, 16);
+      hst.add(hstLight);
+      hst.add(createBeacon('#38bdf8'));
+
+      hst.position.set(initialEarthPos.x + 5.2, 1.4, initialEarthPos.z);
+      scene.add(hst);
+      probesMeshes.current['hubble'] = { 
+        mesh: hst, 
+        data: {
+          id: 'hubble',
+          name: 'Telescopio Espacial Hubble (HST)',
+          type: 'Gran Observatorio Orbital (LEO)',
+          speedKmH: '27,300 km/h'
+        } 
+      };
+      orbitalAngles.current['hubble'] = 1.6;
+    });
+
+    // 10D. MAIN ASTEROID BELT (Between Mars & Jupiter: r = 125 to 168)
+    const asteroidCount = 1200;
+    const asteroidGeo = new THREE.DodecahedronGeometry(0.35, 1);
+    const asteroidMat = new THREE.MeshStandardMaterial({
+      color: '#8c8275',
+      roughness: 0.9,
+      metalness: 0.1,
+    });
+    const asteroidBelt = new THREE.InstancedMesh(asteroidGeo, asteroidMat, asteroidCount);
+    const dummy = new THREE.Object3D();
+
+    for (let i = 0; i < asteroidCount; i++) {
+      const r = 125 + Math.random() * 42;
+      const theta = Math.random() * Math.PI * 2;
+      const y = (Math.random() - 0.5) * 6.5;
+      dummy.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
+
+      const s = 0.4 + Math.random() * 1.3;
+      dummy.scale.set(s, s * (0.8 + Math.random() * 0.4), s);
+      dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      dummy.updateMatrix();
+      asteroidBelt.setMatrixAt(i, dummy.matrix);
+    }
+    asteroidBelt.instanceMatrix.needsUpdate = true;
+    scene.add(asteroidBelt);
+
+    // 10E. KUIPER BELT (Outer icy asteroids: r = 380 to 465)
+    const kuiperCount = 750;
+    const kuiperGeo = new THREE.DodecahedronGeometry(0.42, 1);
+    const kuiperMat = new THREE.MeshStandardMaterial({
+      color: '#94a3b8',
+      roughness: 0.8,
+      metalness: 0.2,
+    });
+    const kuiperBelt = new THREE.InstancedMesh(kuiperGeo, kuiperMat, kuiperCount);
+    for (let i = 0; i < kuiperCount; i++) {
+      const r = 380 + Math.random() * 85;
+      const theta = Math.random() * Math.PI * 2;
+      const y = (Math.random() - 0.5) * 16;
+      dummy.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
+
+      const s = 0.5 + Math.random() * 1.6;
+      dummy.scale.set(s, s, s);
+      dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      dummy.updateMatrix();
+      kuiperBelt.setMatrixAt(i, dummy.matrix);
+    }
+    kuiperBelt.instanceMatrix.needsUpdate = true;
+    scene.add(kuiperBelt);
+
+    // 10F. COMET HALLEY (1P/Halley) WITH PLASMA & DUST TAIL
+    const cometGroup = new THREE.Group();
+    cometGroup.userData.targetId = 'halley';
+
+    const nucGeo = new THREE.DodecahedronGeometry(0.7, 1);
+    const nucMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.7 });
+    cometGroup.add(new THREE.Mesh(nucGeo, nucMat));
+
+    const comaGeo = new THREE.SphereGeometry(1.5, 16, 16);
+    const comaMat = new THREE.MeshBasicMaterial({
+      color: '#67e8f9',
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    cometGroup.add(new THREE.Mesh(comaGeo, comaMat));
+
+    const cometLight = new THREE.PointLight('#67e8f9', 2.0, 30);
+    cometGroup.add(cometLight);
+    cometGroup.add(createBeacon('#06b6d4'));
+
+    const tailGeo = new THREE.ConeGeometry(3.5, 45, 20, 1, true);
+    const tailMat = new THREE.MeshBasicMaterial({
+      color: '#38bdf8',
+      transparent: true,
+      opacity: 0.32,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const cometTail = new THREE.Mesh(tailGeo, tailMat);
+    cometTail.rotation.x = Math.PI / 2;
+    cometTail.position.z = 22.5;
+    cometGroup.add(cometTail);
+
+    scene.add(cometGroup);
+    probesMeshes.current['halley'] = {
+      mesh: cometGroup,
+      data: {
+        id: 'halley',
+        name: 'Cometa 1P/Halley',
+        type: 'Cometa Periódico Excéntrico',
+        speedKmH: '70,560 km/h (Perihelio)'
+      }
+    };
+    orbitalAngles.current['halley'] = 0.6;
+
+    // 10G. DEEP SPACE RADIANT NEBULAE (Orion, Carina, Eagle)
+    const nebulaeData = [
+      { name: 'Nebulosa de Orión (M42)', pos: [1900, 500, -1700], color: '#f43f5e', size: 340 },
+      { name: 'Nebulosa Carina (NGC 3372)', pos: [-2000, -550, 1500], color: '#38bdf8', size: 400 },
+      { name: 'Nebulosa del Águila (M16)', pos: [1500, -650, 2000], color: '#a855f7', size: 360 }
+    ];
+
+    nebulaeData.forEach((neb) => {
+      const nebGeo = new THREE.SphereGeometry(neb.size, 20, 20);
+      const nebMat = new THREE.MeshBasicMaterial({
+        color: neb.color,
+        transparent: true,
+        opacity: 0.16,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        depthWrite: false,
+      });
+      const nebMesh = new THREE.Mesh(nebGeo, nebMat);
+      nebMesh.position.set(neb.pos[0], neb.pos[1], neb.pos[2]);
+      scene.add(nebMesh);
+
+      const coreGeo = new THREE.SphereGeometry(neb.size * 0.45, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({
+        color: '#ffffff',
+        transparent: true,
+        opacity: 0.10,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+        depthWrite: false,
+      });
+      nebMesh.add(new THREE.Mesh(coreGeo, coreMat));
+    });
+
     // 11. KEYBOARD LISTENERS FOR FLIGHT MODE
     const handleKeyDown = (e) => {
       activeKeys.current[e.code] = true;
@@ -585,6 +743,42 @@ export default function SpaceSimulator({
           earthMeshCurrent.position.z + 4.2 * Math.sin(iTheta)
         );
         issObj.mesh.rotation.y += 0.02 * motionScale;
+      }
+
+      // C2. HUBBLE SPACE TELESCOPE ORBITS EARTH (LEO, 28.5° inclination)
+      const hstObj = probesMeshes.current['hubble'];
+      if (earthMeshCurrent && hstObj && hstObj.mesh) {
+        orbitalAngles.current['hubble'] += 0.038 * motionScale;
+        const hTheta = orbitalAngles.current['hubble'];
+        const incl = (28.5 * Math.PI) / 180;
+        hstObj.mesh.position.set(
+          earthMeshCurrent.position.x + 5.2 * Math.cos(hTheta),
+          earthMeshCurrent.position.y + 5.2 * Math.sin(hTheta) * Math.sin(incl),
+          earthMeshCurrent.position.z + 5.2 * Math.sin(hTheta) * Math.cos(incl)
+        );
+        hstObj.mesh.rotation.y += 0.015 * motionScale;
+      }
+
+      // C3. ASTEROID BELT & KUIPER BELT ROTATION
+      if (asteroidBelt) asteroidBelt.rotation.y += 0.00035 * motionScale;
+      if (kuiperBelt) kuiperBelt.rotation.y += 0.00012 * motionScale;
+
+      // C4. COMET HALLEY ECCENTRIC ORBIT & TAIL DIRECTION (Points away from Sun)
+      const halleyObj = probesMeshes.current['halley'];
+      if (halleyObj && halleyObj.mesh) {
+        orbitalAngles.current['halley'] += 0.0035 * motionScale;
+        const hTheta = orbitalAngles.current['halley'];
+        const a = 210;
+        const e = 0.72;
+        const r = (a * (1 - e * e)) / (1 + e * Math.cos(hTheta));
+        const x = r * Math.cos(hTheta);
+        const z = r * Math.sin(hTheta);
+        const y = Math.sin(hTheta) * 35;
+        halleyObj.mesh.position.set(x, y, z);
+
+        const dirFromSun = new THREE.Vector3(x, y, z).normalize();
+        const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dirFromSun);
+        halleyObj.mesh.quaternion.copy(quat);
       }
 
       // D. MARS RELICS ANIMATION (Ingenuity hovering, Perseverance mast scan)

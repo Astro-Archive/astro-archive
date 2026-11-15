@@ -41,5 +41,22 @@ export const CURIOSITIES = {
     summary: 'Perseverance estudia el cráter Jezero y almacena muestras que podrían regresar a la Tierra en el futuro.',
     facts: ['Transportó a Ingenuity hasta Marte.', 'Utiliza cámaras, láseres y un taladro para estudiar rocas.', 'Busca señales de ambientes que pudieron ser habitables en el pasado.'],
     photos: [{ src: 'https://images-assets.nasa.gov/image/PIA26368/PIA26368~large.jpg', caption: 'Perseverance en el cráter Jezero' }]
+  },
+  hubble: {
+    summary: 'El Telescopio Espacial Hubble es el observatorio orbital más influyente en la historia de la astronomía. Lanzado en 1990 desde el transbordador espacial Discovery (STS-31), ha operado por más de tres décadas desde la órbita terrestre baja.',
+    facts: [
+      'Ha realizado más de 1.6 millones de observaciones y sus datos han generado más de 20,000 artículos científicos arbitrados.',
+      'Orbita la Tierra a 27,300 km/h: completa una vuelta completa al planeta cada 95 minutos a 540 km de altitud.',
+      'Su espejo primario de 2.4 metros fue corregido en 1993 por astronautas en la legendaria misión STS-61 instalando las "gafas" ópticas COSTAR.',
+      'Sus Sensores de Guía Fina pueden fijar un objetivo con precisión de 7 milésimas de segundo de arco (apuntar a una moneda a 320 km).'
+    ],
+    photos: [
+      { src: '/textures/hubble/pillars.jpg', caption: 'Pilares de la Creación (M16): Torres de gas hidrógeno y polvo cósmico donde nacen nuevas estrellas.' },
+      { src: '/textures/hubble/deep_field.jpg', caption: 'Campo Ultra Profundo de Hubble: Casi 10,000 galaxias primitivas capturadas en una diminuta ventana del cielo.' },
+      { src: '/textures/hubble/catseye.jpg', caption: 'Nebulosa del Ojo de Gato (NGC 6543): Intrincadas capas de gas ionizado expulsadas por una estrella moribunda.' },
+      { src: '/textures/hubble/sombrero.jpg', caption: 'Galaxia del Sombrero (M104): Núcleo bulboso y masiva banda de polvo interestelar a 29 millones de años luz.' },
+      { src: '/textures/hubble/orion.jpg', caption: 'Nebulosa de Orión (M42): Gran guardería estelar activa a 1,344 años luz de la Tierra.' },
+      { src: '/textures/hubble/antennae.jpg', caption: 'Galaxias de las Antenas: Dos galaxias colisionando y desencadenando millones de nuevas estrellas.' }
+    ]
   }
 };

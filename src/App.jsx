@@ -3,6 +3,7 @@ import SpaceSimulator from './components/SpaceSimulator';
 import SpaceXHUD from './components/SpaceXHUD';
 import BadgesModal from './components/BadgesModal';
 import SurfaceExplorer from './components/SurfaceExplorer';
+import HubbleObservatory from './components/HubbleObservatory';
 import { getAssetPath } from './utils/assets';
 import { ARTIFACTS } from './data/artifactsData';
 
@@ -14,6 +15,7 @@ export default function App() {
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isSurfaceOpen, setIsSurfaceOpen] = useState(false);
+  const [isHubbleOpen, setIsHubbleOpen] = useState(false);
   const [settings, setSettings] = useState({
     showOrbits: true,
     showTrails: true,
@@ -40,6 +42,7 @@ export default function App() {
         return '/audio/jupiter_waves.wav';
       case 'EARTH':
       case 'ISS':
+      case 'HUBBLE':
         return '/audio/we_came_in_peace.mp3';
       default:
         return '/audio/space_ambient.mp3';
@@ -57,6 +60,7 @@ export default function App() {
       OPPORTUNITY: 'opportunity',
       VIKING: 'viking',
       PERSEVERANCE: 'perseverance',
+      HUBBLE: 'hubble',
     };
     const artifactId = targetToArtifact[target];
     if (artifactId) {
@@ -95,6 +99,7 @@ export default function App() {
     OPPORTUNITY: 'opportunity',
     VIKING: 'viking',
     PERSEVERANCE: 'perseverance',
+    HUBBLE: 'hubble',
   };
   const selectedArtifact = ARTIFACTS.find((artifact) => artifact.id === artifactTargetIds[selectedTarget]);
   const updateSettings = (changes) => setSettings((current) => ({ ...current, ...changes }));
@@ -125,6 +130,7 @@ export default function App() {
         isPlayingAudio={isPlayingAudio}
         onToggleAudio={handleToggleAudio}
         onOpenSurface={() => selectedArtifact && setIsSurfaceOpen(true)}
+        onOpenHubble={() => setIsHubbleOpen(true)}
         settings={settings}
         onUpdateSettings={updateSettings}
       />
@@ -139,6 +145,16 @@ export default function App() {
 
       {isSurfaceOpen && selectedArtifact && (
         <SurfaceExplorer artifact={selectedArtifact} onClose={() => setIsSurfaceOpen(false)} />
+      )}
+
+      {/* 4. Hubble Space Telescope Observatory Minigame */}
+      {isHubbleOpen && (
+        <HubbleObservatory 
+          onClose={() => setIsHubbleOpen(false)} 
+          onUnlockDiscovery={(id) => {
+            setScannedIds(prev => prev.includes('hubble') ? prev : [...prev, 'hubble']);
+          }}
+        />
       )}
 
     </div>
