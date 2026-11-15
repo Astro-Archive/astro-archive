@@ -8,6 +8,7 @@ import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import { ARTIFACTS } from '../data/artifactsData';
 import { getAssetPath } from '../utils/assets';
 import { createJamesWebbModel } from '../utils/jamesWebbModel';
+import { playClickSound } from '../utils/uiSound';
 
 function createRockyRingGeometry(innerRadius, outerRadius, radialSegments = 28, angularSegments = 256) {
   const positions = [];
@@ -963,7 +964,10 @@ export default function SpaceSimulator({
       const hit = raycaster.intersectObjects(selectable, true)[0];
       let object = hit?.object;
       while (object && !object.userData.targetId) object = object.parent;
-      if (object?.userData.targetId) onSelectTargetRef.current(object.userData.targetId.toUpperCase());
+      if (object?.userData.targetId) {
+        playClickSound();
+        onSelectTargetRef.current(object.userData.targetId.toUpperCase());
+      }
     };
     renderer.domElement.addEventListener('pointerdown', handlePointerDown);
     renderer.domElement.addEventListener('pointerup', handlePointerUp);

@@ -6,6 +6,7 @@ import SciFiTag from './components/ui/SciFiTag';
 import SciFiLoader from './components/ui/SciFiLoader';
 import SciFiInput from './components/ui/SciFiInput';
 import SciFiSearch from './components/ui/SciFiSearch';
+import { initUISound } from './utils/uiSound';
 import './kit.css';
 
 const BUTTON_VARIANTS = ['primary', 'secondary', 'single-stroke', 'transparent'];
@@ -138,5 +139,7 @@ function App() {
     </main>
   );
 }
+
+initUISound();
 
 createRoot(document.getElementById('root')).render(<App />);

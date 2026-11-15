@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SpaceSimulator from './components/SpaceSimulator';
 import SpaceXHUD from './components/SpaceXHUD';
 import BadgesModal from './components/BadgesModal';
 import SurfaceExplorer from './components/SurfaceExplorer';
 import HubbleObservatory from './components/HubbleObservatory';
 import { getAssetPath } from './utils/assets';
+import { isUISoundEnabled, setUISoundEnabled } from './utils/uiSound';
 import { ARTIFACTS } from './data/artifactsData';
 
 export default function App() {
@@ -23,8 +24,13 @@ export default function App() {
     simSpeed: 1,
     reducedMotion: false,
     highContrast: false,
+    uiSound: isUISoundEnabled(),
   });
   const audioRef = useRef(null);
+
+  useEffect(() => {
+    setUISoundEnabled(settings.uiSound);
+  }, [settings.uiSound]);
 
   const getActiveAudio = () => {
     switch (selectedTarget) {

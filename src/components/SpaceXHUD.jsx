@@ -586,6 +586,16 @@ export default function SpaceXHUD({
                 className="accent-amber-400 w-4 h-4"
               />
             </label>
+
+            <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">
+              <span>Sonidos de interfaz (hover y click)</span>
+              <input
+                type="checkbox"
+                checked={settings.uiSound !== false}
+                onChange={(event) => onUpdateSettings({ uiSound: event.target.checked })}
+                className="accent-amber-400 w-4 h-4"
+              />
+            </label>
           </div>
 
           <div className="mt-4 border-t border-slate-800 pt-2 text-[10px] leading-relaxed text-slate-400 flex items-center justify-between">
