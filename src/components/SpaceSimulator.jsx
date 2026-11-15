@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { createMoonTexture, createMarsTexture, createStarfield } from '../utils/proceduralTextures';
 
 export default function SpaceSimulator({
   selectedArtifact,
@@ -10,7 +9,8 @@ export default function SpaceSimulator({
   isSimulatingMission,
   onSimulationProgress,
   onSimulationEnd,
-  onSelectArtifact
+  simProgress,
+  manualVector, // { x, y, z, pitch, yaw, roll } from SpaceX controls
 }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -18,31 +18,18 @@ export default function SpaceSimulator({
   const controlsRef = useRef(null);
   const rendererRef = useRef(null);
 
-  // References to 3D entities
-  const entitiesRef = useRef({
-    moon: null,
-    mars: null,
-    apolloModel: null,
-    ingenuityModel: null,
-    opportunityModel: null,
-    vikingModel: null,
-    apolloTrajectory: null,
-    ingenuityTrajectory: null,
-    thrusterParticles: null,
-  });
+  // 3D Model containers
+  const loadedModels = useRef({});
+  const activeModelGroup = useRef(null);
+  const planetMeshRef = useRef(null);
+  const skyboxRef = useRef(null);
+  const thrusterRef = useRef(null);
+  const dustParticlesRef = useRef(null);
+  const rotorRef = useRef(null);
 
-  // Camera targets for warp navigation
-  const cameraTargets = {
-    OVERVIEW: { pos: new THREE.Vector3(0, 25, 70), lookAt: new THREE.Vector3(5, 0, -20) },
-    MOON: { pos: new THREE.Vector3(-22, 6, 8), lookAt: new THREE.Vector3(-26, 4, -10) },
-    apollo11: { pos: new THREE.Vector3(-25.5, 4.8, -4), lookAt: new THREE.Vector3(-26, 4.2, -6.5) },
-    MARS: { pos: new THREE.Vector3(38, 2, -6), lookAt: new THREE.Vector3(35, -4, -25) },
-    ingenuity: { pos: new THREE.Vector3(34.2, -2.8, -19), lookAt: new THREE.Vector3(35, -3.2, -21) },
-    opportunity: { pos: new THREE.Vector3(36.5, -3.2, -18.5), lookAt: new THREE.Vector3(36, -3.5, -20) },
-    viking: { pos: new THREE.Vector3(33.5, -4.2, -18), lookAt: new THREE.Vector3(34, -4.5, -20) },
-  };
-
-  const currentCamTarget = useRef(cameraTargets.OVERVIEW);
+  // Target camera state for lerping
+  const targetCamPos = useRef(new THREE.Vector3(0, 1.5, 6));
+  const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
 
   useEffect(() => {
     const container = mountRef.current;
@@ -51,19 +38,20 @@ export default function SpaceSimulator({
     // 1. Scene setup
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.fog = new THREE.FogExp2('#030712', 0.003);
 
-    // 2. Camera setup
-    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 25, 70);
+    // 2. Camera setup (Spacecraft hero view)
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 2000);
+    camera.position.set(0, 2, 7);
     cameraRef.current = camera;
 
     // 3. Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.35;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -71,172 +59,170 @@ export default function SpaceSimulator({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.maxDistance = 250;
-    controls.minDistance = 2;
+    controls.maxDistance = 60;
+    controls.minDistance = 1.2;
     controlsRef.current = controls;
 
-    // 5. Starfield & Deep Space Lighting
-    const stars = createStarfield(3500, 600);
-    scene.add(stars);
+    // 5. Texture Loader
+    const textureLoader = new THREE.TextureLoader();
 
-    // Distant Sun Light
-    const sunLight = new THREE.DirectionalLight('#fff8e7', 2.8);
-    sunLight.position.set(100, 40, 80);
+    // 6. Photographic Deep Space Skybox (Milky Way & Stars)
+    const skyGeo = new THREE.SphereGeometry(800, 32, 32);
+    const starTexture = textureLoader.load('/textures/stars.jpg');
+    starTexture.wrapS = THREE.RepeatWrapping;
+    starTexture.wrapT = THREE.RepeatWrapping;
+    starTexture.repeat.set(2, 2);
+    const skyMat = new THREE.MeshBasicMaterial({
+      map: starTexture,
+      side: THREE.BackSide,
+      color: '#8b9bb4',
+    });
+    const skybox = new THREE.Mesh(skyGeo, skyMat);
+    scene.add(skybox);
+    skyboxRef.current = skybox;
+
+    // 7. Dramatic Sun & Space Lighting
+    const sunLight = new THREE.DirectionalLight('#fffaf0', 3.8);
+    sunLight.position.set(25, 20, 30);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
     scene.add(sunLight);
 
-    // Subtle Earth/Cosmic Rim light
-    const cosmicLight = new THREE.DirectionalLight('#38bdf8', 0.6);
-    cosmicLight.position.set(-80, -20, -50);
-    scene.add(cosmicLight);
+    // Planet Albedo bounce light
+    const planetBounceLight = new THREE.DirectionalLight('#00f0ff', 0.6);
+    planetBounceLight.position.set(-15, -10, -20);
+    scene.add(planetBounceLight);
 
-    const ambientLight = new THREE.AmbientLight('#1e293b', 0.8);
+    const ambientLight = new THREE.AmbientLight('#182232', 0.9);
     scene.add(ambientLight);
 
-    // 6. CELESTIAL BODY 1: THE MOON (Tranquility Base)
-    const moonGeo = new THREE.SphereGeometry(6, 64, 64);
-    const moonMat = new THREE.MeshStandardMaterial({
-      map: createMoonTexture(),
-      roughness: 0.95,
-      metalness: 0.05,
-    });
-    const moon = new THREE.Mesh(moonGeo, moonMat);
-    moon.position.set(-26, 4, -10);
-    scene.add(moon);
-    entitiesRef.current.moon = moon;
+    // 8. Backdrop Planet (Curving majestically in background)
+    const planetGeo = new THREE.SphereGeometry(18, 64, 64);
+    const moonTex = textureLoader.load('/textures/moon.jpg');
+    const marsTex = textureLoader.load('/textures/mars.jpg');
+    const earthTex = textureLoader.load('/textures/earth.jpg');
 
-    // Lunar Orbit Line
-    const moonOrbitGeo = new THREE.RingGeometry(29.8, 30.2, 90);
-    const orbitMat = new THREE.MeshBasicMaterial({ color: '#00f0ff', opacity: 0.15, transparent: true, side: THREE.DoubleSide });
-    const moonOrbit = new THREE.Mesh(moonOrbitGeo, orbitMat);
-    moonOrbit.rotation.x = Math.PI / 2.3;
-    scene.add(moonOrbit);
-
-    // 7. CELESTIAL BODY 2: MARS (Jezero, Endeavour, Chryse)
-    const marsGeo = new THREE.SphereGeometry(8.5, 64, 64);
-    const marsMat = new THREE.MeshStandardMaterial({
-      map: createMarsTexture(),
+    const planetMat = new THREE.MeshStandardMaterial({
+      map: marsTex,
       roughness: 0.85,
       metalness: 0.1,
     });
-    const mars = new THREE.Mesh(marsGeo, marsMat);
-    mars.position.set(35, -4, -25);
-    scene.add(mars);
-    entitiesRef.current.mars = mars;
+    const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+    planetMesh.position.set(0, -22, -12); // Majestic curving planet below
+    planetMesh.rotation.x = 0.2;
+    scene.add(planetMesh);
+    planetMeshRef.current = { mesh: planetMesh, moonTex, marsTex, earthTex };
 
-    // Mars Atmosphere Glow (Fresnel outer halo)
-    const atmosphereGeo = new THREE.SphereGeometry(8.8, 48, 48);
-    const atmosphereMat = new THREE.MeshBasicMaterial({
+    // Mars Atmospheric Glow Rim
+    const atmoGeo = new THREE.SphereGeometry(18.35, 48, 48);
+    const atmoMat = new THREE.MeshBasicMaterial({
       color: '#e67e22',
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.15,
       side: THREE.BackSide,
     });
-    const marsAtmosphere = new THREE.Mesh(atmosphereGeo, atmosphereMat);
-    mars.add(marsAtmosphere);
+    const atmoMesh = new THREE.Mesh(atmoGeo, atmoMat);
+    planetMesh.add(atmoMesh);
 
-    // Mars Orbit Ring
-    const marsOrbitGeo = new THREE.RingGeometry(48.8, 49.2, 120);
-    const marsOrbitMat = new THREE.MeshBasicMaterial({ color: '#f59e0b', opacity: 0.15, transparent: true, side: THREE.DoubleSide });
-    const marsOrbit = new THREE.Mesh(marsOrbitGeo, marsOrbitMat);
-    marsOrbit.rotation.x = Math.PI / 2.2;
-    scene.add(marsOrbit);
-
-    // 8. Trajectory Splines (Apollo 11 Lunar Descent Path)
-    const apolloPoints = [
-      new THREE.Vector3(-23, 11, -5),
-      new THREE.Vector3(-24.5, 8, -6),
-      new THREE.Vector3(-25.5, 5.5, -6.8),
-      new THREE.Vector3(-26, 4.2, -6.5), // Touchdown at Tranquility Base
-    ];
-    const apolloCurve = new THREE.CatmullRomCurve3(apolloPoints);
-    const apolloCurveGeo = new THREE.BufferGeometry().setFromPoints(apolloCurve.getPoints(50));
-    const apolloCurveMat = new THREE.LineDashedMaterial({
-      color: '#00f0ff',
-      dashSize: 0.4,
-      gapSize: 0.2,
-      linewidth: 2,
+    // 9. Local Surface Terrain Plate (Beneath the lander/rover)
+    const terrainGeo = new THREE.CylinderGeometry(5.5, 6, 0.4, 48);
+    const terrainMat = new THREE.MeshStandardMaterial({
+      map: marsTex,
+      roughness: 0.95,
+      metalness: 0.05,
+      color: '#b04a1b',
     });
-    const apolloLine = new THREE.Line(apolloCurveGeo, apolloCurveMat);
-    apolloLine.computeLineDistances();
-    scene.add(apolloLine);
-    entitiesRef.current.apolloTrajectory = { curve: apolloCurve, line: apolloLine };
+    const terrainPlate = new THREE.Mesh(terrainGeo, terrainMat);
+    terrainPlate.position.set(0, -1.2, 0);
+    terrainPlate.receiveShadow = true;
+    scene.add(terrainPlate);
 
-    // 9. Trajectory Splines (Ingenuity Flight 1 Waypoints)
-    const ingenuityPoints = [
-      new THREE.Vector3(35, -3.2, -21),
-      new THREE.Vector3(35, -1.8, -21), // Hover 3m up
-      new THREE.Vector3(36.2, -1.8, -20.8), // Forward translation
-      new THREE.Vector3(36.2, -3.2, -20.8), // Touchdown
-    ];
-    const ingenuityCurve = new THREE.CatmullRomCurve3(ingenuityPoints);
-    const ingenuityCurveGeo = new THREE.BufferGeometry().setFromPoints(ingenuityCurve.getPoints(40));
-    const ingenuityCurveMat = new THREE.LineDashedMaterial({
-      color: '#00ff88',
-      dashSize: 0.3,
-      gapSize: 0.15,
-    });
-    const ingenuityLine = new THREE.Line(ingenuityCurveGeo, ingenuityCurveMat);
-    ingenuityLine.computeLineDistances();
-    scene.add(ingenuityLine);
-    entitiesRef.current.ingenuityTrajectory = { curve: ingenuityCurve, line: ingenuityLine };
-
-    // 10. Load 3D GLB Models with GLTFLoader
-    const loader = new GLTFLoader();
-
-    // Apollo Lunar Module on Moon
-    loader.load('/models/apollo-lunar-module.glb', (gltf) => {
-      const model = gltf.scene;
-      model.scale.set(0.003, 0.003, 0.003);
-      model.position.copy(apolloPoints[3]);
-      model.rotation.y = Math.PI / 4;
-      scene.add(model);
-      entitiesRef.current.apolloModel = model;
-    });
-
-    // Ingenuity on Mars (Jezero)
-    loader.load('/models/ingenuity-mars-helicopter.glb', (gltf) => {
-      const model = gltf.scene;
-      model.scale.set(0.008, 0.008, 0.008);
-      model.position.copy(ingenuityPoints[0]);
-      scene.add(model);
-      entitiesRef.current.ingenuityModel = model;
-    });
-
-    // Opportunity on Mars (Endeavour)
-    loader.load('/models/opportunity-rover.glb', (gltf) => {
-      const model = gltf.scene;
-      model.scale.set(0.004, 0.004, 0.004);
-      model.position.set(36, -3.5, -20);
-      model.rotation.y = -Math.PI / 3;
-      scene.add(model);
-      entitiesRef.current.opportunityModel = model;
-    });
-
-    // Viking Lander on Mars (Chryse)
-    loader.load('/models/viking-lander.glb', (gltf) => {
-      const model = gltf.scene;
-      model.scale.set(0.005, 0.005, 0.005);
-      model.position.set(34, -4.5, -20);
-      scene.add(model);
-      entitiesRef.current.vikingModel = model;
-    });
-
-    // 11. Rocket Thruster Particle Effect
-    const particleCount = 60;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount * 3; i++) particlePositions[i] = 0;
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: '#00f0ff',
-      size: 0.15,
+    // 10. Rocket Thruster Flame & Particle Effects
+    const thrusterGeo = new THREE.ConeGeometry(0.25, 1.2, 16);
+    const thrusterMat = new THREE.MeshBasicMaterial({
+      color: '#38bdf8',
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
     });
-    const thrusterParticles = new THREE.Points(particleGeo, particleMat);
-    thrusterParticles.visible = false;
-    scene.add(thrusterParticles);
-    entitiesRef.current.thrusterParticles = thrusterParticles;
+    const thruster = new THREE.Mesh(thrusterGeo, thrusterMat);
+    thruster.rotation.x = Math.PI;
+    thruster.position.set(0, -0.6, 0);
+    thruster.visible = false;
+    scene.add(thruster);
+    thrusterRef.current = thruster;
+
+    // Dust particles kicked by landing thrusters
+    const dustCount = 80;
+    const dustGeo = new THREE.BufferGeometry();
+    const dustPositions = new Float32Array(dustCount * 3);
+    for (let i = 0; i < dustCount; i++) {
+      dustPositions[i * 3] = (Math.random() - 0.5) * 4;
+      dustPositions[i * 3 + 1] = -1.1 + Math.random() * 0.4;
+      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 4;
+    }
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+    const dustMat = new THREE.PointsMaterial({
+      color: '#fde68a',
+      size: 0.12,
+      transparent: true,
+      opacity: 0,
+    });
+    const dustParticles = new THREE.Points(dustGeo, dustMat);
+    scene.add(dustParticles);
+    dustParticlesRef.current = { points: dustParticles, mat: dustMat };
+
+    // 11. GLTF Loader: Load and Normalize all 5 Spacecraft Models
+    const loader = new GLTFLoader();
+    const modelPaths = {
+      ingenuity: '/models/ingenuity-mars-helicopter.glb',
+      apollo11: '/models/apollo-lunar-module.glb',
+      opportunity: '/models/opportunity-rover.glb',
+      viking: '/models/viking-lander.glb',
+      perseverance: '/models/perseverance-rover.glb',
+    };
+
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
+    activeModelGroup.current = modelGroup;
+
+    Object.entries(modelPaths).forEach(([key, path]) => {
+      loader.load(path, (gltf) => {
+        const root = gltf.scene;
+
+        // Auto-normalize scale and center model perfectly
+        const box = new THREE.Box3().setFromObject(root);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const targetScale = key === 'apollo11' ? 3.2 : key === 'ingenuity' ? 2.2 : 2.8;
+        const scale = targetScale / (maxDim || 1);
+
+        root.scale.set(scale, scale, scale);
+        root.position.sub(center.clone().multiplyScalar(scale));
+        root.position.y += targetScale * 0.45; // Place on top of terrain
+
+        // Enable shadows on all meshes
+        root.traverse((node) => {
+          if (node.isMesh) {
+            node.castShadow = true;
+            node.receiveShadow = true;
+            if (node.material) {
+              node.material.envMapIntensity = 1.2;
+            }
+          }
+        });
+
+        root.visible = false;
+        modelGroup.add(root);
+        loadedModels.current[key] = root;
+
+        // If this is the currently selected artifact, show it
+        if (selectedArtifact && selectedArtifact.id === key) {
+          root.visible = true;
+        }
+      });
+    });
 
     // Resize Handler
     const handleResize = () => {
@@ -247,56 +233,88 @@ export default function SpaceSimulator({
     };
     window.addEventListener('resize', handleResize);
 
-    // 12. Animation Loop
-    let animationFrameId;
-    let simProgress = 0;
+    // 12. Main Simulation & Render Loop
+    let animationId;
+    let clock = new THREE.Clock();
 
     const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
 
-      // Rotate planets slowly
-      if (entitiesRef.current.moon) entitiesRef.current.moon.rotation.y += 0.0006;
-      if (entitiesRef.current.mars) entitiesRef.current.mars.rotation.y += 0.0009;
+      // Rotate deep space skybox very slowly
+      if (skyboxRef.current) skyboxRef.current.rotation.y += 0.0002;
 
-      // Smooth Camera Lerp (Warp flight)
-      const target = currentCamTarget.current;
-      if (target) {
-        camera.position.lerp(target.pos, 0.04);
-        controls.target.lerp(target.lookAt, 0.04);
+      // Rotate background planet slowly
+      if (planetMeshRef.current && planetMeshRef.current.mesh) {
+        planetMeshRef.current.mesh.rotation.y += 0.0004;
       }
 
+      // Smooth camera interpolation
+      camera.position.lerp(targetCamPos.current, 0.05);
+      controls.target.lerp(targetLookAt.current, 0.05);
       controls.update();
 
-      // Mission Event Simulation Animation
-      if (isSimulatingMission) {
-        simProgress += 0.004;
-        if (simProgress > 1) {
-          simProgress = 0;
-          if (onSimulationEnd) onSimulationEnd();
-        } else {
-          if (onSimulationProgress) onSimulationProgress(simProgress);
+      // Apply Manual SpaceX Flight Translation/Rotation if active
+      if (manualVector) {
+        if (manualVector.pitch) camera.position.y += manualVector.pitch * 0.08;
+        if (manualVector.yaw) camera.position.x += manualVector.yaw * 0.08;
+        if (manualVector.zoom) camera.position.z += manualVector.zoom * 0.12;
+      }
 
-          // Animate Apollo Descent
-          if (selectedArtifact.id === 'apollo11' && entitiesRef.current.apolloModel && entitiesRef.current.apolloTrajectory) {
-            const point = entitiesRef.current.apolloTrajectory.curve.getPoint(simProgress);
-            entitiesRef.current.apolloModel.position.copy(point);
-            // Engine plume
-            if (entitiesRef.current.thrusterParticles) {
-              entitiesRef.current.thrusterParticles.visible = true;
-              entitiesRef.current.thrusterParticles.position.set(point.x, point.y - 0.2, point.z);
-            }
+      // ACTIVE MISSION SIMULATION (Replay Event Animation)
+      if (isSimulatingMission && selectedArtifact) {
+        const activeModel = loadedModels.current[selectedArtifact.id];
+        
+        // 1. Apollo 11 Descent Simulation
+        if (selectedArtifact.id === 'apollo11' && activeModel) {
+          // Descents from 5 units up down to 0 units
+          const descentY = (1 - simProgress) * 5.0;
+          activeModel.position.y = 1.4 + descentY;
+          activeModel.rotation.z = Math.sin(simProgress * Math.PI) * 0.08; // subtle landing wobble
+
+          if (thrusterRef.current) {
+            thrusterRef.current.visible = simProgress < 0.95;
+            thrusterRef.current.position.set(0, activeModel.position.y - 0.7, 0);
+            thrusterRef.current.scale.set(
+              1 + Math.sin(clock.getElapsedTime() * 25) * 0.2,
+              1 + Math.cos(clock.getElapsedTime() * 30) * 0.3,
+              1
+            );
           }
 
-          // Animate Ingenuity Flight
-          if (selectedArtifact.id === 'ingenuity' && entitiesRef.current.ingenuityModel && entitiesRef.current.ingenuityTrajectory) {
-            const point = entitiesRef.current.ingenuityTrajectory.curve.getPoint(simProgress);
-            entitiesRef.current.ingenuityModel.position.copy(point);
-            entitiesRef.current.ingenuityModel.rotation.y += 0.15; // rotor spin proxy
+          // Dust cloud on landing
+          if (dustParticlesRef.current) {
+            dustParticlesRef.current.mat.opacity = THREE.MathUtils.lerp(0, 0.7, Math.sin(simProgress * Math.PI));
           }
         }
+
+        // 2. Ingenuity Flight Simulation
+        if (selectedArtifact.id === 'ingenuity' && activeModel) {
+          // Spin rotors & lift off
+          activeModel.rotation.y += 0.45; // Rotor proxy
+          const flightHeight = Math.sin(simProgress * Math.PI) * 2.5;
+          activeModel.position.y = 1.0 + flightHeight;
+          activeModel.position.x = Math.sin(simProgress * Math.PI * 2) * 1.5;
+          activeModel.rotation.z = Math.sin(simProgress * Math.PI * 2) * 0.15; // forward bank angle
+        }
+
+        // 3. Opportunity Traverse Simulation
+        if (selectedArtifact.id === 'opportunity' && activeModel) {
+          activeModel.position.z = (simProgress - 0.5) * 2.0;
+          activeModel.position.y = 1.2 + Math.sin(simProgress * 15) * 0.03; // rock vibrations
+        }
       } else {
-        if (entitiesRef.current.thrusterParticles) {
-          entitiesRef.current.thrusterParticles.visible = false;
+        // Reset positions when not simulating
+        if (thrusterRef.current) thrusterRef.current.visible = false;
+        if (dustParticlesRef.current) dustParticlesRef.current.mat.opacity = 0;
+        
+        const activeModel = selectedArtifact ? loadedModels.current[selectedArtifact.id] : null;
+        if (activeModel) {
+          const targetY = selectedArtifact.id === 'apollo11' ? 1.4 : selectedArtifact.id === 'ingenuity' ? 1.0 : 1.2;
+          activeModel.position.y = THREE.MathUtils.lerp(activeModel.position.y, targetY, 0.1);
+          activeModel.position.x = THREE.MathUtils.lerp(activeModel.position.x, 0, 0.1);
+          activeModel.position.z = THREE.MathUtils.lerp(activeModel.position.z, 0, 0.1);
+          activeModel.rotation.z = THREE.MathUtils.lerp(activeModel.rotation.z, 0, 0.1);
         }
       }
 
@@ -306,7 +324,7 @@ export default function SpaceSimulator({
     animate();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
       if (container && renderer.domElement) {
         container.removeChild(renderer.domElement);
@@ -315,24 +333,42 @@ export default function SpaceSimulator({
     };
   }, []);
 
-  // Update camera target when selected artifact or viewMode changes
+  // Update visible model and background planet when selected artifact changes
   useEffect(() => {
-    if (viewMode === 'OVERVIEW') {
-      currentCamTarget.current = cameraTargets.OVERVIEW;
-    } else if (viewMode === 'MOON') {
-      currentCamTarget.current = cameraTargets.MOON;
-    } else if (viewMode === 'MARS') {
-      currentCamTarget.current = cameraTargets.MARS;
-    } else if (selectedArtifact) {
-      if (cameraTargets[selectedArtifact.id]) {
-        currentCamTarget.current = cameraTargets[selectedArtifact.id];
+    if (!selectedArtifact) return;
+
+    // 1. Hide all models and show active model
+    Object.entries(loadedModels.current).forEach(([k, model]) => {
+      model.visible = k === selectedArtifact.id;
+    });
+
+    // 2. Switch background planet & atmosphere according to celestial body
+    if (planetMeshRef.current) {
+      const { mesh, moonTex, marsTex } = planetMeshRef.current;
+      if (selectedArtifact.body === 'Moon') {
+        mesh.material.map = moonTex;
+        mesh.material.color.set('#d1d5db');
+        mesh.material.needsUpdate = true;
+      } else {
+        mesh.material.map = marsTex;
+        mesh.material.color.set('#c1440e');
+        mesh.material.needsUpdate = true;
       }
+    }
+
+    // 3. Set camera position depending on viewMode
+    if (viewMode === 'OVERVIEW') {
+      targetCamPos.current.set(0, 10, 24);
+      targetLookAt.current.set(0, -5, -10);
+    } else {
+      // Hero view on the spacecraft
+      targetCamPos.current.set(0, 1.8, 6.2);
+      targetLookAt.current.set(0, 0.8, 0);
     }
   }, [selectedArtifact, viewMode]);
 
   return (
     <div className="relative w-full h-full min-h-screen overflow-hidden bg-black">
-      {/* Three.js Canvas container */}
       <div ref={mountRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing" />
     </div>
   );

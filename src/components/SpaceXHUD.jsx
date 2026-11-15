@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Compass, Radio, Volume2, VolumeX, Play, RotateCcw, 
   ChevronRight, ChevronLeft, Award, ExternalLink, Activity, 
-  Sparkles, Layers, Maximize2, ShieldCheck, Terminal
+  Sparkles, Layers, Maximize2, ShieldCheck, Terminal, Crosshair,
+  ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Eye, RefreshCw
 } from 'lucide-react';
 
 export default function SpaceXHUD({
@@ -17,110 +18,144 @@ export default function SpaceXHUD({
   onOpenBadges,
   scannedCount,
   isPlayingAudio,
-  onToggleAudio
+  onToggleAudio,
+  onManualVector
 }) {
-  const [isTelemetryOpen, setIsTelemetryOpen] = useState(true);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false); // Default collapsed so users see the glorious 3D space immediately!
+  const [showFlightPad, setShowFlightPad] = useState(true);
 
   return (
     <div className="absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-3 sm:p-5 select-none font-mono">
       
-      {/* 1. TOP BAR: SpaceX-Style Celestial Navigation HUD */}
+      {/* 1. TOP BAR: SpaceX-Style Celestial Mission Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
         
         {/* Brand / Mode Indicator */}
-        <div className="flex items-center space-x-3 bg-black/70 backdrop-blur-md border border-cyan-500/40 px-3.5 py-2 rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+        <div className="flex items-center space-x-3 bg-black/80 backdrop-blur-md border border-cyan-500/40 px-3.5 py-2 rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.2)]">
           <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-xs sm:text-sm tracking-widest text-white">ORBITAL SIMULATOR</span>
+              <span className="font-bold text-xs sm:text-sm tracking-widest text-white">SPACEX-STYLE SIMULATOR</span>
               <span className="text-[10px] bg-cyan-950 border border-cyan-500/50 text-cyan-300 px-1.5 py-0.2 rounded font-mono">
-                SIM // v2.0
+                SIM // v3.0
               </span>
             </div>
             <div className="text-[10px] text-slate-400">
-              TARGET: <span className="text-cyan-300 font-bold">{selectedArtifact ? selectedArtifact.name.toUpperCase() : 'DEEP SPACE'}</span>
+              TARGET LOCK: <span className="text-cyan-300 font-bold">{selectedArtifact ? selectedArtifact.name.toUpperCase() : 'DEEP SPACE'}</span>
             </div>
           </div>
         </div>
 
-        {/* Warp Celestial Destinations */}
-        <div className="flex items-center space-x-1 sm:space-x-1.5 bg-black/80 backdrop-blur-md p-1 rounded-xl border border-slate-800 text-xs">
+        {/* Orbit / Camera Views */}
+        <div className="flex items-center space-x-1 sm:space-x-1.5 bg-black/85 backdrop-blur-md p-1 rounded-xl border border-slate-800 text-xs">
           <button
-            onClick={() => setViewMode('OVERVIEW')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
+            onClick={() => setViewMode(viewMode === 'OVERVIEW' ? 'RELIC' : 'OVERVIEW')}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5 ${
               viewMode === 'OVERVIEW'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 shadow-[0_0_12px_rgba(0,240,255,0.25)]'
+                ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-[0_0_12px_rgba(0,240,255,0.25)]'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            🌌 System Overview
-          </button>
-          <button
-            onClick={() => setViewMode('MOON')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              viewMode === 'MOON'
-                ? 'bg-slate-300/20 text-slate-100 border border-slate-300/50 shadow-[0_0_12px_rgba(255,255,255,0.25)]'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            🌙 Moon Orbit
-          </button>
-          <button
-            onClick={() => setViewMode('MARS')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              viewMode === 'MARS'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            🔴 Mars Orbit
+            <Eye className="w-3.5 h-3.5" />
+            <span>{viewMode === 'OVERVIEW' ? 'Spacecraft Close-up' : 'Wide Orbital View'}</span>
           </button>
         </div>
 
         {/* Cadet Log / Badges Button */}
         <button
           onClick={onOpenBadges}
-          className="flex items-center space-x-2 text-xs bg-black/70 hover:bg-cyan-950/50 backdrop-blur-md border border-cyan-500/40 px-3 py-2 rounded-xl text-cyan-300 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]"
+          className="flex items-center space-x-2 text-xs bg-black/80 hover:bg-cyan-950/50 backdrop-blur-md border border-cyan-500/40 px-3.5 py-2 rounded-xl text-cyan-300 transition-all hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]"
         >
           <Award className="w-4 h-4 text-amber-400" />
           <span className="hidden sm:inline">Cadet Log:</span>
-          <span className="font-bold text-amber-400">{scannedCount}/{artifacts.length}</span>
+          <span className="font-bold text-amber-400">{scannedCount}/{artifacts.length} Discovered</span>
         </button>
 
       </div>
 
-      {/* 2. CENTER: SpaceX ISS Crosshair Reticle & Telemetry Vectors */}
+      {/* 2. CENTER: SpaceX ISS Crosshair Reticle & Target Lock */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         
         {/* Reticle Circle */}
-        <div className="relative w-48 h-48 sm:w-64 sm:h-64 border border-cyan-500/25 rounded-full flex items-center justify-center">
+        <div className="relative w-52 h-52 sm:w-72 sm:h-72 border border-cyan-500/25 rounded-full flex items-center justify-center">
           {/* Inner ticks */}
-          <div className="absolute inset-2 border border-dashed border-cyan-500/20 rounded-full animate-spin-slow"></div>
+          <div className="absolute inset-3 border border-dashed border-cyan-500/20 rounded-full"></div>
           
           {/* Crosshair Lines */}
-          <div className="w-full h-[1px] bg-cyan-500/25"></div>
-          <div className="h-full w-[1px] bg-cyan-500/25 absolute"></div>
+          <div className="w-full h-[1px] bg-cyan-500/20"></div>
+          <div className="h-full w-[1px] bg-cyan-500/20 absolute"></div>
 
-          {/* Center Precision Target Dot */}
-          <div className="w-2 h-2 rounded-full border border-cyan-400 absolute bg-cyan-400/30"></div>
+          {/* Center Precision Target Box */}
+          <div className="w-8 h-8 border border-cyan-400/80 rounded-md absolute flex items-center justify-center shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+            <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></div>
+          </div>
 
           {/* SpaceX Pitch & Yaw Degree Markers */}
-          <div className="absolute top-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">+10° PITCH</div>
-          <div className="absolute bottom-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">-10° PITCH</div>
-          <div className="absolute left-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">-05° YAW</div>
-          <div className="absolute right-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">+05° YAW</div>
+          <div className="absolute top-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">+05° PITCH</div>
+          <div className="absolute bottom-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">-05° PITCH</div>
+          <div className="absolute left-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">-02° YAW</div>
+          <div className="absolute right-2 text-[9px] text-cyan-400/80 font-mono tracking-widest">+02° YAW</div>
         </div>
 
-        {/* Real-time Velocity & Distance Vector Box (SpaceX Style) */}
+        {/* Real-time Distance & Speed Vector (SpaceX Style) */}
         <div className="absolute top-20 sm:top-24 text-center">
-          <div className="text-[10px] text-cyan-300/80 tracking-widest bg-black/60 px-3 py-1 rounded-full border border-cyan-500/20 backdrop-blur-sm">
-            RANGE: {selectedArtifact.body === 'Moon' ? '384,400 KM' : '225,000,000 KM'} // RATE: {isSimulatingMission ? '1.42 M/S' : '0.00 M/S'}
+          <div className="text-[10px] text-cyan-300 tracking-widest bg-black/75 px-3 py-1 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+            ALTITUDE: {isSimulatingMission ? `${(3.0 * (1 - simProgress)).toFixed(1)} M` : '0.0 M (SURFACE)'} // RATE: {isSimulatingMission ? '1.25 M/S' : '0.00 M/S'} // ATTITUDE: NOMINAL
           </div>
         </div>
 
       </div>
 
-      {/* 3. BOTTOM PANEL: Artifact Selector & Mission Simulation Controller */}
+      {/* 3. FLIGHT CONTROL PADS: SpaceX ISS Simulator Manual Dials (Bottom Left) */}
+      {showFlightPad && (
+        <div className="absolute left-4 bottom-20 pointer-events-auto hidden md:flex flex-col space-y-2 bg-black/75 backdrop-blur-md p-3 rounded-2xl border border-slate-800 text-xs">
+          <div className="text-[9px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-800 pb-1">
+            Manual Flight Controls
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 text-center">
+            <div></div>
+            <button
+              onClick={() => onManualVector && onManualVector({ pitch: -1 })}
+              className="p-1.5 rounded bg-slate-900 border border-slate-700 hover:border-cyan-400 text-cyan-300"
+              title="Pitch Up"
+            >
+              <ArrowUp className="w-3.5 h-3.5 mx-auto" />
+            </button>
+            <div></div>
+
+            <button
+              onClick={() => onManualVector && onManualVector({ yaw: -1 })}
+              className="p-1.5 rounded bg-slate-900 border border-slate-700 hover:border-cyan-400 text-cyan-300"
+              title="Yaw Left"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 mx-auto" />
+            </button>
+            <div className="text-[9px] flex items-center justify-center text-slate-500 font-bold">ROT</div>
+            <button
+              onClick={() => onManualVector && onManualVector({ yaw: 1 })}
+              className="p-1.5 rounded bg-slate-900 border border-slate-700 hover:border-cyan-400 text-cyan-300"
+              title="Yaw Right"
+            >
+              <ArrowRight className="w-3.5 h-3.5 mx-auto" />
+            </button>
+
+            <div></div>
+            <button
+              onClick={() => onManualVector && onManualVector({ pitch: 1 })}
+              className="p-1.5 rounded bg-slate-900 border border-slate-700 hover:border-cyan-400 text-cyan-300"
+              title="Pitch Down"
+            >
+              <ArrowDown className="w-3.5 h-3.5 mx-auto" />
+            </button>
+            <div></div>
+          </div>
+          <div className="text-[9px] text-slate-500 text-center">
+            Or Click & Drag to Orbit 360°
+          </div>
+        </div>
+      )}
+
+      {/* 4. BOTTOM PANEL: Artifact Selector & Mission Simulation Controller */}
       <div className="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 pointer-events-auto">
         
         {/* Artifact Quick Switcher */}
@@ -144,7 +179,7 @@ export default function SpaceXHUD({
           })}
         </div>
 
-        {/* Action Controller: Replay Event & Audio */}
+        {/* Action Controller: Replay Event, Audio & Telemetry Toggle */}
         <div className="flex items-center space-x-2 bg-black/85 backdrop-blur-md p-2 rounded-2xl border border-cyan-500/30 shadow-[0_0_20px_rgba(0,0,0,0.8)]">
           
           {/* Mission Event Replay Button */}
@@ -177,17 +212,22 @@ export default function SpaceXHUD({
           {/* Toggle Telemetry Drawer */}
           <button
             onClick={() => setIsTelemetryOpen(!isTelemetryOpen)}
-            className="p-2 rounded-xl text-xs border border-slate-700 bg-space-900 text-slate-300 hover:text-white hover:border-cyan-400 transition-all"
+            className={`p-2 rounded-xl text-xs border transition-all ${
+              isTelemetryOpen
+                ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400'
+                : 'border-slate-700 bg-space-900 text-slate-300 hover:text-white hover:border-cyan-400'
+            }`}
             title="Toggle Technical Telemetry"
           >
             <Activity className="w-4 h-4 text-amber-400" />
+            <span className="hidden sm:inline ml-1.5 text-xs">{isTelemetryOpen ? 'Hide Data' : 'Specs'}</span>
           </button>
 
         </div>
 
       </div>
 
-      {/* 4. RIGHT SIDE: Collapsible Glassmorphism Telemetry Drawer */}
+      {/* 5. RIGHT SIDE: Collapsible Glassmorphism Telemetry Drawer */}
       {isTelemetryOpen && selectedArtifact && (
         <div className="absolute right-3 sm:right-5 top-20 bottom-24 w-80 sm:w-96 bg-black/85 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-4 sm:p-5 overflow-y-auto pointer-events-auto shadow-[0_0_35px_rgba(0,0,0,0.9)] animate-slide-left">
           

@@ -6,12 +6,13 @@ import { ARTIFACTS } from './data/artifactsData';
 
 export default function App() {
   const [selectedArtifact, setSelectedArtifact] = useState(ARTIFACTS[0]);
-  const [viewMode, setViewMode] = useState('OVERVIEW');
+  const [viewMode, setViewMode] = useState('RELIC'); // Default to close-up relic view
   const [isSimulatingMission, setIsSimulatingMission] = useState(false);
   const [simProgress, setSimProgress] = useState(0);
   const [scannedIds, setScannedIds] = useState([ARTIFACTS[0].id]);
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [manualVector, setManualVector] = useState(null);
   const audioRef = useRef(null);
 
   // Stop previous audio when artifact changes
@@ -62,6 +63,12 @@ export default function App() {
     }
   };
 
+  // Brief manual nudge on flight controls
+  const handleManualVector = (vec) => {
+    setManualVector(vec);
+    setTimeout(() => setManualVector(null), 150);
+  };
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
       
@@ -72,7 +79,8 @@ export default function App() {
         isSimulatingMission={isSimulatingMission}
         onSimulationProgress={(p) => setSimProgress(p)}
         onSimulationEnd={() => setIsSimulatingMission(false)}
-        onSelectArtifact={handleSelectArtifact}
+        simProgress={simProgress}
+        manualVector={manualVector}
       />
 
       {/* 2. SpaceX ISS Docking Simulator Style HUD Overlay */}
@@ -89,6 +97,7 @@ export default function App() {
         scannedCount={scannedIds.length}
         isPlayingAudio={isPlayingAudio}
         onToggleAudio={handleToggleAudio}
+        onManualVector={handleManualVector}
       />
 
       {/* 3. Badges & Cadet Certification Modal */}
