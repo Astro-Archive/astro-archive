@@ -314,5 +314,40 @@ export const SPECIAL_PROBES = [
       'Calculó con exactitud la tasa de expansión del universo, determinando su edad en 13,800 millones de años.',
       'Sus Sensores de Guía Fina pueden apuntar a un cabello humano a 1.6 kilómetros de distancia sin perder el enfoque.'
     ]
+  },
+  {
+    id: 'jwst',
+    shortName: 'James Webb (JWST)',
+    name: 'Telescopio Espacial James Webb (JWST)',
+    type: 'Gran Observatorio Infrarrojo (Punto L2)',
+    launchYear: '25 de Diciembre de 2021 (Ariane 5)',
+    altitude: '1.5 Millones de km de la Tierra (Punto Lagrange L2)',
+    speedKmH: 'Órbita de Halo en L2',
+    status: 'Activo / En Operación Científica',
+    isProceduralWebb: true,
+    coordinates: { x: 150, y: 52, z: -120 },
+    funFacts: [
+      'Su espejo primario de 6.5 metros está compuesto por 18 segmentos hexagonales de berilio recubiertos con una capa de oro puro de 100 nanómetros.',
+      'Su parasol de cinco capas de Kapton es del tamaño de una cancha de tenis y mantiene los instrumentos a -233 °C en el lado frío.',
+      'Orbita el segundo punto de Lagrange (L2) a 1.5 millones de kilómetros de la Tierra, donde las gravedades de la Tierra y el Sol se equilibran.',
+      'Sus cámaras e instrumentos infrarrojos (NIRCam, NIRSpec, MIRI) pueden observar las primeras galaxias nacidas tras el Big Bang y analizar atmósferas de exoplanetas.'
+    ]
+  },
+  {
+    id: 'halley',
+    shortName: 'Cometa Halley',
+    name: 'Cometa 1P/Halley',
+    type: 'Cometa Periódico Retrógrado (Nube de Oort)',
+    launchYear: 'Observado desde 240 a.C. // Sonda Giotto (1986)',
+    altitude: 'Órbita Excéntrica (Perihelio: 87.8 Mkm - Afelio: 5,280 Mkm)',
+    speedKmH: '70,560 km/h (Perihelio) - 3,280 km/h (Afelio)',
+    status: 'Rumbo a Afelio (Próximo perihelio en julio de 2061)',
+    modelPath: '/models/halley-nucleus.glb',
+    funFacts: [
+      'En marzo de 1986, la sonda Giotto de la ESA se acercó a solo 596 km del núcleo, capturando por primera vez en la historia imágenes directas del corazón de un cometa.',
+      'Su núcleo tiene forma de cacahuate / patata alargada de 15 x 7.2 x 7.2 km, con una corteza de materia orgánica oscura que refleja solo el 4% de la luz solar (más negro que el carbón).',
+      'Tiene un período orbital de aproximadamente 75 a 76 años; su última visita fue en 1986 y regresará al perihelio a mediados de 2061.',
+      'Los chorros de gas y polvo que subliman de su núcleo originan dos lluvias de meteoros anuales en la Tierra: las Eta Acuáridas (mayo) y las Oriónidas (octubre).'
+    ]
   }
 ];

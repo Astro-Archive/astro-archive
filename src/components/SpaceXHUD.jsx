@@ -57,6 +57,7 @@ export default function SpaceXHUD({
     VIKING: 'viking',
     PERSEVERANCE: 'perseverance',
     HUBBLE: 'hubble',
+    JWST: 'jwst',
   };
   const currentArtifact = artifacts.find(a => a.id === artifactTargetIds[selectedTarget]);
 
@@ -381,6 +382,7 @@ export default function SpaceXHUD({
                 <div className="grid grid-cols-2 gap-1.5">
                   {[
                     { id: 'HUBBLE', label: 'Hubble' },
+                    { id: 'JWST', label: 'James Webb' },
                     { id: 'ISS', label: 'ISS (LEO)' },
                     { id: 'HALLEY', label: 'C. Halley' },
                     { id: 'VOYAGER1', label: 'Voyager 1' },
@@ -457,15 +459,17 @@ export default function SpaceXHUD({
             </SciFiButton>
           )}
 
-          {(selectedTarget.toUpperCase() === 'HUBBLE' || currentArtifact?.id === 'hubble' || currentProbe?.id === 'hubble') && (
+          {(['HUBBLE', 'JWST'].includes(selectedTarget.toUpperCase()) || ['hubble', 'jwst'].includes(currentArtifact?.id) || ['hubble', 'jwst'].includes(currentProbe?.id)) && (
             <SciFiButton
-              onClick={onOpenHubble}
+              onClick={() => onOpenHubble(selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'jwst' : 'hubble')}
               showArrow={false}
-              title="Operar Telescopio Hubble y apuntar a astros de espacio profundo"
+              icon={<Eye className="w-4 h-4" />}
+              title="Operar Telescopio Espacial y apuntar a astros de espacio profundo"
             >
-              Telescopio
+              {selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'Operar James Webb' : 'Operar Hubble'}
             </SciFiButton>
           )}
+
 
           <SciFiButton
             variant={isTelemetryOpen ? 'secondary' : 'transparent'}

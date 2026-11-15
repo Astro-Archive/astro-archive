@@ -1,11 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { ExternalLink, Image, Map, RotateCw, X } from 'lucide-react';
+import { ExternalLink, Image, RotateCw, X } from 'lucide-react';
 import { CURIOSITIES } from '../data/curiositiesData';
 import ArtifactModel3D from './ArtifactModel3D';
 import SciFiButton from './ui/SciFiButton';
+import JamesWebbModel3D from './JamesWebbModel3D';
 import { getAssetPath } from '../utils/assets';
+import SolarSystemModel3D from './SolarSystemModel3D';
+import { SOLAR_SYSTEM_OVERVIEW } from '../data/solarSystemOverview';
 
-export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenSurface, onOpenHubble }) {
+export default function CuriosityPanel({ artifact, body, probe, telescope, onClose, onOpenSurface, onOpenHubble }) {
   const curiosity = artifact ? CURIOSITIES[artifact.id] : null;
   const gallery = useMemo(() => curiosity?.photos || [], [curiosity]);
   const [activePhoto, setActivePhoto] = useState(0);
@@ -33,7 +36,11 @@ export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenS
                 {autoRotate ? 'Pausar giro' : 'Activar giro'}
               </button>
             </div>
-            <ArtifactModel3D src={artifact.modelUrl} alt={`Modelo 3D de ${artifact.name}`} autoRotate={autoRotate} />
+            {artifact.isProceduralWebb || artifact.id === 'jwst' ? (
+              <JamesWebbModel3D autoRotate={autoRotate} />
+            ) : (
+              <ArtifactModel3D src={artifact.modelUrl} alt={`Modelo 3D de ${artifact.name}`} autoRotate={autoRotate} />
+            )}
           </div>
 
           <div className="mb-4 border border-slate-800 bg-slate-950 p-3">
@@ -70,9 +77,14 @@ export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenS
             </SciFiButton>
           )}
 
-          {onOpenHubble && (artifact?.id === 'hubble' || probe?.id === 'hubble') && (
-            <SciFiButton onClick={onOpenHubble} className="mb-4 w-full">
-              Operar telescopio Hubble
+          {onOpenHubble && (['hubble', 'jwst'].includes(artifact?.id) || ['hubble', 'jwst'].includes(probe?.id)) && (
+            <SciFiButton
+              onClick={() => onOpenHubble(artifact?.id === 'jwst' || probe?.id === 'jwst' ? 'jwst' : 'hubble')}
+              className="mb-4 w-full"
+            >
+              {artifact?.id === 'jwst' || probe?.id === 'jwst'
+                ? 'Operar Telescopio James Webb (Infrarrojo L2)'
+                : 'Operar Telescopio Hubble (Modo Observatorio)'}
             </SciFiButton>
           )}
 
@@ -83,6 +95,44 @@ export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenS
           <a href={artifact.officialNasaUrl} target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center gap-1 text-cyan-400 underline">
             Fuente oficial NASA <ExternalLink className="w-3.5 h-3.5" />
           </a>
+        </>
+      )}
+
+      {!artifact && !telescope && !probe && !body && (
+        <>
+          <div className="mb-4 overflow-hidden border border-cyan-500/40 bg-slate-950">
+            <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
+              <span className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-cyan-300"><RotateCw className="h-3.5 w-3.5" /> Modelo 3D del sistema</span>
+              <span className="text-[10px] text-slate-500">Arrastra para rotar</span>
+            </div>
+            <SolarSystemModel3D />
+          </div>
+
+          <p className="mb-4 border-l-2 border-cyan-500/60 pl-3 font-sans text-xs leading-relaxed text-slate-200">{SOLAR_SYSTEM_OVERVIEW.summary}</p>
+
+          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {SOLAR_SYSTEM_OVERVIEW.facts.map(([label, value]) => (
+              <div key={label} className="border border-slate-800 bg-slate-950 p-3">
+                <span className="block text-[10px] uppercase tracking-wider text-slate-500">{label}</span>
+                <span className="mt-1 block text-xs leading-relaxed text-cyan-100">{value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mb-4 border border-slate-800 bg-slate-950 p-3">
+            <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-wider text-amber-300"><Image className="h-3.5 w-3.5" /> Imágenes reales del sistema solar</div>
+            <img src={SOLAR_SYSTEM_OVERVIEW.photos[0].src} alt={SOLAR_SYSTEM_OVERVIEW.photos[0].caption} className="h-40 w-full object-cover sm:h-48" onError={(event) => { event.currentTarget.src = getAssetPath('/textures/stars.jpg'); }} />
+            <p className="mt-2 text-[11px] leading-relaxed text-slate-300">{SOLAR_SYSTEM_OVERVIEW.photos[0].caption}</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {SOLAR_SYSTEM_OVERVIEW.photos.slice(1).map((photo) => <img key={photo.src} src={photo.src} alt={photo.caption} className="h-20 w-full object-cover" onError={(event) => { event.currentTarget.src = getAssetPath('/textures/stars.jpg'); }} />)}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {SOLAR_SYSTEM_OVERVIEW.factsLong.map((fact) => <p key={fact} className="border border-slate-800 bg-slate-950 p-3 font-sans text-xs leading-relaxed text-slate-300">{fact}</p>)}
+          </div>
+
+          <a href="https://science.nasa.gov/solar-system/" target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center gap-1 text-cyan-400 underline">Fuente oficial NASA <ExternalLink className="h-3.5 w-3.5" /></a>
         </>
       )}
 
