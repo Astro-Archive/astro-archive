@@ -16,7 +16,7 @@ export default function App() {
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isSurfaceOpen, setIsSurfaceOpen] = useState(false);
-  const [isHubbleOpen, setIsHubbleOpen] = useState(false);
+  const [observatoryTelescope, setObservatoryTelescope] = useState(null);
   const [settings, setSettings] = useState({
     showOrbits: true,
     showTrails: true,
@@ -44,6 +44,7 @@ export default function App() {
       case 'EARTH':
       case 'ISS':
       case 'HUBBLE':
+      case 'JWST':
         return '/audio/we_came_in_peace.mp3';
       default:
         return '/audio/space_ambient.mp3';
@@ -62,6 +63,7 @@ export default function App() {
       VIKING: 'viking',
       PERSEVERANCE: 'perseverance',
       HUBBLE: 'hubble',
+      JWST: 'jwst',
     };
     const artifactId = targetToArtifact[target];
     if (artifactId) {
@@ -101,6 +103,7 @@ export default function App() {
     VIKING: 'viking',
     PERSEVERANCE: 'perseverance',
     HUBBLE: 'hubble',
+    JWST: 'jwst',
   };
   const selectedArtifact = ARTIFACTS.find((artifact) => artifact.id === artifactTargetIds[selectedTarget]);
   const updateSettings = (changes) => setSettings((current) => ({ ...current, ...changes }));
@@ -133,7 +136,7 @@ export default function App() {
         isPlayingAudio={isPlayingAudio}
         onToggleAudio={handleToggleAudio}
         onOpenSurface={() => selectedArtifact && setIsSurfaceOpen(true)}
-        onOpenHubble={() => setIsHubbleOpen(true)}
+        onOpenHubble={(tel) => setObservatoryTelescope(tel || (selectedTarget === 'JWST' ? 'jwst' : 'hubble'))}
         settings={settings}
         onUpdateSettings={updateSettings}
       />
@@ -150,12 +153,14 @@ export default function App() {
         <SurfaceExplorer artifact={selectedArtifact} onClose={() => setIsSurfaceOpen(false)} />
       )}
 
-      {/* 4. Hubble Space Telescope Observatory Minigame */}
-      {isHubbleOpen && (
+      {/* 4. Space Telescope Observatory Minigame (Hubble & James Webb) */}
+      {observatoryTelescope && (
         <HubbleObservatory 
-          onClose={() => setIsHubbleOpen(false)} 
+          initialTelescope={observatoryTelescope}
+          onClose={() => setObservatoryTelescope(null)} 
           onUnlockDiscovery={(id) => {
-            setScannedIds(prev => prev.includes('hubble') ? prev : [...prev, 'hubble']);
+            const key = id.startsWith('webb') ? 'jwst' : 'hubble';
+            setScannedIds(prev => prev.includes(key) ? prev : [...prev, key]);
           }}
         />
       )}

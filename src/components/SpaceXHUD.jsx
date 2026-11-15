@@ -54,6 +54,7 @@ export default function SpaceXHUD({
     VIKING: 'viking',
     PERSEVERANCE: 'perseverance',
     HUBBLE: 'hubble',
+    JWST: 'jwst',
   };
   const currentArtifact = artifacts.find(a => a.id === artifactTargetIds[selectedTarget]);
 
@@ -397,6 +398,16 @@ export default function SpaceXHUD({
                     🔭 Hubble (HST)
                   </button>
                   <button
+                    onClick={() => { onSelectTarget('JWST'); setIsDestinoMenuOpen(false); }}
+                    className={`p-2 border transition-all text-center font-bold ${
+                      selectedTarget === 'JWST'
+                        ? 'bg-amber-500/40 text-amber-200 border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
+                        : 'border-amber-500/50 bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 hover:border-amber-400'
+                    }`}
+                  >
+                    🛰️ James Webb (JWST)
+                  </button>
+                  <button
                     onClick={() => { onSelectTarget('ISS'); setIsDestinoMenuOpen(false); }}
                     className={`p-2 border transition-all text-center font-bold ${
                       selectedTarget === 'ISS'
@@ -496,14 +507,16 @@ export default function SpaceXHUD({
             </button>
           )}
 
-          {(selectedTarget.toUpperCase() === 'HUBBLE' || currentArtifact?.id === 'hubble' || currentProbe?.id === 'hubble') && (
+          {(['HUBBLE', 'JWST'].includes(selectedTarget.toUpperCase()) || ['hubble', 'jwst'].includes(currentArtifact?.id) || ['hubble', 'jwst'].includes(currentProbe?.id)) && (
             <button
-              onClick={onOpenHubble}
+              onClick={() => onOpenHubble(selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'jwst' : 'hubble')}
               className="p-2 rounded-none text-xs sm:text-sm border transition-all flex items-center space-x-1.5 border-cyan-400 bg-cyan-950/80 text-cyan-200 hover:bg-cyan-900 shadow-[0_0_15px_rgba(0,240,255,0.6)] animate-pulse"
-              title="Operar Telescopio Hubble y apuntar a astros de espacio profundo"
+              title="Operar Telescopio Espacial y apuntar a astros de espacio profundo"
             >
               <Eye className="w-4 h-4 text-cyan-300" />
-              <span className="font-bold hidden sm:inline">Operar Telescopio</span>
+              <span className="font-bold hidden sm:inline">
+                {selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'Operar James Webb' : 'Operar Hubble'}
+              </span>
               <span className="font-bold sm:hidden">Telescopio</span>
             </button>
           )}

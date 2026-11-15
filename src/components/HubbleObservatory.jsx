@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Crosshair, Camera, Compass, Award, X, Sparkles, CheckCircle2, 
-  ChevronRight, RotateCcw, Eye, Info, Volume2, VolumeX, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Layers
+  ChevronRight, RotateCcw, Eye, Info, Volume2, VolumeX, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Layers,
+  ZoomIn, ZoomOut, Maximize2
 } from 'lucide-react';
 import { getAssetPath } from '../utils/assets';
 
@@ -176,9 +177,195 @@ const OBSERVATION_TARGETS = [
   }
 ];
 
-export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
-  const [selectedTargetId, setSelectedTargetId] = useState('pillars');
-  const [discoveredIds, setDiscoveredIds] = useState(['pillars']);
+export const WEBB_OBSERVATION_TARGETS = [
+  {
+    id: 'webb_carina',
+    name: 'Nebulosa de Carina (Acantilados Cósmicos)',
+    objectType: 'Guardería Estelar / Región H II',
+    constellation: 'Carina (La Quilla)',
+    distance: '7,600 años luz',
+    coordinates: { ra: '10h 45m 08s', dec: '-59° 52′ 04″' },
+    targetOffset: { x: -38, y: -28 },
+    image: 'https://images-assets.nasa.gov/image/PIA23768/PIA23768~large.jpg',
+    filter: 'NIRCam F090W / F187N / F200W',
+    summary: 'Los colosales "Acantilados Cósmicos": un paisaje tridimensional de gas brillante y polvo interestelar esculpido por la feroz radiación ultravioleta de estrellas jóvenes en formación.',
+    discoveryText: 'La penetrante visión infrarroja de Webb reveló por primera vez cientos de protoestrellas completamente ocultas detrás del denso polvo que el Hubble no podía ver.',
+    importance: 'Permite estudiar cómo la radiación de estrellas masivas transforma una nube molecular en embriones planetarios.',
+    year: '2022'
+  },
+  {
+    id: 'webb_deep_field',
+    name: 'Primer Campo Profundo (SMACS 0723)',
+    objectType: 'Lente Gravitacional / Galaxias Primitivas',
+    constellation: 'Volans (El Pez Volador)',
+    distance: 'Más de 13,000 millones de años luz',
+    coordinates: { ra: '07h 23m 19s', dec: '-73° 27′ 15″' },
+    targetOffset: { x: 42, y: 35 },
+    image: 'https://images-assets.nasa.gov/image/PIA24921/PIA24921~large.jpg',
+    filter: 'NIRCam Mosaico 12.5 Horas (0.9 – 4.4 µm)',
+    summary: 'La imagen infrarroja más profunda y nítida jamás tomada del universo distante, cubriendo una porción de cielo equivalente a sostener un grano de arena con el brazo extendido.',
+    discoveryText: 'La masa colosal del cúmulo SMACS 0723 actuó como una lupa cósmica, magnificando y curvando la luz de galaxias que existían cuando el universo tenía menos de mil millones de años.',
+    importance: 'Muestra galaxias muy jóvenes y primitivas, cercanas al mismísimo comienzo de la historia del universo.',
+    year: '2022'
+  },
+  {
+    id: 'webb_exoplanet',
+    name: 'Atmósfera de WASP-96b (Espectroscopia)',
+    objectType: 'Exoplaneta Gigante Gaseoso Caliente',
+    constellation: 'Phoenix (El Fénix)',
+    distance: '1,150 años luz',
+    coordinates: { ra: '00h 04m 11s', dec: '-47° 21′ 38″' },
+    targetOffset: { x: 30, y: -45 },
+    image: 'https://images-assets.nasa.gov/image/PIA23405/PIA23405~large.jpg',
+    filter: 'NIRISS Espectroscopia de Tránsito (0.6 – 2.8 µm)',
+    summary: 'Un gigante de gas caliente que orbita muy cerca de su estrella anfitriona cada 3.4 días terrestres.',
+    discoveryText: 'Webb detectó la huella química inequívoca de moléculas de vapor de agua, neblinas y nubes en su atmósfera, marcando un hito en la caracterización de mundos alienígenas.',
+    importance: 'La espectroscopia de transmisión infrarroja demuestra que podemos analizar agua, metano y biofirmas en otros mundos.',
+    year: '2022'
+  },
+  {
+    id: 'webb_pillars',
+    name: 'Pilares de la Creación (Infrarrojo NIRCam)',
+    objectType: 'Guardería Estelar en Nebulosa del Águila',
+    constellation: 'Serpens (Serpiente)',
+    distance: '6,500 años luz',
+    coordinates: { ra: '18h 18m 48s', dec: '-13° 49′ 00″' },
+    targetOffset: { x: -25, y: 40 },
+    image: 'https://images-assets.nasa.gov/image/PIA21454/PIA21454~large.jpg',
+    filter: 'NIRCam F187N + F200W + F444W',
+    summary: 'Las legendarias columnas de gas y polvo vistas en longitudes de onda infrarrojas, donde el polvo se vuelve semitransparente.',
+    discoveryText: 'Destacó esferas de color rojo intenso que corresponden a glóbulos de gas colapsando por gravedad donde están naciendo estrellas con apenas unos cientos de miles de años.',
+    importance: 'Son laboratorios cósmicos naturales para observar el nacimiento de nuevas estrellas sin la opacidad del polvo.',
+    year: '2022'
+  },
+  {
+    id: 'webb_southern_ring',
+    name: 'Nebulosa del Anillo del Sur (NGC 3132)',
+    objectType: 'Nebulosa Planetaria Doble Estrella',
+    constellation: 'Vela (Las Velas)',
+    distance: '2,500 años luz',
+    coordinates: { ra: '10h 07m 01s', dec: '-40° 26′ 11″' },
+    targetOffset: { x: 15, y: -55 },
+    image: 'https://images-assets.nasa.gov/image/PIA24568/PIA24568~large.jpg',
+    filter: 'NIRCam + MIRI Infrarrojo Medio',
+    summary: 'Capas concéntricas de gas y polvo expulsadas por una estrella moribunda a lo largo de miles de años.',
+    discoveryText: 'El instrumento MIRI de Webb reveló por primera vez que la estrella central causante de la nebulosa está envuelta en polvo y tiene una compañera estelar cercana en una danza orbital caótica.',
+    importance: 'Revela cómo evolucionan y mueren las estrellas similares al Sol al final de sus ciclos vitales.',
+    year: '2022'
+  },
+  {
+    id: 'webb_cartwheel',
+    name: 'Galaxia Cartwheel (Rueda de Carro)',
+    objectType: 'Galaxia de Anillo por Colisión',
+    constellation: 'Sculptor (El Escultor)',
+    distance: '500 millones de años luz',
+    coordinates: { ra: '00h 37m 41s', dec: '-33° 42′ 58″' },
+    targetOffset: { x: 50, y: -20 },
+    image: 'https://images-assets.nasa.gov/image/PIA24917/PIA24917~large.jpg',
+    filter: 'NIRCam / MIRI Compuesto Infrarrojo',
+    summary: 'El resultado violento de una colisión frontal a alta velocidad entre una galaxia espiral gigante y otra menor, semejante a arrojar una piedra a un estanque.',
+    discoveryText: 'Webb desveló rayos individuales dentro del anillo de formación estelar activa y demostró que la galaxia se encuentra en una fase altamente transitoria de reorganización.',
+    importance: 'Su anillo en expansión permite estudiar cómo las ondas de choque activan olas gigantescas de formación estelar.',
+    year: '2022'
+  },
+  {
+    id: 'webb_stephans_quintet',
+    name: 'Quinteto de Stephan (Grupo Compacto HCG 92)',
+    objectType: 'Grupo Galáctico en Interacción Gravitacional',
+    constellation: 'Pegasus (Pegaso)',
+    distance: '290 millones de años luz',
+    coordinates: { ra: '22h 35m 57s', dec: '+33° 57′ 36″' },
+    targetOffset: { x: -48, y: 18 },
+    image: 'https://images-assets.nasa.gov/image/PIA24914/PIA24914~large.jpg',
+    filter: 'Mosaico NIRCam de 150 Millones de Píxeles',
+    summary: 'Cinco galaxias agrupadas cercanamente, cuatro de las cuales están atrapadas en una dramática danza de choques gravitacionales.',
+    discoveryText: 'Capturó gigantescas ondas de choque de gas provocadas por una galaxia penetrando el grupo a más de 800 km/s y observó la alimentación de un agujero negro supermasivo central.',
+    importance: 'Muestra en tiempo real cómo la gravedad desgarra y reorganiza el gas y las estrellas durante las fusiones galácticas.',
+    year: '2022'
+  },
+  {
+    id: 'webb_tarantula',
+    name: 'Nebulosa de la Tarántula (30 Doradus)',
+    objectType: 'Superguardería Estelar Extragaláctica',
+    constellation: 'Gran Nube de Magallanes',
+    distance: '161,000 años luz',
+    coordinates: { ra: '05h 38m 38s', dec: '-69° 05′ 38″' },
+    targetOffset: { x: -20, y: -40 },
+    image: 'https://images-assets.nasa.gov/image/PIA25110/PIA25110~large.jpg',
+    filter: 'NIRCam Mosaico de Alta Resolución',
+    summary: 'La región de formación estelar más grande y brillante de todo el Grupo Local de galaxias.',
+    discoveryText: 'Desveló decenas de miles de estrellas jóvenes nunca antes vistas y miles de millones de años luz de galaxias distantes de fondo brillando a través del polvo.',
+    importance: 'Contiene estrellas con composiciones químicas similares a las del cosmos temprano durante el "Mediodía Cósmico".',
+    year: '2022'
+  },
+  {
+    id: 'webb_phantom',
+    name: 'Galaxia Fantasma (M74)',
+    objectType: 'Espiral de Gran Diseño Infrarroja',
+    constellation: 'Pisces (Piscis)',
+    distance: '32 millones de años luz',
+    coordinates: { ra: '01h 36m 41s', dec: '+15° 47′ 01″' },
+    targetOffset: { x: 38, y: 45 },
+    image: 'https://images-assets.nasa.gov/image/PIA24920/PIA24920~large.jpg',
+    filter: 'MIRI Infrarrojo Medio (Polvo Cálido)',
+    summary: 'Una galaxia espiral con brazos simétricos y majestuosos vistos de frente desde la Tierra.',
+    discoveryText: 'MIRI cartografió filamentos delicados de polvo y gas que recorren los brazos espirales, emanando desde un núcleo estelar despejado.',
+    importance: 'Permite comparar la estructura y distribución de gas de galaxias espirales frente a nuestra Vía Láctea.',
+    year: '2022'
+  },
+  {
+    id: 'webb_uranus',
+    name: 'Urano y Sistema de Anillos Infrarrojo',
+    objectType: 'Gigante Helado con Anillos Tenues',
+    constellation: 'Sistema Solar Exterior',
+    distance: '2,900 millones de km (19.2 AU)',
+    coordinates: { ra: 'Coordenadas Heliocéntricas', dec: 'Eclíptica' },
+    targetOffset: { x: -45, y: -18 },
+    image: 'https://images-assets.nasa.gov/image/PIA18182/PIA18182~large.jpg',
+    filter: 'NIRCam F140M / F300M (Infrarrojo)',
+    summary: 'El enigmático planeta ladeado observado con una sensibilidad sin precedentes para anillos tenues.',
+    discoveryText: 'Webb captó 11 de los 13 anillos del planeta, incluidos anillos de polvo extremadamente débiles que solo habían sido vistos por la nave Voyager 2 y el Observatorio Keck.',
+    importance: 'El infrarrojo permite estudiar su atmósfera de metano profundo, tormentas estacionales y meteorología helada.',
+    year: '2023'
+  },
+  {
+    id: 'webb_neptune',
+    name: 'Neptuno y sus Lunas en Infrarrojo',
+    objectType: 'Gigante Helado y Anillos Brillantes',
+    constellation: 'Sistema Solar Exterior',
+    distance: '4,500 millones de km (30.1 AU)',
+    coordinates: { ra: 'Coordenadas Heliocéntricas', dec: 'Eclíptica' },
+    targetOffset: { x: 52, y: 12 },
+    image: 'https://images-assets.nasa.gov/image/PIA01492/PIA01492~large.jpg',
+    filter: 'NIRCam (0.6 – 5.0 µm)',
+    summary: 'La primera mirada clara a los anillos de Neptuno en más de tres décadas desde el sobrevuelo de la Voyager 2.',
+    discoveryText: 'Debido a que el gas metano absorbe con fuerza la luz roja e infrarroja, el planeta aparece brillante solo donde hay nubes altas de hielo de metano, revelando anillos espectaculares.',
+    importance: 'Sus vórtices y vientos de 2,100 km/h ayudan a modelar la dinámica de atmósferas gigantescas en exoplanetas helados.',
+    year: '2022'
+  },
+  {
+    id: 'webb_jupiter',
+    name: 'Júpiter Profundo y Auroras Infrarrojas',
+    objectType: 'Planeta Gigante con Auroras Bipolares',
+    constellation: 'Sistema Solar Exterior',
+    distance: '640 millones de km (4.3 AU)',
+    coordinates: { ra: 'Coordenadas Heliocéntricas', dec: 'Eclíptica' },
+    targetOffset: { x: 18, y: 50 },
+    image: 'https://images-assets.nasa.gov/image/PIA22946/PIA22946~large.jpg',
+    filter: 'NIRCam Filtro Compuesto F360M / F212N',
+    summary: 'Júpiter observado en infrarrojo mostrando gigantescas auroras luminosas en sus polos norte y sur.',
+    discoveryText: 'Webb reveló tormentas gigantes, neblinas a gran altitud, los tenues anillos jovianos y dos pequeñas lunas (Amaltea y Adrastea) orbitando junto a los anillos.',
+    importance: 'Sus tormentas masivas son el laboratorio clave para comprender cómo el calor interno interactúa con la alta atmósfera.',
+    year: '2022'
+  }
+];
+
+export default function HubbleObservatory({ initialTelescope = 'hubble', onClose, onUnlockDiscovery }) {
+  const [activeTelescope, setActiveTelescope] = useState(initialTelescope);
+  const [zoom, setZoom] = useState(1);
+  const targetsList = useMemo(() => activeTelescope === 'jwst' ? WEBB_OBSERVATION_TARGETS : OBSERVATION_TARGETS, [activeTelescope]);
+  const [selectedTargetId, setSelectedTargetId] = useState(initialTelescope === 'jwst' ? 'webb_carina' : 'pillars');
+  const [discoveredIds, setDiscoveredIds] = useState(['pillars', 'webb_carina']);
   const [telescopePos, setTelescopePos] = useState({ x: 0, y: 0 });
   const [isCapturing, setIsCapturing] = useState(false);
   const [captureProgress, setCaptureProgress] = useState(0);
@@ -186,14 +373,21 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
   const [activeTab, setActiveTab] = useState('viewport'); // 'viewport' | 'targets'
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  // Sync default target & zoom when switching telescopes
+  useEffect(() => {
+    setSelectedTargetId(activeTelescope === 'jwst' ? 'webb_carina' : 'pillars');
+    setTelescopePos({ x: 0, y: 0 });
+    setZoom(1);
+  }, [activeTelescope]);
+
   // Audio Context ref for synthesized SFX (servos, lock ping, camera shutter)
   const audioCtxRef = useRef(null);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
 
   const activeTarget = useMemo(
-    () => OBSERVATION_TARGETS.find(t => t.id === selectedTargetId) || OBSERVATION_TARGETS[0],
-    [selectedTargetId]
+    () => targetsList.find(t => t.id === selectedTargetId) || targetsList[0],
+    [targetsList, selectedTargetId]
   );
 
   // Calculate distance between telescope reticle and target coordinates
@@ -386,24 +580,64 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
     <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 font-mono text-cyan-300 select-none overflow-hidden">
       
       {/* 1. TOP SCIENTIFIC HEADER */}
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/40 bg-black/90 px-3 py-2.5 sm:px-6 backdrop-blur-md">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/40 bg-black/90 px-3 py-2 sm:px-6 backdrop-blur-md">
         
-        {/* Observatory Title */}
+        {/* Observatory Title & Active Telescope */}
         <div className="flex items-center space-x-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-none border border-cyan-400 bg-cyan-950/80 shadow-[0_0_12px_rgba(0,240,255,0.4)]">
-            <Crosshair className="h-4 w-4 text-cyan-300 animate-spin-slow" />
+          <div className={`flex h-8 w-8 items-center justify-center rounded-none border shadow-md ${
+            activeTelescope === 'jwst'
+              ? 'border-amber-400 bg-amber-950/80 shadow-[0_0_12px_rgba(251,191,36,0.4)]'
+              : 'border-cyan-400 bg-cyan-950/80 shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+          }`}>
+            <Crosshair className={`h-4 w-4 animate-spin-slow ${activeTelescope === 'jwst' ? 'text-amber-300' : 'text-cyan-300'}`} />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs sm:text-sm font-bold tracking-widest text-cyan-200">HUBBLE SPACE TELESCOPE</span>
-              <span className="hidden sm:inline-block border border-emerald-500/60 bg-emerald-950/80 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300">
-                FGS LOCK: NOMINAL
+              <span className="text-xs sm:text-sm font-bold tracking-widest text-white">
+                {activeTelescope === 'jwst' ? 'JAMES WEBB SPACE TELESCOPE' : 'HUBBLE SPACE TELESCOPE'}
+              </span>
+              <span className={`hidden sm:inline-block border px-1.5 py-0.5 text-[9px] font-bold ${
+                activeTelescope === 'jwst'
+                  ? 'border-amber-500/60 bg-amber-950/80 text-amber-300'
+                  : 'border-emerald-500/60 bg-emerald-950/80 text-emerald-300'
+              }`}>
+                {activeTelescope === 'jwst' ? 'L2 HALO LOCK: NOMINAL' : 'FGS LOCK: NOMINAL'}
               </span>
             </div>
             <div className="text-[10px] text-slate-400">
-              STScI SOC // ÓRBITA LEO (535 KM) // SENSOR WFC3/ACS
+              {activeTelescope === 'jwst'
+                ? 'STScI MOC // PUNTO LAGRANGE L2 (1.5M KM) // SENSORES NIRCAM / MIRI'
+                : 'STScI SOC // ÓRBITA LEO (535 KM) // SENSOR WFC3/ACS'}
             </div>
           </div>
+        </div>
+
+        {/* Telescope Switcher: HST vs JWST */}
+        <div className="flex items-center space-x-1 border border-slate-700 bg-black/80 p-0.5">
+          <button
+            onClick={() => { setActiveTelescope('hubble'); setSelectedTargetId('pillars'); setZoom(1); }}
+            className={`px-2 sm:px-3 py-1 text-[11px] font-bold transition-all flex items-center space-x-1 ${
+              activeTelescope === 'hubble'
+                ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400 shadow-[0_0_8px_rgba(0,240,255,0.4)]'
+                : 'text-slate-400 hover:text-white border border-transparent'
+            }`}
+          >
+            <span>🔭</span>
+            <span className="hidden sm:inline">HUBBLE (HST)</span>
+            <span className="sm:hidden">HST</span>
+          </button>
+          <button
+            onClick={() => { setActiveTelescope('jwst'); setSelectedTargetId('webb_carina'); setZoom(1); }}
+            className={`px-2 sm:px-3 py-1 text-[11px] font-bold transition-all flex items-center space-x-1 ${
+              activeTelescope === 'jwst'
+                ? 'bg-amber-500/30 text-amber-200 border border-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.4)]'
+                : 'text-slate-400 hover:text-white border border-transparent'
+            }`}
+          >
+            <span>🛰️</span>
+            <span className="hidden sm:inline">JAMES WEBB (JWST)</span>
+            <span className="sm:hidden">JWST</span>
+          </button>
         </div>
 
         {/* Discovery Counter & Controls */}
@@ -413,7 +647,9 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
           <div className="flex items-center space-x-1.5 border border-amber-500/50 bg-amber-950/30 px-2.5 py-1 text-xs">
             <Award className="h-3.5 w-3.5 text-amber-400" />
             <span className="text-slate-300 hidden sm:inline">Descubrimientos:</span>
-            <span className="font-bold text-amber-300">{discoveredIds.length}/{OBSERVATION_TARGETS.length}</span>
+            <span className="font-bold text-amber-300">
+              {discoveredIds.filter(id => targetsList.some(t => t.id === id)).length}/{targetsList.length}
+            </span>
           </div>
 
           {/* Sound Toggle */}
@@ -458,7 +694,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
               : 'border-transparent text-slate-400'
           }`}
         >
-          🎯 Catálogo de Misión ({discoveredIds.length}/{OBSERVATION_TARGETS.length})
+          🎯 Catálogo de Misión ({discoveredIds.filter(id => targetsList.some(t => t.id === id)).length}/{targetsList.length})
         </button>
       </div>
 
@@ -473,6 +709,10 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onWheel={(e) => {
+            e.preventDefault();
+            setZoom(z => Math.max(1, Math.min(10, +(z - Math.sign(e.deltaY) * 0.5).toFixed(1))));
+          }}
         >
           {/* Cosmic Starfield Background with Twinkle */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black pointer-events-none">
@@ -481,31 +721,49 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fde047_1.5px,transparent_1.5px)] [background-size:64px_64px]"></div>
           </div>
 
-          {/* Faint Target Silhouette in Space (Relative to telescope offset) */}
+          {/* Faint Target Silhouette in Space (Relative to telescope offset + Zoom scale) */}
           <div 
-            className="absolute pointer-events-none transition-transform duration-75 ease-out"
+            className="absolute pointer-events-none transition-transform duration-100 ease-out"
             style={{
-              transform: `translate(${(activeTarget.targetOffset.x - telescopePos.x) * 6}px, ${(activeTarget.targetOffset.y - telescopePos.y) * 6}px)`
+              transform: `translate(${(activeTarget.targetOffset.x - telescopePos.x) * 6}px, ${(activeTarget.targetOffset.y - telescopePos.y) * 6}px) scale(${1 + (zoom - 1) * 0.22})`
             }}
           >
             <div className="relative flex items-center justify-center">
               {/* Outer detection pulse */}
-              <div className={`w-32 h-32 rounded-full border border-dashed transition-all duration-300 ${
-                isLockAcquired ? 'border-cyan-400 scale-105 animate-pulse' : 'border-cyan-500/30'
+              <div className={`w-36 h-36 rounded-full border border-dashed transition-all duration-300 ${
+                isLockAcquired 
+                  ? (activeTelescope === 'jwst' ? 'border-amber-400 scale-105 animate-pulse' : 'border-cyan-400 scale-105 animate-pulse') 
+                  : 'border-cyan-500/30'
               }`}></div>
               
-              {/* Target Image Preview Silhouette */}
-              <div className="absolute w-24 h-24 rounded-full overflow-hidden border border-cyan-400/50 opacity-40 shadow-[0_0_20px_rgba(0,240,255,0.4)]">
+              {/* Target Image Preview Silhouette with Dynamic Zoom Scale, Sharpness & Detail */}
+              <div 
+                className={`absolute rounded-full overflow-hidden border shadow-2xl transition-all duration-300 ease-out ${
+                  activeTelescope === 'jwst' 
+                    ? 'border-amber-400/60 shadow-[0_0_25px_rgba(251,191,36,0.4)]' 
+                    : 'border-cyan-400/60 shadow-[0_0_25px_rgba(0,240,255,0.4)]'
+                }`}
+                style={{
+                  width: `${96 + (zoom - 1) * 14}px`,
+                  height: `${96 + (zoom - 1) * 14}px`,
+                  opacity: Math.min(1, 0.45 + (zoom / 16)),
+                  filter: isLockAcquired 
+                    ? 'contrast(1.25) saturate(1.25)' 
+                    : `blur(${Math.max(0, 2.5 - zoom * 0.35)}px) saturate(${0.75 + zoom * 0.05})`
+                }}
+              >
                 <img 
-                  src={getAssetPath(activeTarget.image)} 
+                  src={activeTarget.image.startsWith('http') ? activeTarget.image : getAssetPath(activeTarget.image)} 
                   alt={activeTarget.name}
-                  className="w-full h-full object-cover filter blur-[1px]"
+                  className="w-full h-full object-cover transition-transform duration-300"
+                  style={{ transform: `scale(${1 + (zoom - 1) * 0.06})` }}
+                  onError={(e) => { e.currentTarget.src = getAssetPath('/textures/stars.jpg'); }}
                 />
               </div>
 
               {/* Target Tag */}
-              <div className="absolute -bottom-8 whitespace-nowrap bg-black/85 border border-cyan-500/50 px-2 py-0.5 text-[10px] text-cyan-300">
-                [SEÑAL FGS]: {activeTarget.name.toUpperCase()}
+              <div className="absolute -bottom-10 whitespace-nowrap bg-black/85 border border-cyan-500/50 px-2.5 py-0.5 text-[10px] text-cyan-300 shadow-md">
+                [{activeTelescope === 'jwst' ? 'SEÑAL NIR' : 'SEÑAL FGS'}]: {activeTarget.name.toUpperCase()}
               </div>
             </div>
           </div>
@@ -539,16 +797,20 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             {/* Central Precision Guidance Box */}
             <div className={`w-14 h-14 border transition-all duration-200 flex items-center justify-center ${
               isLockAcquired 
-                ? 'border-2 border-emerald-400 bg-emerald-500/20 shadow-[0_0_20px_rgba(52,211,153,0.8)] scale-110' 
+                ? (activeTelescope === 'jwst'
+                    ? 'border-2 border-amber-400 bg-amber-500/20 shadow-[0_0_20px_rgba(251,191,36,0.8)] scale-110'
+                    : 'border-2 border-emerald-400 bg-emerald-500/20 shadow-[0_0_20px_rgba(52,211,153,0.8)] scale-110')
                 : 'border-cyan-400/60 bg-cyan-950/20'
             }`}>
-              <div className={`w-2 h-2 ${isLockAcquired ? 'bg-emerald-300' : 'bg-cyan-400'} rounded-none`}></div>
+              <div className={`w-2 h-2 ${isLockAcquired ? (activeTelescope === 'jwst' ? 'bg-amber-300' : 'bg-emerald-300') : 'bg-cyan-400'} rounded-none`}></div>
             </div>
 
             {/* Live Reticle Status Readout */}
             <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/90 border border-cyan-500/40 px-3 py-0.5 text-[10px] tracking-widest font-bold">
               {isLockAcquired ? (
-                <span className="text-emerald-400 animate-pulse font-black">● GUIDANCE LOCK CONFIRMADO</span>
+                <span className={`${activeTelescope === 'jwst' ? 'text-amber-300' : 'text-emerald-400'} animate-pulse font-black`}>
+                  ● GUIDANCE LOCK CONFIRMADO
+                </span>
               ) : (
                 <span className="text-slate-400">BUSCANDO SEÑAL ESTELAR...</span>
               )}
@@ -561,7 +823,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             <div className="text-cyan-400 font-bold border-b border-slate-800 pb-0.5">TELEMETRÍA DE APUNTADO</div>
             <div>RA: <span className="text-white font-mono">{activeTarget.coordinates.ra}</span></div>
             <div>DEC: <span className="text-white font-mono">{activeTarget.coordinates.dec}</span></div>
-            <div>DERIVA GIRO: <span className="text-emerald-400 font-mono">0.007″/hr</span></div>
+            <div>CAMPO / ZOOM: <span className="text-emerald-400 font-mono">{zoom.toFixed(1)}x (FOV: {(2.4 / zoom).toFixed(2)}′)</span></div>
             <div>FILTRO ACTIVO: <span className="text-amber-300">{activeTarget.filter.split(' ')[0]}</span></div>
           </div>
 
@@ -569,7 +831,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
           <div className="absolute top-3 right-3 bg-black/85 border border-cyan-500/40 p-2.5 text-xs pointer-events-none w-44">
             <div className="flex justify-between items-center mb-1">
               <span className="text-[10px] text-slate-400">ALINEACIÓN FGS:</span>
-              <span className={`font-bold ${isLockAcquired ? 'text-emerald-400' : 'text-cyan-300'}`}>
+              <span className={`font-bold ${isLockAcquired ? (activeTelescope === 'jwst' ? 'text-amber-300' : 'text-emerald-400') : 'text-cyan-300'}`}>
                 {alignmentPercent}%
               </span>
             </div>
@@ -577,7 +839,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
               <div 
                 className={`h-full transition-all duration-150 ${
                   isLockAcquired 
-                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]' 
+                    ? (activeTelescope === 'jwst' ? 'bg-gradient-to-r from-amber-500 to-yellow-300 shadow-[0_0_10px_rgba(251,191,36,0.8)]' : 'bg-gradient-to-r from-emerald-500 to-cyan-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]')
                     : 'bg-cyan-500'
                 }`}
                 style={{ width: `${alignmentPercent}%` }}
@@ -585,16 +847,16 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             </div>
             <div className="text-[9px] text-slate-400 mt-1 flex justify-between">
               <span>Tolerancia: &lt;3%</span>
-              <span className={isLockAcquired ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
+              <span className={isLockAcquired ? (activeTelescope === 'jwst' ? 'text-amber-300 font-bold' : 'text-emerald-400 font-bold') : 'text-slate-500'}>
                 {isLockAcquired ? 'OBJETIVO EN MIRA' : 'FUERA DE EJE'}
               </span>
             </div>
           </div>
 
-          {/* BOTTOM FLOATING CONTROLS: D-PAD & CAPTURE BUTTON */}
-          <div className="absolute bottom-3 inset-x-3 flex flex-wrap items-end justify-between gap-3 pointer-events-auto">
+          {/* BOTTOM FLOATING CONTROLS: D-PAD, ZOOM SLIDER & CAPTURE BUTTON */}
+          <div className="absolute bottom-3 inset-x-3 flex flex-wrap items-end justify-between gap-2 pointer-events-auto">
             
-            {/* On-screen touch D-Pad for mobile / touch steering */}
+            {/* 1. On-screen touch D-Pad for steering */}
             <div className="bg-black/90 border border-cyan-500/40 p-2 shadow-2xl backdrop-blur-md flex flex-col items-center">
               <div className="text-[9px] text-slate-400 mb-1 font-bold">GIROSCOPIOS RCS</div>
               <div className="grid grid-cols-3 gap-1 w-28">
@@ -640,12 +902,49 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
               </div>
             </div>
 
-            {/* Instruction Tip */}
-            <div className="hidden lg:block bg-black/80 border border-slate-700 px-3 py-1.5 text-[11px] text-slate-300 max-w-xs">
-              💡 <span className="font-bold text-cyan-300">Consejo:</span> Usa las teclas <kbd className="border border-slate-600 px-1 bg-slate-800">W/A/S/D</kbd> o arrastra el ratón para alinear el centro con la señal estelar.
+            {/* 2. ZOOM OPTICAL & DIGITAL SLIDER CONTROLLER */}
+            <div className="bg-black/90 border border-cyan-500/40 p-2 shadow-2xl backdrop-blur-md flex flex-col items-center">
+              <div className="flex items-center justify-between w-full text-[9px] text-slate-400 mb-1 font-bold space-x-3">
+                <span className="flex items-center space-x-1">
+                  <Maximize2 className="w-3 h-3 text-cyan-400" />
+                  <span>AUMENTO ÓPTICO</span>
+                </span>
+                <span className="text-cyan-300 font-mono font-bold">{zoom.toFixed(1)}x</span>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <button
+                  onClick={() => setZoom(z => Math.max(1, +(z - 0.5).toFixed(1)))}
+                  className="h-8 w-8 bg-slate-900 hover:bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-cyan-300 active:bg-cyan-600"
+                  title="Reducir Zoom (-)"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
+                <input 
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="0.1"
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="w-24 sm:w-36 accent-cyan-400 cursor-pointer h-2 bg-slate-800"
+                  title="Deslizar o usar rueda del ratón para ampliar campo"
+                />
+                <button
+                  onClick={() => setZoom(z => Math.min(10, +(z + 0.5).toFixed(1)))}
+                  className="h-8 w-8 bg-slate-900 hover:bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-cyan-300 active:bg-cyan-600"
+                  title="Aumentar Zoom (+)"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            {/* PRIMARY ACTION: CAPTURE EXPOSURE */}
+            {/* 3. INSTRUCTION TIP */}
+            <div className="hidden xl:block bg-black/80 border border-slate-700 px-3 py-1.5 text-[11px] text-slate-300 max-w-xs">
+              💡 <span className="font-bold text-cyan-300">Consejo:</span> Usa <kbd className="border border-slate-600 px-1 bg-slate-800">W/A/S/D</kbd> o ratón para alinear, y la <span className="text-cyan-300 font-bold">rueda</span> para zoom.
+            </div>
+
+            {/* 4. PRIMARY ACTION: CAPTURE EXPOSURE */}
             <button
               onClick={handleCaptureExposure}
               disabled={!isLockAcquired || isCapturing}
@@ -653,7 +952,9 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
                 isCapturing
                   ? 'border-amber-400 bg-amber-950/80 text-amber-300 animate-pulse'
                   : isLockAcquired
-                  ? 'border-emerald-400 bg-emerald-600 hover:bg-emerald-500 text-black shadow-[0_0_25px_rgba(16,185,129,0.7)] animate-bounce'
+                  ? (activeTelescope === 'jwst'
+                      ? 'border-amber-400 bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_25px_rgba(251,191,36,0.8)] animate-bounce'
+                      : 'border-emerald-400 bg-emerald-600 hover:bg-emerald-500 text-black shadow-[0_0_25px_rgba(16,185,129,0.7)] animate-bounce')
                   : 'border-slate-800 bg-slate-950 text-slate-500 cursor-not-allowed opacity-60'
               }`}
             >
@@ -662,7 +963,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
                 {isCapturing 
                   ? `EXPOSICIÓN EN CURSO (${captureProgress}%)...` 
                   : isLockAcquired 
-                  ? 'TOMAR FOTOGRAFÍA (WFC3 / ACS)' 
+                  ? (activeTelescope === 'jwst' ? 'TOMAR FOTOGRAFÍA (NIRCAM / MIRI)' : 'TOMAR FOTOGRAFÍA (WFC3 / ACS)')
                   : 'ALINEA EL TELESCOPIO PARA CAPTURAR'}
               </span>
             </button>
@@ -676,7 +977,9 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
                 <div className="h-10 w-10 mx-auto rounded-none border-2 border-cyan-400 border-t-transparent animate-spin"></div>
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm text-white">RECOLECTANDO FOTONES DE ESPACIO PROFUNDO</h3>
-                  <p className="text-[11px] text-slate-400">Sensor CCD refrigerado a -81°C // Filtro {activeTarget.filter}</p>
+                  <p className="text-[11px] text-slate-400">
+                    {activeTelescope === 'jwst' ? 'Detectores criogénicos a -233°C // NIRCam/MIRI' : 'Sensor CCD refrigerado a -81°C // WFC3/ACS'}
+                  </p>
                 </div>
                 {/* Progress bar */}
                 <div className="w-full bg-slate-900 border border-slate-700 h-3 overflow-hidden">
@@ -686,7 +989,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
                   ></div>
                 </div>
                 <div className="text-[10px] text-cyan-300 font-mono">
-                  PROCESANDO IMAGEN MATRIZ FIT // {captureProgress}% COMPLETADO
+                  PROCESANDO MATRIZ ESPECTRAL // {captureProgress}% COMPLETADO
                 </div>
               </div>
             </div>
@@ -703,7 +1006,9 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
           {/* Target Selection Header */}
           <div className="p-3 sm:p-4 border-b border-cyan-500/30">
             <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">PLAN DE OBSERVACIÓN</span>
-            <h2 className="text-sm sm:text-base font-bold text-white">OBJETIVOS CIENTÍFICOS DE HUBBLE</h2>
+            <h2 className="text-sm sm:text-base font-bold text-white">
+              {activeTelescope === 'jwst' ? 'OBJETIVOS CIENTÍFICOS DE WEBB (INFRARROJO)' : 'OBJETIVOS CIENTÍFICOS DE HUBBLE'}
+            </h2>
             <p className="text-[11px] text-slate-400 mt-0.5">
               Selecciona un astro para calibrar las coordenadas y apuntar el observatorio:
             </p>
@@ -711,7 +1016,7 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
 
           {/* Targets List */}
           <div className="flex-1 p-3 space-y-2 overflow-y-auto">
-            {OBSERVATION_TARGETS.map((target) => {
+            {targetsList.map((target) => {
               const isSelected = selectedTargetId === target.id;
               const isDiscovered = discoveredIds.includes(target.id);
 
@@ -731,9 +1036,10 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
                   {/* Thumbnail / Status */}
                   <div className="relative w-12 h-12 flex-shrink-0 border border-slate-700 overflow-hidden bg-black">
                     <img 
-                      src={getAssetPath(target.image)} 
+                      src={target.image.startsWith('http') ? target.image : getAssetPath(target.image)} 
                       alt={target.name}
                       className={`w-full h-full object-cover ${isDiscovered ? '' : 'filter grayscale blur-[1px]'}`}
+                      onError={(e) => { e.currentTarget.src = getAssetPath('/textures/stars.jpg'); }}
                     />
                     {isDiscovered && (
                       <div className="absolute top-0 right-0 bg-emerald-500 text-black p-0.5" title="Registrado en Bitácora">
@@ -766,15 +1072,21 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
           <div className="p-3 border-t border-slate-800 bg-slate-950 text-[11px] space-y-1">
             <div className="flex justify-between text-slate-300">
               <span>Espejo Primario:</span>
-              <span className="text-white font-bold">2.4 m Ritchey-Chrétien</span>
+              <span className="text-white font-bold">
+                {activeTelescope === 'jwst' ? '6.5 m (18 hexágonos berilio/oro)' : '2.4 m Ritchey-Chrétien'}
+              </span>
             </div>
             <div className="flex justify-between text-slate-300">
               <span>Sensibilidad:</span>
-              <span className="text-white font-bold">115 a 2,500 nanómetros</span>
+              <span className="text-white font-bold">
+                {activeTelescope === 'jwst' ? '0.6 a 28 micrómetros (Infrarrojo)' : '115 a 2,500 nanómetros'}
+              </span>
             </div>
             <div className="flex justify-between text-slate-300">
               <span>Resolución angular:</span>
-              <span className="text-emerald-400 font-bold">0.05 arcosegundos</span>
+              <span className="text-emerald-400 font-bold">
+                {activeTelescope === 'jwst' ? '0.01 arcosegundos (Sub-pixel L2)' : '0.05 arcosegundos'}
+              </span>
             </div>
           </div>
 
@@ -804,12 +1116,15 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             {/* Full-res NASA Photograph */}
             <div className="border border-cyan-500/40 overflow-hidden bg-black relative group">
               <img 
-                src={getAssetPath(revealedTarget.image)} 
+                src={revealedTarget.image.startsWith('http') ? revealedTarget.image : getAssetPath(revealedTarget.image)} 
                 alt={revealedTarget.name}
                 className="w-full h-64 sm:h-80 object-cover"
+                onError={(e) => { e.currentTarget.src = getAssetPath('/textures/stars.jpg'); }}
               />
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/70 to-transparent p-3 text-xs">
-                <span className="text-[10px] text-amber-400 font-bold block">FOTOGRAFÍA OFICIAL DE LA NASA / ESA // HST</span>
+                <span className="text-[10px] text-amber-400 font-bold block">
+                  FOTOGRAFÍA OFICIAL DE LA NASA / ESA // {activeTelescope === 'jwst' ? 'JWST (INFRARROJO)' : 'HST (ÓPTICO)'}
+                </span>
                 <span className="text-white font-bold text-sm sm:text-base">{revealedTarget.name}</span>
               </div>
             </div>
@@ -818,8 +1133,13 @@ export default function HubbleObservatory({ onClose, onUnlockDiscovery }) {
             <div className="space-y-2 text-xs sm:text-sm">
               <p className="text-slate-200 leading-relaxed font-sans">{revealedTarget.summary}</p>
               <div className="border-l-2 border-cyan-400 pl-3 py-1 bg-cyan-950/20 text-slate-300 font-sans text-xs leading-relaxed">
-                <span className="font-bold text-cyan-300">Importancia científica:</span> {revealedTarget.discoveryText}
+                <span className="font-bold text-cyan-300">Hallazgo clave:</span> {revealedTarget.discoveryText}
               </div>
+              {revealedTarget.importance && (
+                <div className="border-l-2 border-amber-400 pl-3 py-1 bg-amber-950/20 text-slate-300 font-sans text-xs leading-relaxed">
+                  <span className="font-bold text-amber-300">Importancia científica:</span> {revealedTarget.importance}
+                </div>
+              )}
             </div>
 
             {/* Technical Chips */}

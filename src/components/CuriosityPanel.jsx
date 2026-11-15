@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ExternalLink, Eye, Image, Map, RotateCw, X } from 'lucide-react';
 import { CURIOSITIES } from '../data/curiositiesData';
 import ArtifactModel3D from './ArtifactModel3D';
+import JamesWebbModel3D from './JamesWebbModel3D';
 import { getAssetPath } from '../utils/assets';
 import SolarSystemModel3D from './SolarSystemModel3D';
 import { SOLAR_SYSTEM_OVERVIEW } from '../data/solarSystemOverview';
@@ -34,7 +35,11 @@ export default function CuriosityPanel({ artifact, body, probe, telescope, onClo
                 {autoRotate ? 'Pausar giro' : 'Activar giro'}
               </button>
             </div>
-            <ArtifactModel3D src={artifact.modelUrl} alt={`Modelo 3D de ${artifact.name}`} autoRotate={autoRotate} />
+            {artifact.isProceduralWebb || artifact.id === 'jwst' ? (
+              <JamesWebbModel3D autoRotate={autoRotate} />
+            ) : (
+              <ArtifactModel3D src={artifact.modelUrl} alt={`Modelo 3D de ${artifact.name}`} autoRotate={autoRotate} />
+            )}
           </div>
 
           <div className="mb-4 border border-slate-800 bg-slate-950 p-3">
@@ -71,9 +76,15 @@ export default function CuriosityPanel({ artifact, body, probe, telescope, onClo
             </button>
           )}
 
-          {onOpenHubble && (artifact?.id === 'hubble' || probe?.id === 'hubble') && (
-            <button onClick={onOpenHubble} className="mb-4 flex w-full items-center justify-center gap-2 border border-cyan-400/60 bg-cyan-950/80 px-3 py-2.5 font-bold text-cyan-200 hover:bg-cyan-900 shadow-[0_0_15px_rgba(0,240,255,0.4)] animate-pulse">
-              <Eye className="w-4 h-4 text-cyan-300" /> 🔭 Operar Telescopio Hubble (Modo Observatorio)
+          {onOpenHubble && (['hubble', 'jwst'].includes(artifact?.id) || ['hubble', 'jwst'].includes(probe?.id)) && (
+            <button 
+              onClick={() => onOpenHubble(artifact?.id === 'jwst' || probe?.id === 'jwst' ? 'jwst' : 'hubble')} 
+              className="mb-4 flex w-full items-center justify-center gap-2 border border-cyan-400/60 bg-cyan-950/80 px-3 py-2.5 font-bold text-cyan-200 hover:bg-cyan-900 shadow-[0_0_15px_rgba(0,240,255,0.4)] animate-pulse"
+            >
+              <Eye className="w-4 h-4 text-cyan-300" />
+              {artifact?.id === 'jwst' || probe?.id === 'jwst' 
+                ? '🛰️ Operar Telescopio James Webb (Infrarrojo L2)' 
+                : '🔭 Operar Telescopio Hubble (Modo Observatorio)'}
             </button>
           )}
 

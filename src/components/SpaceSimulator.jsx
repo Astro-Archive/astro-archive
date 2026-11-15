@@ -7,6 +7,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import { ARTIFACTS } from '../data/artifactsData';
 import { getAssetPath } from '../utils/assets';
+import { createJamesWebbModel } from '../utils/jamesWebbModel';
 
 function createRockyRingGeometry(innerRadius, outerRadius, radialSegments = 28, angularSegments = 256) {
   const positions = [];
@@ -96,6 +97,7 @@ export default function SpaceSimulator({
   const settingsRef = useRef(settings);
   const orbitLinesRef = useRef([]);
   const probeTrailsRef = useRef([]);
+  const telemetryThrottleRef = useRef(0);
 
   useEffect(() => {
     onFlightTelemetryRef.current = onFlightTelemetry;
@@ -365,16 +367,7 @@ export default function SpaceSimulator({
     dracoLoader.setDecoderPath(getAssetPath('/draco/gltf/'));
     loader.setDRACOLoader(dracoLoader);
 
-    // Helper for probe beacon (glowing target ring so it's always easy to spot!)
-    const createBeacon = (color = '#00f0ff') => {
-      const geo = new THREE.RingGeometry(2.0, 2.3, 32);
-      const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-      const ring = new THREE.Mesh(geo, mat);
-      ring.rotation.x = Math.PI / 2;
-      return ring;
-    };
-
-    // VOYAGER 1 (Positioned in deep space with dedicated beacon & light)
+    // VOYAGER 1 (Positioned in deep space with dedicated light)
     loader.load(getAssetPath('/models/voyager.glb'), (gltf) => {
       const v1 = gltf.scene;
       v1.userData.targetId = 'voyager1';
@@ -388,7 +381,6 @@ export default function SpaceSimulator({
       const vLight = new THREE.PointLight('#fff', 2.5, 30);
       vLight.position.set(2, 3, 4);
       v1.add(vLight);
-      v1.add(createBeacon('#f59e0b'));
 
       scene.add(v1);
       probesMeshes.current['voyager1'] = { mesh: v1, data: SPECIAL_PROBES[0] };
@@ -421,7 +413,6 @@ export default function SpaceSimulator({
       const vLight = new THREE.PointLight('#fff', 2.5, 30);
       vLight.position.set(2, 3, 4);
       v2.add(vLight);
-      v2.add(createBeacon('#38bdf8'));
 
       scene.add(v2);
       probesMeshes.current['voyager2'] = { mesh: v2, data: SPECIAL_PROBES[1] };
@@ -445,17 +436,25 @@ export default function SpaceSimulator({
       const iss = gltf.scene;
       iss.userData.targetId = 'iss';
       const box = new THREE.Box3().setFromObject(iss);
-      const scale = 1.2 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3()).length() || 1;
+      const scale = 1.2 / size;
       iss.scale.set(scale, scale, scale);
+      // Perfectly center inside wrapper using scaled offset so it never shifts towards Earth!
+      iss.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
 
-      const issLight = new THREE.PointLight('#fff', 2.0, 15);
-      iss.add(issLight);
-      iss.add(createBeacon('#60a5fa'));
+      const issWrapper = new THREE.Group();
+      issWrapper.userData.targetId = 'iss';
+      issWrapper.add(iss);
 
-      // Start at Earth's position
-      iss.position.set(initialEarthPos.x + 4.2, 0.8, initialEarthPos.z);
-      scene.add(iss);
-      probesMeshes.current['iss'] = { mesh: iss, data: SPECIAL_PROBES[2] };
+      const issLight = new THREE.PointLight('#fff', 2.5, 20);
+      issLight.position.set(1.5, 2, 2);
+      issWrapper.add(issLight);
+
+      // Start at safe altitude 4.4 units from Earth center (Earth radius is 2.7)
+      issWrapper.position.set(initialEarthPos.x + 4.4, 0, initialEarthPos.z);
+      scene.add(issWrapper);
+      probesMeshes.current['iss'] = { mesh: issWrapper, data: SPECIAL_PROBES[2] };
       orbitalAngles.current['iss'] = 0;
     });
 
@@ -490,14 +489,6 @@ export default function SpaceSimulator({
       model.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
     };
 
-    const createRelicBeacon = (color = '#10b981', radius = 0.22) => {
-      const geo = new THREE.RingGeometry(radius * 0.75, radius, 32);
-      const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
-      const ring = new THREE.Mesh(geo, mat);
-      ring.rotation.x = Math.PI / 2;
-      return ring;
-    };
-
     // 1. Perseverance Rover (Jezero Crater - Mars)
     loader.load(getAssetPath('/models/perseverance-rover.glb'), (gltf) => {
       const model = gltf.scene;
@@ -506,7 +497,6 @@ export default function SpaceSimulator({
       const scale = 0.28 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
       placeOnMars(model, 18.38, 77.58, 0.03);
-      model.add(createRelicBeacon('#10b981', 0.22));
       if (marsObj && marsObj.mesh) {
         marsObj.mesh.add(model);
         probesMeshes.current['perseverance'] = {
@@ -526,7 +516,6 @@ export default function SpaceSimulator({
       model.scale.set(scale, scale, scale);
       // Separated cleanly by ~25 degrees so they never overlap
       placeOnMars(model, 34.2, 52.4, 0.10);
-      model.add(createRelicBeacon('#f43f5e', 0.20));
       if (marsObj && marsObj.mesh) {
         marsObj.mesh.add(model);
         probesMeshes.current['ingenuity'] = {
@@ -545,7 +534,6 @@ export default function SpaceSimulator({
       const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
       placeOnMars(model, -2.0, -18.5, 0.03);
-      model.add(createRelicBeacon('#f59e0b', 0.22));
       if (marsObj && marsObj.mesh) {
         marsObj.mesh.add(model);
         probesMeshes.current['opportunity'] = {
@@ -564,7 +552,6 @@ export default function SpaceSimulator({
       const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
       placeOnMars(model, 22.5, -62.0, 0.03);
-      model.add(createRelicBeacon('#a855f7', 0.22));
       if (marsObj && marsObj.mesh) {
         marsObj.mesh.add(model);
         probesMeshes.current['viking'] = {
@@ -575,33 +562,42 @@ export default function SpaceSimulator({
       }
     });
 
-    // 10C. HUBBLE SPACE TELESCOPE (HST in Low Earth Orbit - 28.5° inclination)
+    // 10C. HUBBLE SPACE TELESCOPE (Official 3D GLB in Low Earth Orbit - 28.5° inclination)
     loader.load(
       getAssetPath('/models/hubble.glb'),
       (gltf) => {
         const hst = gltf.scene;
         hst.userData.targetId = 'hubble';
 
-        // Properly center mesh pivot
+        // Properly center mesh pivot using scaled offset
         const box = new THREE.Box3().setFromObject(hst);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3()).length() || 1;
-        hst.position.sub(center);
+        const scale = 0.85 / size;
+        hst.scale.set(scale, scale, scale);
+        hst.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+        // Adjust metallic PBR materials so they don't reflect pitch-black void
+        hst.traverse((child) => {
+          if (child.isMesh && child.material) {
+            child.material.metalness = Math.min(child.material.metalness ?? 0, 0.65);
+            child.material.roughness = Math.max(child.material.roughness ?? 0.5, 0.35);
+          }
+        });
 
         const wrapper = new THREE.Group();
         wrapper.userData.targetId = 'hubble';
         wrapper.add(hst);
 
-        // Scale to ~2.6 units (distinct, impressive satellite size in LEO)
-        const scale = 2.6 / size;
-        wrapper.scale.set(scale, scale, scale);
+        // Dedicated solar illumination for Hubble (placed outside the telescope tube!)
+        const hstSunLight = new THREE.DirectionalLight('#ffffff', 3.0);
+        hstSunLight.position.set(3, 4, 3);
+        wrapper.add(hstSunLight);
+        const hstGlow = new THREE.PointLight('#38bdf8', 2.0, 15);
+        hstGlow.position.set(-3, -2, -3);
+        wrapper.add(hstGlow);
 
-        // Dedicated solar illumination for Hubble
-        const hstLight = new THREE.PointLight('#38bdf8', 3.0, 25);
-        wrapper.add(hstLight);
-        wrapper.add(createBeacon('#38bdf8', 2.8));
-
-        wrapper.position.set(initialEarthPos.x + 5.2, 1.4, initialEarthPos.z);
+        wrapper.position.set(initialEarthPos.x + 5.4, 0, initialEarthPos.z);
         scene.add(wrapper);
         probesMeshes.current['hubble'] = { 
           mesh: wrapper, 
@@ -613,10 +609,96 @@ export default function SpaceSimulator({
           } 
         };
         orbitalAngles.current['hubble'] = 1.6;
+
+        // Auto-frame if already selected
+        if (selectedTargetRef.current?.toLowerCase() === 'hubble') {
+          const wp = new THREE.Vector3();
+          wrapper.getWorldPosition(wp);
+          targetCamPos.current.set(wp.x + 2.4 * 0.6, wp.y + 2.4 * 0.4, wp.z + 2.4);
+          targetLookAt.current.copy(wp);
+          lastTargetPos.current.copy(wp);
+          isTransitioning.current = true;
+        }
       },
       undefined,
       (err) => {
         console.error('Error loading Hubble HST:', err);
+      }
+    );
+
+    // 10D. JAMES WEBB SPACE TELESCOPE (Official 3D GLB - Halo Orbit at Sun-Earth L2)
+    loader.load(
+      getAssetPath('/models/jwst.glb'),
+      (gltf) => {
+        const webb = gltf.scene;
+        webb.userData.targetId = 'jwst';
+
+        // Properly center mesh pivot using scaled offset
+        const box = new THREE.Box3().setFromObject(webb);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3()).length() || 1;
+        const scale = 1.15 / size;
+        webb.scale.set(scale, scale, scale);
+        webb.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+        webb.traverse((child) => {
+          if (child.isMesh && child.material) {
+            child.material.metalness = Math.min(child.material.metalness ?? 0, 0.70);
+            child.material.roughness = Math.max(child.material.roughness ?? 0.5, 0.30);
+          }
+        });
+
+        const wrapper = new THREE.Group();
+        wrapper.userData.targetId = 'jwst';
+        wrapper.add(webb);
+
+        // Warm golden illumination highlighting the 18 beryllium-gold mirror segments
+        const webbRimLight = new THREE.PointLight('#ffe7a3', 3.5, 25);
+        webbRimLight.position.set(2, 3, 3);
+        wrapper.add(webbRimLight);
+        const webbSunLight = new THREE.DirectionalLight('#ffffff', 2.0);
+        webbSunLight.position.set(-3, -2, -3);
+        wrapper.add(webbSunLight);
+
+        scene.add(wrapper);
+        probesMeshes.current['jwst'] = {
+          mesh: wrapper,
+          data: {
+            id: 'jwst',
+            name: 'Telescopio Espacial James Webb (JWST)',
+            type: 'Gran Observatorio Infrarrojo (Punto L2)',
+            speedKmH: 'Órbita de Halo en L2'
+          }
+        };
+        orbitalAngles.current['jwst'] = 0;
+
+        // Auto-frame if already selected
+        if (selectedTargetRef.current?.toLowerCase() === 'jwst') {
+          const wp = new THREE.Vector3();
+          wrapper.getWorldPosition(wp);
+          targetCamPos.current.set(wp.x + 2.6 * 0.6, wp.y + 2.6 * 0.4, wp.z + 2.6);
+          targetLookAt.current.copy(wp);
+          lastTargetPos.current.copy(wp);
+          isTransitioning.current = true;
+        }
+      },
+      undefined,
+      (err) => {
+        console.warn('Fallback to procedural Webb model:', err);
+        const webb = createJamesWebbModel();
+        webb.userData.targetId = 'jwst';
+        webb.scale.setScalar(0.7);
+        scene.add(webb);
+        probesMeshes.current['jwst'] = {
+          mesh: webb,
+          data: {
+            id: 'jwst',
+            name: 'Telescopio Espacial James Webb (JWST)',
+            type: 'Gran Observatorio Infrarrojo (Punto L2)',
+            speedKmH: 'Órbita de Halo en L2'
+          }
+        };
+        orbitalAngles.current['jwst'] = 0;
       }
     );
 
@@ -698,16 +780,55 @@ export default function SpaceSimulator({
     kuiperBelt.instanceMatrix.needsUpdate = true;
     scene.add(kuiperBelt);
 
-    // 10F. COMET HALLEY (1P/Halley) WITH ETHEREAL TAIL & GLOWING COMA (No Hard Cones!)
+    // 10F. COMET HALLEY (1P/Halley - Authentic Giotto 1986 Nucleus 3D Model)
     const cometGroup = new THREE.Group();
     cometGroup.userData.targetId = 'halley';
 
-    // Nucleus (irregular craggy dirty-snowball rock)
-    const cometNucleus = new THREE.Mesh(
-      createRuggedRockGeometry(0.65),
-      new THREE.MeshStandardMaterial({ color: '#334155', roughness: 0.9, flatShading: true })
+    // Nucleus (Authentic Giotto 1986 3D Model: peanut/potato bi-lobed shape, 15x8x8km, dark crust & active jets)
+    loader.load(
+      getAssetPath('/models/halley-nucleus.glb'),
+      (gltf) => {
+        const nucleus = gltf.scene;
+        nucleus.userData.targetId = 'halley';
+
+        const box = new THREE.Box3().setFromObject(nucleus);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3()).length() || 1;
+        const scale = 1.6 / size;
+        nucleus.scale.set(scale, scale, scale);
+        nucleus.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+        // Giotto observed active jets spraying from sunward vents
+        const jetGeo = new THREE.ConeGeometry(0.12, 1.4, 16);
+        const jetMat = new THREE.MeshBasicMaterial({
+          color: '#a5f3fc',
+          transparent: true,
+          opacity: 0.55,
+          side: THREE.DoubleSide,
+        });
+        const jet1 = new THREE.Mesh(jetGeo, jetMat);
+        jet1.position.set(0.4, 0.35, 0.2);
+        jet1.rotation.z = Math.PI / 4;
+        nucleus.add(jet1);
+
+        const jet2 = new THREE.Mesh(jetGeo, jetMat);
+        jet2.position.set(-0.35, 0.4, -0.15);
+        jet2.rotation.z = -Math.PI / 3;
+        nucleus.add(jet2);
+
+        cometGroup.add(nucleus);
+      },
+      undefined,
+      (err) => {
+        console.warn('Fallback to procedural nucleus for Halley:', err);
+        const fallbackNucleus = new THREE.Mesh(
+          createRuggedRockGeometry(0.65),
+          new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.95, flatShading: true })
+        );
+        fallbackNucleus.userData.targetId = 'halley';
+        cometGroup.add(fallbackNucleus);
+      }
     );
-    cometGroup.add(cometNucleus);
 
     // Glowing Coma Texture (soft radial atmospheric glow)
     const createComaTexture = () => {
@@ -737,7 +858,6 @@ export default function SpaceSimulator({
 
     const cometLight = new THREE.PointLight('#67e8f9', 2.8, 35);
     cometGroup.add(cometLight);
-    cometGroup.add(createBeacon('#06b6d4', 2.5));
 
     // Ethereal Tapering Gradient Tail (Soft billboard ribbons with alpha gradient)
     const createTailTexture = () => {
@@ -897,31 +1017,86 @@ export default function SpaceSimulator({
         moonObj.mesh.rotation.y += 0.005 * motionScale;
       }
 
-      // C. ISS ORBITS EARTH
+      // C. ISS ORBITS EARTH (Calibrated circular LEO orbit, R = 4.4, inclination 51.6°)
       const issObj = probesMeshes.current['iss'];
       if (earthMeshCurrent && issObj && issObj.mesh) {
         orbitalAngles.current['iss'] += 0.045 * motionScale;
         const iTheta = orbitalAngles.current['iss'];
+        const rISS = 4.4;
+        const inclISS = (51.6 * Math.PI) / 180;
+        const cosI = Math.cos(iTheta);
+        const sinI = Math.sin(iTheta);
+
         issObj.mesh.position.set(
-          earthMeshCurrent.position.x + 4.2 * Math.cos(iTheta),
-          earthMeshCurrent.position.y + 2.2 * Math.sin(iTheta),
-          earthMeshCurrent.position.z + 4.2 * Math.sin(iTheta)
+          earthMeshCurrent.position.x + rISS * cosI,
+          earthMeshCurrent.position.y + rISS * sinI * Math.sin(inclISS),
+          earthMeshCurrent.position.z + rISS * sinI * Math.cos(inclISS)
         );
-        issObj.mesh.rotation.y += 0.02 * motionScale;
+
+        // Calibrate attitude: align forward along orbital velocity vector (prograde flight direction)
+        const tangentISS = new THREE.Vector3(
+          -sinI,
+          cosI * Math.sin(inclISS),
+          cosI * Math.cos(inclISS)
+        ).normalize();
+        const upISS = new THREE.Vector3(
+          cosI,
+          sinI * Math.sin(inclISS),
+          sinI * Math.cos(inclISS)
+        ).normalize();
+        const issMat = new THREE.Matrix4().lookAt(new THREE.Vector3(0, 0, 0), tangentISS, upISS);
+        issObj.mesh.quaternion.setFromRotationMatrix(issMat);
       }
 
-      // C2. HUBBLE SPACE TELESCOPE ORBITS EARTH (LEO, 28.5° inclination)
+      // C2. HUBBLE SPACE TELESCOPE ORBITS EARTH (Calibrated circular LEO orbit, R = 5.4, inclination 28.5°)
       const hstObj = probesMeshes.current['hubble'];
       if (earthMeshCurrent && hstObj && hstObj.mesh) {
         orbitalAngles.current['hubble'] += 0.038 * motionScale;
         const hTheta = orbitalAngles.current['hubble'];
-        const incl = (28.5 * Math.PI) / 180;
+        const rHST = 5.4;
+        const inclHST = (28.5 * Math.PI) / 180;
+        const cosH = Math.cos(hTheta);
+        const sinH = Math.sin(hTheta);
+
         hstObj.mesh.position.set(
-          earthMeshCurrent.position.x + 5.2 * Math.cos(hTheta),
-          earthMeshCurrent.position.y + 5.2 * Math.sin(hTheta) * Math.sin(incl),
-          earthMeshCurrent.position.z + 5.2 * Math.sin(hTheta) * Math.cos(incl)
+          earthMeshCurrent.position.x + rHST * cosH,
+          earthMeshCurrent.position.y + rHST * sinH * Math.sin(inclHST),
+          earthMeshCurrent.position.z + rHST * sinH * Math.cos(inclHST)
         );
-        hstObj.mesh.rotation.y += 0.015 * motionScale;
+
+        // Calibrate attitude: observatory points smoothly along orbital tangent with zenith up
+        const tangentHST = new THREE.Vector3(
+          -sinH,
+          cosH * Math.sin(inclHST),
+          cosH * Math.cos(inclHST)
+        ).normalize();
+        const upHST = new THREE.Vector3(
+          cosH,
+          sinH * Math.sin(inclHST),
+          sinH * Math.cos(inclHST)
+        ).normalize();
+        const hstMat = new THREE.Matrix4().lookAt(new THREE.Vector3(0, 0, 0), tangentHST, upHST);
+        hstObj.mesh.quaternion.setFromRotationMatrix(hstMat);
+      }
+
+      // C2b. JAMES WEBB SPACE TELESCOPE (Halo Orbit around Sun-Earth L2 Lagrangian Point)
+      const jwstObj = probesMeshes.current['jwst'];
+      if (earthMeshCurrent && jwstObj && jwstObj.mesh) {
+        orbitalAngles.current['jwst'] += 0.008 * motionScale;
+        const eTheta = orbitalAngles.current['earth'];
+        const eDist = 82;
+        const l2Dist = eDist + 9.5; // Outward from Sun beyond Earth
+        const haloT = orbitalAngles.current['jwst'];
+        const haloRadius = 2.0;
+        
+        // Halo loop perpendicular to the ecliptic plane
+        const jwstX = Math.cos(eTheta) * l2Dist + Math.sin(eTheta) * Math.sin(haloT) * haloRadius;
+        const jwstY = Math.cos(haloT) * 1.5;
+        const jwstZ = Math.sin(eTheta) * l2Dist - Math.cos(eTheta) * Math.sin(haloT) * haloRadius;
+        
+        jwstObj.mesh.position.set(jwstX, jwstY, jwstZ);
+        // Calibrate attitude: sunshield always faces directly toward the Sun at (0, 0, 0)
+        jwstObj.mesh.lookAt(0, 0, 0);
       }
 
       // C3. ASTEROID BELT & KUIPER BELT ROTATION
@@ -980,15 +1155,23 @@ export default function SpaceSimulator({
         }
 
         if (currentTargetPos) {
-          if (isTransitioning.current) {
-            camera.position.lerp(targetCamPos.current, 0.07);
-            controls.target.lerp(targetLookAt.current, 0.07);
+          const isSurface = prObj && prObj.parentMesh != null;
+          const isSatellite = ['hubble', 'jwst', 'iss'].includes(activeTarget.toLowerCase());
+          const dist = isSurface ? 1.4 : isSatellite ? 2.4 : 4.5;
 
-            if (camera.position.distanceTo(targetCamPos.current) < 1.2) {
+          if (isTransitioning.current) {
+            // Dynamically follow moving body during transition so camera never loses or lags behind target!
+            targetCamPos.current.set(currentTargetPos.x + dist * 0.6, currentTargetPos.y + dist * 0.4, currentTargetPos.z + dist);
+            targetLookAt.current.copy(currentTargetPos);
+
+            camera.position.lerp(targetCamPos.current, 0.08);
+            controls.target.lerp(targetLookAt.current, 0.08);
+
+            if (camera.position.distanceTo(targetCamPos.current) < 0.6) {
               isTransitioning.current = false;
             }
           } else {
-            // Move camera with planet orbit
+            // Move camera with planet or satellite orbit
             const delta = new THREE.Vector3().subVectors(currentTargetPos, lastTargetPos.current);
             camera.position.add(delta);
             controls.target.copy(currentTargetPos);
@@ -1070,6 +1253,41 @@ export default function SpaceSimulator({
         }
       } else {
         controls.enabled = true;
+
+        // Telemetry in orbit / overview mode (throttled to 80ms)
+        if (onFlightTelemetryRef.current) {
+          const now = performance.now();
+          if (now - telemetryThrottleRef.current > 80) {
+            telemetryThrottleRef.current = now;
+            const camDir = new THREE.Vector3();
+            camera.getWorldDirection(camDir);
+            const headingDeg = Math.round((((Math.atan2(camDir.x, camDir.z) * 180 / Math.PI) % 360) + 360) % 360);
+            const pitchDeg = Math.round(Math.asin(Math.max(-1, Math.min(1, camDir.y))) * 180 / Math.PI);
+
+            let nearestName = 'SOL';
+            let nearestDist = camera.position.length();
+            Object.entries(planetMeshes.current).forEach(([k, item]) => {
+              if (item?.mesh && k !== 'sun') {
+                const d = camera.position.distanceTo(item.mesh.position);
+                if (d < nearestDist) {
+                  nearestDist = d;
+                  nearestName = item.data?.shortName || item.data?.name || k.toUpperCase();
+                }
+              }
+            });
+
+            onFlightTelemetryRef.current({
+              speed: '0.0',
+              heading: headingDeg,
+              pitch: pitchDeg,
+              x: (camera.position.x * 0.35).toFixed(1),
+              y: (camera.position.y * 0.35).toFixed(1),
+              z: (camera.position.z * 0.35).toFixed(1),
+              nearestName,
+              nearestDist: (nearestDist * 0.35).toFixed(1)
+            });
+          }
+        }
       }
 
       controls.update();
@@ -1123,16 +1341,23 @@ export default function SpaceSimulator({
     }
 
     // Special Probes & Surface Relics (Check first so camera frames directly onto the rover/lander!)
-    const probeObj = probesMeshes.current[selectedTarget.toLowerCase()];
+    const probeId = selectedTarget.toLowerCase();
+    const probeObj = probesMeshes.current[probeId];
     if (probeObj && probeObj.mesh) {
       const wp = new THREE.Vector3();
       probeObj.mesh.getWorldPosition(wp);
       const isSurface = probeObj.parentMesh != null;
-      const dist = isSurface ? 1.4 : 4.5;
+      const isSatellite = ['hubble', 'jwst', 'iss'].includes(probeId);
+      const dist = isSurface ? 1.4 : isSatellite ? 2.4 : 4.5;
       targetCamPos.current.set(wp.x + dist * 0.6, wp.y + dist * 0.4, wp.z + dist);
       targetLookAt.current.copy(wp);
       lastTargetPos.current.copy(wp);
       isTransitioning.current = true;
+      return;
+    }
+
+    // If it's a known probe still loading, do not jump to Earth or parent planet!
+    if (['hubble', 'jwst', 'iss', 'halley', 'voyager1', 'voyager2', 'apollo', 'perseverance', 'ingenuity', 'opportunity', 'viking'].includes(probeId)) {
       return;
     }
 

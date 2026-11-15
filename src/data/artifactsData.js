@@ -239,5 +239,47 @@ export const ARTIFACTS = [
     ],
     theStory: 'Lanzado el 24 de abril de 1990 a bordo del transbordador espacial Discovery (STS-31), el Telescopio Espacial Hubble transformó la astronomía. Superó la turbulencia distorsionadora de la atmósfera terrestre y fue diseñado para ser reparado y mejorado en órbita por astronautas durante 5 épicas misiones de servicio del Transbordador.',
     legacy: 'Determinó la tasa de expansión acelerada del universo y su edad (13,800 millones de años), descubrió que casi toda galaxia alberga un agujero negro supermasivo en su centro, y capturó los primeros datos atmosféricos de exoplanetas lejanos.'
+  },
+  {
+    id: 'jwst',
+    name: 'James Webb Space Telescope (JWST)',
+    body: 'Lagrange Point L2',
+    location: 'Órbita de Halo L2 Sol-Tierra (1.5M km)',
+    coordinates: 'Punto L2, 1,500,000 km antisolar',
+    missionTime: '2021 – Presente (En Operación)',
+    status: 'Operational / Flagship Observatory',
+    statusType: 'green',
+    isProceduralWebb: true,
+    modelUrl: '/models/jwst.glb',
+    officialNasaUrl: 'https://science.nasa.gov/mission/webb/',
+    audioSample: '/audio/space_ambient.mp3',
+    audioTitle: 'Deep Space Infrared Telemetry Carrier',
+    diagnostics: {
+      altitude: '1,500,000 km (Punto de Lagrange L2)',
+      operatingTemp: '-233 °C (Instrumentos fríos) / +85 °C (Lado solar)',
+      pointingAccuracy: '0.001 arcosegundos (FGS Sub-pixel Lock)',
+      primaryMirrorDiameter: '6.5 metros (18 segmentos hexagonales de berilio-oro)',
+      sunshieldDimensions: '21.2 m × 14.2 m (5 capas de Kapton)',
+      spectralCoverage: '0.6 a 28 micrómetros (Infrarrojo Cercano y Medio)'
+    },
+    engineeringBreakdown: [
+      {
+        title: 'Espejo Primario Dorado de 6.5 m',
+        specs: '18 segmentos hexagonales de berilio bañados en oro',
+        desc: 'Los 18 segmentos se despliegan y alinean mediante 132 microactuadores electromecánicos de precisión nanométrica para formar una superficie colectora óptica perfecta.'
+      },
+      {
+        title: 'Parasol Térmico de 5 Capas (Kapton)',
+        specs: '21 m × 14 m con recubrimientos de aluminio y silicio dopado',
+        desc: 'Atenúa más de 1 millón de veces el calor y la luz provenientes del Sol, la Tierra y la Luna, permitiendo detectar la tenue radiación infrarroja de galaxias primitivas.'
+      },
+      {
+        title: 'Instrumentos NIRCam, NIRSpec y MIRI',
+        specs: 'Detectores infrarrojos refrigerados criogénicamente',
+        desc: 'Permiten atravesar las densas nubes de polvo interestelar para observar el nacimiento de estrellas y desglosar la huella química de atmósferas de exoplanetas.'
+      }
+    ],
+    theStory: 'Lanzado el 25 de diciembre de 2021 desde Kourou en un cohete Ariane 5, el telescopio James Webb ejecutó la secuencia de despliegue autónomo más compleja y arriesgada de la historia espacial, con más de 300 puntos de falla única. Hoy opera a 1.5 millones de km de la Tierra en el punto L2 revelando los rincones más profundos del cosmos.',
+    legacy: 'Descubrió galaxias brillantes a solo 300 millones de años del Big Bang desafiando modelos cosmológicos previos, detectó vapor de agua y dióxido de carbono en exoplanetas, y fotografió guarderías estelares con una nitidez infrarroja sin precedentes.'
   }
 ];
