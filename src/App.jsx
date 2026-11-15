@@ -6,12 +6,12 @@ import { ARTIFACTS } from './data/artifactsData';
 
 export default function App() {
   const [selectedTarget, setSelectedTarget] = useState('OVERVIEW');
+  const [isFlightMode, setIsFlightMode] = useState(false);
   const [scannedIds, setScannedIds] = useState(['apollo11', 'ingenuity']);
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const audioRef = useRef(null);
 
-  // Audio sample selection based on current target
   const getActiveAudio = () => {
     if (selectedTarget === 'APOLLO') return '/audio/eagle_landed.mp3';
     return '/audio/space_ambient.mp3';
@@ -19,14 +19,13 @@ export default function App() {
 
   const handleSelectTarget = (target) => {
     setSelectedTarget(target);
+    setIsFlightMode(false); // Disengage flight mode when locking onto a new body
 
     // Track badges
     if (target === 'APOLLO' && !scannedIds.includes('apollo11')) {
       setScannedIds(prev => [...prev, 'apollo11']);
     } else if (target === 'INGENUITY' && !scannedIds.includes('ingenuity')) {
       setScannedIds(prev => [...prev, 'ingenuity']);
-    } else if (target === 'OPPORTUNITY' && !scannedIds.includes('opportunity')) {
-      setScannedIds(prev => [...prev, 'opportunity']);
     }
 
     // Stop audio on target change
@@ -35,6 +34,10 @@ export default function App() {
       audioRef.current = null;
       setIsPlayingAudio(false);
     }
+  };
+
+  const handleToggleFlightMode = () => {
+    setIsFlightMode(!isFlightMode);
   };
 
   const handleToggleAudio = () => {
@@ -54,16 +57,19 @@ export default function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
       
-      {/* 1. Fullscreen Three.js WebGL Universe Canvas (Smooth 60FPS Space Engine) */}
+      {/* 1. Fullscreen Three.js WebGL Universe Canvas (Smooth 60FPS Space Engine with Orbiting Planets & Spacecraft) */}
       <SpaceSimulator
         selectedTarget={selectedTarget}
         onSelectTarget={handleSelectTarget}
+        isFlightMode={isFlightMode}
       />
 
       {/* 2. SpaceX ISS Docking Simulator Style HUD Overlay */}
       <SpaceXHUD
         selectedTarget={selectedTarget}
         onSelectTarget={handleSelectTarget}
+        isFlightMode={isFlightMode}
+        onToggleFlightMode={handleToggleFlightMode}
         artifacts={ARTIFACTS}
         onOpenBadges={() => setIsBadgesOpen(true)}
         scannedCount={scannedIds.length}
