@@ -8,6 +8,54 @@ import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import { ARTIFACTS } from '../data/artifactsData';
 import { getAssetPath } from '../utils/assets';
 
+function createRockyRingGeometry(innerRadius, outerRadius, radialSegments = 28, angularSegments = 256) {
+  const positions = [];
+  const normals = [];
+  const uvs = [];
+  const indices = [];
+  const layers = 2;
+  const vertexIndex = (layer, radial, angular) => layer * (radialSegments + 1) * (angularSegments + 1) + radial * (angularSegments + 1) + angular;
+
+  for (let layer = 0; layer < layers; layer += 1) {
+    const z = layer === 0 ? 0.055 : -0.055;
+    for (let radial = 0; radial <= radialSegments; radial += 1) {
+      const radialT = radial / radialSegments;
+      const baseRadius = innerRadius + (outerRadius - innerRadius) * radialT;
+      for (let angular = 0; angular <= angularSegments; angular += 1) {
+        const theta = (angular / angularSegments) * Math.PI * 2;
+        const bandNoise = Math.sin(baseRadius * 8.7) * 0.035 + Math.sin(baseRadius * 19.3 + 1.7) * 0.018;
+        const edgeNoise = Math.sin(theta * 17 + baseRadius * 4) * 0.008;
+        const radius = baseRadius + bandNoise + edgeNoise;
+        const ripple = Math.sin(theta * 11 + baseRadius * 6.5) * 0.012 + Math.sin(theta * 37 + baseRadius * 15) * 0.006;
+        positions.push(radius * Math.cos(theta), radius * Math.sin(theta), z + (layer === 0 ? ripple : -ripple));
+        normals.push(0, 0, layer === 0 ? 1 : -1);
+        uvs.push(angular / angularSegments, radialT);
+      }
+    }
+  }
+
+  for (let layer = 0; layer < layers; layer += 1) {
+    for (let radial = 0; radial < radialSegments; radial += 1) {
+      for (let angular = 0; angular < angularSegments; angular += 1) {
+        const a = vertexIndex(layer, radial, angular);
+        const b = vertexIndex(layer, radial + 1, angular);
+        const c = vertexIndex(layer, radial + 1, angular + 1);
+        const d = vertexIndex(layer, radial, angular + 1);
+        if (layer === 0) indices.push(a, b, d, b, c, d);
+        else indices.push(a, d, b, b, d, c);
+      }
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
 export default function SpaceSimulator({
   selectedTarget,
   onSelectTarget,
@@ -217,18 +265,69 @@ export default function SpaceSimulator({
 
       // Saturn 3D Rings
       if (body.hasRings) {
-        const ringGeo = new THREE.RingGeometry(body.radius * 1.35, body.radius * 2.3, 64);
         const ringTex = textureLoader.load(getAssetPath(body.ringTexture));
+        ringTex.wrapS = THREE.RepeatWrapping;
+        ringTex.wrapT = THREE.ClampToEdgeWrapping;
+        ringTex.repeat.set(2.5, 1);
+        ringTex.colorSpace = THREE.SRGBColorSpace;
+
+        const ringGeo = createRockyRingGeometry(body.radius * 1.35, body.radius * 2.3, 32, 256);
         const ringMat = new THREE.MeshStandardMaterial({
           map: ringTex,
+          bumpMap: ringTex,
+          bumpScale: 0.16,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.9,
-          roughness: 0.6,
+          opacity: 0.94,
+          roughness: 0.82,
+          metalness: 0.08,
+          depthWrite: false,
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.rotation.x = Math.PI / 2.3;
         mesh.add(ringMesh);
+
+        // Bandas separadas para evitar el aspecto de una sola lámina continua.
+        const ringBands = [
+          [1.43, 1.58, '#d6b36a', 0.48],
+          [1.67, 1.78, '#6d5937', 0.38],
+          [1.86, 2.02, '#c8a86a', 0.42],
+          [2.12, 2.25, '#725e3c', 0.32],
+        ];
+        ringBands.forEach(([innerFactor, outerFactor, color, opacity], index) => {
+          const bandGeo = createRockyRingGeometry(body.radius * innerFactor, body.radius * outerFactor, 8, 192);
+          const bandMat = new THREE.MeshStandardMaterial({
+            color,
+            map: ringTex,
+            bumpMap: ringTex,
+            bumpScale: 0.11 + index * 0.02,
+            roughness: 0.9,
+            metalness: 0.04,
+            transparent: true,
+            opacity,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          });
+          const band = new THREE.Mesh(bandGeo, bandMat);
+          band.rotation.x = Math.PI / 2.3;
+          band.rotation.z = index % 2 ? 0.003 : -0.002;
+          mesh.add(band);
+        });
+
+        // Polvo y partículas finas para dar volumen visual al borde exterior.
+        const dustPositions = new Float32Array(900 * 3);
+        for (let i = 0; i < 900; i += 1) {
+          const theta = Math.random() * Math.PI * 2;
+          const radius = body.radius * (1.36 + Math.random() * 0.88);
+          dustPositions[i * 3] = radius * Math.cos(theta);
+          dustPositions[i * 3 + 1] = radius * Math.sin(theta);
+          dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 0.14;
+        }
+        const dustGeo = new THREE.BufferGeometry();
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+        const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: '#d8c28b', size: 0.035, transparent: true, opacity: 0.48, depthWrite: false }));
+        dust.rotation.x = Math.PI / 2.3;
+        mesh.add(dust);
       }
 
       // Mars Atmosphere Glow
