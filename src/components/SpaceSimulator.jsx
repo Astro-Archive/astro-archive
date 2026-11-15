@@ -346,18 +346,107 @@ export default function SpaceSimulator({
       probesMeshes.current['apollo'] = { mesh: model, parentMesh: moonMesh };
     });
 
-    // Ingenuity (on Mars)
+    // 10B. MARS RELICS: PERSEVERANCE, INGENUITY, OPPORTUNITY, VIKING 1
+    const marsObj = planetMeshes.current['mars'];
+    const marsRadius = 1.8;
+
+    // Helper: place object on Mars sphere by latitude / longitude
+    const placeOnMars = (model, latDeg, lonDeg, heightOffset = 0.03) => {
+      const lat = (latDeg * Math.PI) / 180;
+      const lon = (lonDeg * Math.PI) / 180;
+      const r = marsRadius + heightOffset;
+      const x = r * Math.cos(lat) * Math.sin(lon);
+      const y = r * Math.sin(lat);
+      const z = r * Math.cos(lat) * Math.cos(lon);
+      model.position.set(x, y, z);
+
+      // Orient radially outwards from Mars center
+      const normal = new THREE.Vector3(x, y, z).normalize();
+      model.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+    };
+
+    const createRelicBeacon = (color = '#10b981', radius = 0.22) => {
+      const geo = new THREE.RingGeometry(radius * 0.75, radius, 32);
+      const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
+      const ring = new THREE.Mesh(geo, mat);
+      ring.rotation.x = Math.PI / 2;
+      return ring;
+    };
+
+    // 1. Perseverance Rover (Jezero Crater - Mars)
+    loader.load('/models/perseverance-rover.glb', (gltf) => {
+      const model = gltf.scene;
+      model.userData.targetId = 'perseverance';
+      const box = new THREE.Box3().setFromObject(model);
+      const scale = 0.28 / (box.getSize(new THREE.Vector3()).length() || 1);
+      model.scale.set(scale, scale, scale);
+      placeOnMars(model, 18.38, 77.58, 0.03);
+      model.add(createRelicBeacon('#10b981', 0.22));
+      if (marsObj && marsObj.mesh) {
+        marsObj.mesh.add(model);
+        probesMeshes.current['perseverance'] = {
+          mesh: model,
+          parentMesh: marsObj.mesh,
+          basePos: model.position.clone()
+        };
+      }
+    });
+
+    // 2. Ingenuity Mars Helicopter (Wright Field - Dedicated Airspace on Mars)
     loader.load('/models/ingenuity-mars-helicopter.glb', (gltf) => {
       const model = gltf.scene;
       model.userData.targetId = 'ingenuity';
       const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.55 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const scale = 0.22 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
-      const marsObj = planetMeshes.current['mars'];
+      // Separated cleanly by ~25 degrees so they never overlap
+      placeOnMars(model, 34.2, 52.4, 0.10);
+      model.add(createRelicBeacon('#f43f5e', 0.20));
       if (marsObj && marsObj.mesh) {
         marsObj.mesh.add(model);
-        model.position.set(0, 1.82, 0);
-        probesMeshes.current['ingenuity'] = { mesh: model, parentMesh: marsObj.mesh };
+        probesMeshes.current['ingenuity'] = {
+          mesh: model,
+          parentMesh: marsObj.mesh,
+          basePos: model.position.clone()
+        };
+      }
+    });
+
+    // 3. Opportunity Rover (Meridiani Planum - Mars)
+    loader.load('/models/opportunity-rover.glb', (gltf) => {
+      const model = gltf.scene;
+      model.userData.targetId = 'opportunity';
+      const box = new THREE.Box3().setFromObject(model);
+      const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
+      model.scale.set(scale, scale, scale);
+      placeOnMars(model, -2.0, -18.5, 0.03);
+      model.add(createRelicBeacon('#f59e0b', 0.22));
+      if (marsObj && marsObj.mesh) {
+        marsObj.mesh.add(model);
+        probesMeshes.current['opportunity'] = {
+          mesh: model,
+          parentMesh: marsObj.mesh,
+          basePos: model.position.clone()
+        };
+      }
+    });
+
+    // 4. Viking 1 Lander (Chryse Planitia - Mars)
+    loader.load('/models/viking-lander.glb', (gltf) => {
+      const model = gltf.scene;
+      model.userData.targetId = 'viking';
+      const box = new THREE.Box3().setFromObject(model);
+      const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
+      model.scale.set(scale, scale, scale);
+      placeOnMars(model, 22.5, -62.0, 0.03);
+      model.add(createRelicBeacon('#a855f7', 0.22));
+      if (marsObj && marsObj.mesh) {
+        marsObj.mesh.add(model);
+        probesMeshes.current['viking'] = {
+          mesh: model,
+          parentMesh: marsObj.mesh,
+          basePos: model.position.clone()
+        };
       }
     });
 
@@ -484,22 +573,37 @@ export default function SpaceSimulator({
         issObj.mesh.rotation.y += 0.02 * motionScale;
       }
 
-      // D. CAMERA TRACKING & ORBITAL LOCK
+      // D. MARS RELICS ANIMATION (Ingenuity hovering, Perseverance mast scan)
+      const clockSec = Date.now() * 0.001;
+      const ingObj = probesMeshes.current['ingenuity'];
+      if (ingObj && ingObj.mesh && ingObj.basePos) {
+        const hoverOffset = Math.sin(clockSec * 3.0) * 0.03 + 0.04;
+        const norm = ingObj.basePos.clone().normalize();
+        ingObj.mesh.position.copy(ingObj.basePos).addScaledVector(norm, hoverOffset);
+        ingObj.mesh.rotateY(0.04);
+      }
+      const pervObj = probesMeshes.current['perseverance'];
+      if (pervObj && pervObj.mesh) {
+        pervObj.mesh.rotateY(Math.sin(clockSec * 1.5) * 0.006);
+      }
+
+      // E. CAMERA TRACKING & ORBITAL LOCK
       const activeTarget = selectedTargetRef.current;
       const activeFlightMode = isFlightModeRef.current;
       if (activeTarget && activeTarget !== 'OVERVIEW' && !activeFlightMode) {
         let currentTargetPos = null;
 
-        const artifact = ARTIFACTS.find((item) => item.id.toUpperCase() === activeTarget);
-        const planetTarget = artifact?.body?.toLowerCase();
-        const pObj = planetMeshes.current[activeTarget.toLowerCase()] || planetMeshes.current[planetTarget];
-        if (pObj && pObj.mesh) currentTargetPos = pObj.mesh.position;
-
+        // Prioritize specific probe/relic first so camera locks directly onto the hardware!
         const prObj = probesMeshes.current[activeTarget.toLowerCase()];
         if (prObj && prObj.mesh) {
           const wp = new THREE.Vector3();
           prObj.mesh.getWorldPosition(wp);
           currentTargetPos = wp;
+        } else {
+          const artifact = ARTIFACTS.find((item) => item.id.toUpperCase() === activeTarget);
+          const planetTarget = artifact?.body?.toLowerCase();
+          const pObj = planetMeshes.current[activeTarget.toLowerCase()] || planetMeshes.current[planetTarget];
+          if (pObj && pObj.mesh) currentTargetPos = pObj.mesh.position;
         }
 
         if (currentTargetPos) {
@@ -619,6 +723,20 @@ export default function SpaceSimulator({
       return;
     }
 
+    // Special Probes & Surface Relics (Check first so camera frames directly onto the rover/lander!)
+    const probeObj = probesMeshes.current[selectedTarget.toLowerCase()];
+    if (probeObj && probeObj.mesh) {
+      const wp = new THREE.Vector3();
+      probeObj.mesh.getWorldPosition(wp);
+      const isSurface = probeObj.parentMesh != null;
+      const dist = isSurface ? 1.4 : 4.5;
+      targetCamPos.current.set(wp.x + dist * 0.6, wp.y + dist * 0.4, wp.z + dist);
+      targetLookAt.current.copy(wp);
+      lastTargetPos.current.copy(wp);
+      isTransitioning.current = true;
+      return;
+    }
+
     // Celestial Bodies
     const artifact = ARTIFACTS.find((item) => item.id.toUpperCase() === selectedTarget);
     const targetObj = planetMeshes.current[selectedTarget.toLowerCase()] ||
@@ -633,17 +751,6 @@ export default function SpaceSimulator({
       lastTargetPos.current.copy(pos);
       isTransitioning.current = true;
       return;
-    }
-
-    // Special Probes (Voyager 1, 2, ISS, Apollo, Ingenuity)
-    const probeObj = probesMeshes.current[selectedTarget.toLowerCase()];
-    if (probeObj && probeObj.mesh) {
-      const wp = new THREE.Vector3();
-      probeObj.mesh.getWorldPosition(wp);
-      targetCamPos.current.set(wp.x + 3.0, wp.y + 1.8, wp.z + 5.0);
-      targetLookAt.current.copy(wp);
-      lastTargetPos.current.copy(wp);
-      isTransitioning.current = true;
     }
   }, [selectedTarget]);
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Compass, Radio, Volume2, VolumeX, Award, ExternalLink, Activity, 
   Sparkles, Layers, Maximize2, ShieldCheck, Terminal, Eye, Info,
-  Navigation, Plane, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Zap, Target, Settings, ChevronUp, ChevronDown
+  Navigation, Plane, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Zap, Target, Settings, ChevronUp, ChevronDown, Map
 } from 'lucide-react';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import CuriosityPanel from './CuriosityPanel';
@@ -413,6 +413,17 @@ export default function SpaceXHUD({
             {isPlayingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             <span className="font-bold hidden sm:inline">{isPlayingAudio ? 'Silenciar' : 'Audio NASA'}</span>
           </button>
+
+          {currentArtifact && ['Moon', 'Mars'].includes(currentArtifact.body) && (
+            <button
+              onClick={onOpenSurface}
+              className="p-2 rounded-none text-xs sm:text-sm border transition-all flex items-center space-x-1.5 border-emerald-400 bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-pulse"
+              title="Explorar Superficie 3D con Rover o Dron"
+            >
+              <Map className="w-4 h-4 text-emerald-400" />
+              <span className="font-bold hidden sm:inline">Explorar Superficie</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsTelemetryOpen(!isTelemetryOpen)}

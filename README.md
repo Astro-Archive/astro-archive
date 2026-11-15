@@ -110,8 +110,10 @@ npm run preview
 
 Developed with passion for **NASA Space Apps Challenge 2026**.
 
-- **Leo Franco** ([@LeoFraaan](https://github.com/LeoFraaan))
+- **Leonardo Franco Vergaray Guarniz** ([@LeoFraaan](https://github.com/LeoFraaan))
 - **Giovanni Silva** ([@GiovanniSilva14](https://github.com/GiovanniSilva14))
+- **César Quiroz** ([@cesarquiroz9297](https://github.com/cesarquiroz9297))
+- **Jose Francisco Arce Gonzalez** ([@0xincainsider](https://github.com/0xincainsider))
 
 - **Event:** Universal Event
 - **Challenge:** *Abandoned but not Forgotten: Storytelling about NASA's Discarded Equipment on the Moon and Mars*
