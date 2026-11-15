@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Cpu, Radio, ExternalLink, Volume2, VolumeX, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function TelemetryHUD({ artifact, isInspecting, setIsInspecting }) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [audioError, setAudioError] = useState(false);
+  const audioRef = useRef(null);
+
+  // Stop previous audio and load new when artifact changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsPlayingAudio(false);
+  }, [artifact.id]);
 
   const toggleAudio = () => {
-    // Basic web audio trigger or placeholder alert
-    setIsPlayingAudio(!isPlayingAudio);
+    if (isPlayingAudio) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      setIsPlayingAudio(false);
+    } else {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(artifact.audioSample);
+        audioRef.current.onended = () => setIsPlayingAudio(false);
+      }
+      audioRef.current.play().then(() => {
+        setIsPlayingAudio(true);
+      }).catch((err) => {
+        console.warn("Audio autoplay policy or error:", err);
+        setIsPlayingAudio(false);
+      });
+    }
   };
 
   return (
@@ -38,7 +62,7 @@ export default function TelemetryHUD({ artifact, isInspecting, setIsInspecting }
           Site: <span className="text-slate-200">{artifact.location}</span> ({artifact.coordinates})
         </p>
 
-        <p className="text-xs leading-relaxed text-slate-300 border-l-2 border-cyan-500/50 pl-3 py-0.5">
+        <p className="text-xs leading-relaxed text-slate-300 border-l-2 border-cyan-500/50 pl-3 py-0.5 font-sans">
           {artifact.theStory}
         </p>
       </div>
@@ -68,24 +92,24 @@ export default function TelemetryHUD({ artifact, isInspecting, setIsInspecting }
       <div className="bg-space-900/60 border border-slate-800/80 p-4 rounded-xl flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center text-cyan-300">
-            <Radio className="w-4 h-4 animate-pulse" />
+            <Radio className={`w-4 h-4 ${isPlayingAudio ? 'animate-bounce text-emerald-400' : 'animate-pulse'}`} />
           </div>
-          <div>
+          <div className="overflow-hidden max-w-[200px] sm:max-w-none">
             <span className="text-[10px] uppercase text-slate-400 block font-bold">Acoustic / Radio Archive</span>
-            <span className="text-xs text-slate-200">{artifact.audioTitle}</span>
+            <span className="text-xs text-slate-200 truncate block">{artifact.audioTitle}</span>
           </div>
         </div>
 
         <button
           onClick={toggleAudio}
-          className={`px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 border transition-all ${
+          className={`px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 border transition-all flex-shrink-0 ${
             isPlayingAudio
-              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
               : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30'
           }`}
         >
           {isPlayingAudio ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-          <span>{isPlayingAudio ? 'Stop Feed' : 'Simulate Feed'}</span>
+          <span>{isPlayingAudio ? 'Mute' : 'Play Audio'}</span>
         </button>
       </div>
 
@@ -93,7 +117,7 @@ export default function TelemetryHUD({ artifact, isInspecting, setIsInspecting }
       <div className="bg-space-900/60 border border-slate-800/80 p-4 rounded-xl">
         <div className="text-[11px] uppercase tracking-wider text-amber-400 flex items-center space-x-1.5 mb-3 font-bold">
           <Cpu className="w-3.5 h-3.5" />
-          <span>Hardware Deconstructed (Engineering for Explorers)</span>
+          <span>Hardware Deconstructed (Engineering Specs)</span>
         </div>
 
         <div className="space-y-3">
