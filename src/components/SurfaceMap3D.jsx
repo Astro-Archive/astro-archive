@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { getAssetPath } from '../utils/assets';
 
 // NASA Jezero Crater Science Mission Targets
 export const MARS_SAMPLE_TARGETS = [
@@ -191,7 +192,7 @@ export default function SurfaceMap3D({
 
     // 6. Expanded Terrain Generation (150 x 150 units - Vast Exploration Zone)
     const textureLoader = new THREE.TextureLoader();
-    const terrainTex = textureLoader.load(isMars ? '/textures/mars.jpg' : '/textures/moon.jpg');
+    const terrainTex = textureLoader.load(getAssetPath(isMars ? '/textures/mars.jpg' : '/textures/moon.jpg'));
     terrainTex.wrapS = THREE.RepeatWrapping;
     terrainTex.wrapT = THREE.RepeatWrapping;
     terrainTex.repeat.set(16, 16);
@@ -419,7 +420,7 @@ export default function SurfaceMap3D({
       ? '/models/apollo-lunar-module.glb'
       : '/models/perseverance-rover.glb';
 
-    loader.load(modelPath, (gltf) => {
+    loader.load(getAssetPath(modelPath), (gltf) => {
       const model = gltf.scene;
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());

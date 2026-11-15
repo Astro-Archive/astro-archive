@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ExternalLink, Image, Map, RotateCw, X } from 'lucide-react';
 import { CURIOSITIES } from '../data/curiositiesData';
 import ArtifactModel3D from './ArtifactModel3D';
+import { getAssetPath } from '../utils/assets';
 
 export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenSurface }) {
   const curiosity = artifact ? CURIOSITIES[artifact.id] : null;
@@ -59,7 +60,7 @@ export default function CuriosityPanel({ artifact, body, probe, onClose, onOpenS
           <div className="mb-4 border border-slate-800 bg-slate-950 p-3">
             <div className="mb-2 text-[10px] uppercase tracking-wider text-emerald-300">Archivo de audio</div>
             <p className="mb-2 text-[11px] text-slate-400">{artifact.audioTitle}</p>
-            <audio controls preload="metadata" className="h-9 w-full" src={artifact.audioSample} />
+            <audio controls preload="metadata" className="h-9 w-full" src={getAssetPath(artifact.audioSample)} />
           </div>
 
           {onOpenSurface && ['Moon', 'Mars'].includes(artifact.body) && (

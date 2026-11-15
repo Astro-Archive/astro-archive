@@ -3,6 +3,7 @@ import SpaceSimulator from './components/SpaceSimulator';
 import SpaceXHUD from './components/SpaceXHUD';
 import BadgesModal from './components/BadgesModal';
 import SurfaceExplorer from './components/SurfaceExplorer';
+import { getAssetPath } from './utils/assets';
 import { ARTIFACTS } from './data/artifactsData';
 
 export default function App() {
@@ -80,7 +81,7 @@ export default function App() {
       setIsPlayingAudio(false);
     } else {
       const src = getActiveAudio();
-      audioRef.current = new Audio(src);
+      audioRef.current = new Audio(getAssetPath(src));
       audioRef.current.onended = () => setIsPlayingAudio(false);
       audioRef.current.play().then(() => {
         setIsPlayingAudio(true);

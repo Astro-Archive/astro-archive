@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import { ARTIFACTS } from '../data/artifactsData';
+import { getAssetPath } from '../utils/assets';
 
 export default function SpaceSimulator({
   selectedTarget,
@@ -107,7 +108,7 @@ export default function SpaceSimulator({
 
     // 6. Deep Space Skybox (Milky Way & Stars)
     const skyGeo = new THREE.SphereGeometry(3800, 32, 32);
-    const starTex = textureLoader.load('/textures/stars.jpg');
+    const starTex = textureLoader.load(getAssetPath('/textures/stars.jpg'));
     starTex.wrapS = THREE.RepeatWrapping;
     starTex.wrapT = THREE.RepeatWrapping;
     starTex.repeat.set(3, 3);
@@ -131,7 +132,7 @@ export default function SpaceSimulator({
     // 8. BUILD SOLAR SYSTEM BODIES
     SOLAR_BODIES.forEach((body, idx) => {
       const geo = new THREE.SphereGeometry(body.radius, 48, 48);
-      const tex = textureLoader.load(body.texture);
+      const tex = textureLoader.load(getAssetPath(body.texture));
 
       let mat;
       if (body.emissive) {
@@ -197,7 +198,7 @@ export default function SpaceSimulator({
       // Saturn 3D Rings
       if (body.hasRings) {
         const ringGeo = new THREE.RingGeometry(body.radius * 1.35, body.radius * 2.3, 64);
-        const ringTex = textureLoader.load(body.ringTexture);
+        const ringTex = textureLoader.load(getAssetPath(body.ringTexture));
         const ringMat = new THREE.MeshStandardMaterial({
           map: ringTex,
           side: THREE.DoubleSide,
@@ -227,7 +228,7 @@ export default function SpaceSimulator({
     const earthMesh = planetMeshes.current['earth']?.mesh;
     const initialEarthPos = earthMesh ? earthMesh.position : new THREE.Vector3(82, 0, 0);
     const moonGeo = new THREE.SphereGeometry(0.75, 32, 32);
-    const moonTex = textureLoader.load('/textures/moon.jpg');
+    const moonTex = textureLoader.load(getAssetPath('/textures/moon.jpg'));
     const moonMat = new THREE.MeshStandardMaterial({ map: moonTex, roughness: 0.9 });
     const moonMesh = new THREE.Mesh(moonGeo, moonMat);
     moonMesh.userData.targetId = 'moon';
@@ -250,7 +251,7 @@ export default function SpaceSimulator({
     };
 
     // VOYAGER 1 (Positioned in deep space with dedicated beacon & light)
-    loader.load('/models/voyager.glb', (gltf) => {
+    loader.load(getAssetPath('/models/voyager.glb'), (gltf) => {
       const v1 = gltf.scene;
       v1.userData.targetId = 'voyager1';
       const box = new THREE.Box3().setFromObject(v1);
@@ -284,7 +285,7 @@ export default function SpaceSimulator({
     });
 
     // VOYAGER 2 (Deep space south)
-    loader.load('/models/voyager.glb', (gltf) => {
+    loader.load(getAssetPath('/models/voyager.glb'), (gltf) => {
       const v2 = gltf.scene.clone();
       v2.userData.targetId = 'voyager2';
       const box = new THREE.Box3().setFromObject(v2);
@@ -316,7 +317,7 @@ export default function SpaceSimulator({
     });
 
     // ISS (International Space Station in Earth orbit)
-    loader.load('/models/iss.glb', (gltf) => {
+    loader.load(getAssetPath('/models/iss.glb'), (gltf) => {
       const iss = gltf.scene;
       iss.userData.targetId = 'iss';
       const box = new THREE.Box3().setFromObject(iss);
@@ -335,7 +336,7 @@ export default function SpaceSimulator({
     });
 
     // Apollo 11 (on the Moon)
-    loader.load('/models/apollo-lunar-module.glb', (gltf) => {
+    loader.load(getAssetPath('/models/apollo-lunar-module.glb'), (gltf) => {
       const model = gltf.scene;
       model.userData.targetId = 'apollo';
       const box = new THREE.Box3().setFromObject(model);
@@ -374,7 +375,7 @@ export default function SpaceSimulator({
     };
 
     // 1. Perseverance Rover (Jezero Crater - Mars)
-    loader.load('/models/perseverance-rover.glb', (gltf) => {
+    loader.load(getAssetPath('/models/perseverance-rover.glb'), (gltf) => {
       const model = gltf.scene;
       model.userData.targetId = 'perseverance';
       const box = new THREE.Box3().setFromObject(model);
@@ -393,7 +394,7 @@ export default function SpaceSimulator({
     });
 
     // 2. Ingenuity Mars Helicopter (Wright Field - Dedicated Airspace on Mars)
-    loader.load('/models/ingenuity-mars-helicopter.glb', (gltf) => {
+    loader.load(getAssetPath('/models/ingenuity-mars-helicopter.glb'), (gltf) => {
       const model = gltf.scene;
       model.userData.targetId = 'ingenuity';
       const box = new THREE.Box3().setFromObject(model);
@@ -413,7 +414,7 @@ export default function SpaceSimulator({
     });
 
     // 3. Opportunity Rover (Meridiani Planum - Mars)
-    loader.load('/models/opportunity-rover.glb', (gltf) => {
+    loader.load(getAssetPath('/models/opportunity-rover.glb'), (gltf) => {
       const model = gltf.scene;
       model.userData.targetId = 'opportunity';
       const box = new THREE.Box3().setFromObject(model);
@@ -432,7 +433,7 @@ export default function SpaceSimulator({
     });
 
     // 4. Viking 1 Lander (Chryse Planitia - Mars)
-    loader.load('/models/viking-lander.glb', (gltf) => {
+    loader.load(getAssetPath('/models/viking-lander.glb'), (gltf) => {
       const model = gltf.scene;
       model.userData.targetId = 'viking';
       const box = new THREE.Box3().setFromObject(model);

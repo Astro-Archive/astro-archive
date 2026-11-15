@@ -4,6 +4,7 @@ import {
   Plane, Wind, CheckCircle2, Circle, AlertCircle, Award, Volume2, VolumeX, Sparkles
 } from 'lucide-react';
 import SurfaceMap3D, { MARS_SAMPLE_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
+import { getAssetPath } from '../utils/assets';
 
 /**
  * Web Audio API synthesizer for instant zero-latency sound effects:
@@ -160,7 +161,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
       <div className="relative flex h-full max-h-[880px] w-full max-w-6xl flex-col overflow-hidden border border-emerald-500/60 bg-black shadow-2xl">
         
         {/* Hidden Martian Wind Audio Player */}
-        <audio ref={windAudioRef} src="/audio/mars_wind.wav" loop preload="auto" />
+        <audio ref={windAudioRef} src={getAssetPath('/audio/mars_wind.wav')} loop preload="auto" />
 
         {/* 1. Header */}
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-500/40 bg-black/95 px-3 py-2.5 sm:px-5">

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { getAssetPath } from '../utils/assets';
 
 export default function ArtifactModel3D({ src, alt, autoRotate = true }) {
   const mountRef = useRef(null);
@@ -36,7 +37,7 @@ export default function ArtifactModel3D({ src, alt, autoRotate = true }) {
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     let model = null;
-    loader.load(src, (gltf) => {
+    loader.load(getAssetPath(src), (gltf) => {
       model = gltf.scene;
       const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());
