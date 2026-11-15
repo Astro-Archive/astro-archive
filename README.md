@@ -7,7 +7,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/UI-Tailwind%20CSS-38bdf8.svg)](https://tailwindcss.com/)
 
 > **"Abandoned but not Forgotten: Storytelling about NASA's Discarded Equipment on the Moon and Mars"**  
-> *A space exploration and educational 3D simulator designed for young minds and future engineers (ages 10–16) to discover, pilot, and inspect humanity's historical footprint across the Solar System.*
+> *A space exploration and educational 3D simulator designed for students, educators, and space enthusiasts worldwide to discover, pilot, and inspect humanity's historical footprint across the Solar System.*
 
 ---
 
@@ -35,7 +35,7 @@ Inspired by real-time orbital mechanics and sci-fi simulators like *Space Engine
   - **Opportunity & Perseverance Rovers:** Robotic explorers cataloging the history of water and life on Mars.
 - **📊 Real Telemetry Matrix & Deep-Space Curiosities:**
   - Technical telemetry readouts (Power levels, temperatures, signal delay to Earth, atmospheric density).
-  - Curated engineering trivia and scientific facts tailored for students aged 10–16 without patronizing simplifications.
+  - Curated engineering trivia and scientific facts without patronizing simplifications.
 - **🎙️ Historic Apollo Audio Archives:**
   - Authentic digitized transmissions from Mission Control (*"The Eagle has landed"*, *"One small step"*).
 - **📱 Responsive & Sharp UI:**
