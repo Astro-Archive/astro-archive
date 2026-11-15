@@ -13,6 +13,7 @@ export default function SpaceXHUD({
   isFlightMode,
   onToggleFlightMode,
   flightVelocity,
+  flightTelemetry,
   artifacts,
   onOpenBadges,
   scannedCount,
@@ -26,6 +27,22 @@ export default function SpaceXHUD({
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDestinoMenuOpen, setIsDestinoMenuOpen] = useState(false);
+
+  // Helper for cardinal compass heading
+  const getCardinal = (deg) => {
+    const val = ((deg % 360) + 360) % 360;
+    if (val >= 337.5 || val < 22.5) return 'NORTE (N)';
+    if (val >= 22.5 && val < 67.5) return 'NORESTE (NE)';
+    if (val >= 67.5 && val < 112.5) return 'ESTE (E)';
+    if (val >= 112.5 && val < 157.5) return 'SURESTE (SE)';
+    if (val >= 157.5 && val < 202.5) return 'SUR (S)';
+    if (val >= 202.5 && val < 247.5) return 'SUROESTE (SW)';
+    if (val >= 247.5 && val < 292.5) return 'OESTE (W)';
+    return 'NOROESTE (NW)';
+  };
+
+  const currentHeading = flightTelemetry?.heading ?? 180;
+  const currentPitch = flightTelemetry?.pitch ?? 0;
 
   // Look up target
   const currentBody = SOLAR_BODIES.find(b => b.id.toUpperCase() === selectedTarget.toUpperCase());
@@ -112,83 +129,115 @@ export default function SpaceXHUD({
       {isFlightMode ? (
         <div className="absolute inset-0 pointer-events-none flex flex-col justify-between pt-16 sm:pt-20 pb-16 px-3 sm:px-6">
           
-          {/* Top Compass Heading Tape (Space Engine Style - Non-overlapping) */}
-          <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 bg-black/85 border border-emerald-500/40 px-5 py-1 text-[11px] text-emerald-300 flex items-center space-x-4 sm:space-x-6 backdrop-blur-md font-mono hidden md:flex shadow-[0_0_15px_rgba(0,0,0,0.8)]">
-            <span className="text-slate-500">150°</span>
-            <span className="text-slate-400">160°</span>
-            <span className="text-slate-400">170°</span>
-            <span className="text-emerald-400 font-bold border-b-2 border-emerald-400 px-1">180° ▲</span>
-            <span className="text-slate-400">190°</span>
-            <span className="text-slate-400">200°</span>
-            <span className="text-slate-500">210°</span>
-            <span className="text-amber-400 font-bold ml-3 border-l border-emerald-500/40 pl-3">REF: {activeTitle.toUpperCase()}</span>
+          {/* Top Compass Heading Tape (Space Engine Style - Dynamic & Functional) */}
+          <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 bg-black/90 border border-emerald-500/50 px-4 py-1.5 text-xs text-emerald-300 flex items-center space-x-3 sm:space-x-5 backdrop-blur-md font-mono hidden md:flex shadow-[0_0_20px_rgba(0,0,0,0.9)]">
+            <span className="text-[10px] text-slate-400 font-bold border-r border-emerald-500/40 pr-3">
+              🧭 RUMBO: <span className="text-emerald-400">{getCardinal(currentHeading)}</span>
+            </span>
+            <span className="text-slate-500">{((currentHeading - 30 + 360) % 360)}°</span>
+            <span className="text-slate-400">{((currentHeading - 20 + 360) % 360)}°</span>
+            <span className="text-slate-300">{((currentHeading - 10 + 360) % 360)}°</span>
+            <span className="text-emerald-400 font-black border-b-2 border-emerald-400 px-1.5 bg-emerald-950/50">
+              {currentHeading}° ▲
+            </span>
+            <span className="text-slate-300">{((currentHeading + 10) % 360)}°</span>
+            <span className="text-slate-400">{((currentHeading + 20) % 360)}°</span>
+            <span className="text-slate-500">{((currentHeading + 30) % 360)}°</span>
+            <span className="text-amber-400 font-bold ml-2 border-l border-emerald-500/40 pl-3">
+              PITCH: {currentPitch > 0 ? `+${currentPitch}°` : `${currentPitch}°`}
+            </span>
           </div>
 
-          {/* Side Telemetry Panels: Left Spacecraft + Right Orbital Parameters (Placed safely below header) */}
+          {/* Side Telemetry Panels: Left Functional Coordinates + Right Navigation */}
           <div className="flex justify-between items-start mt-4 sm:mt-6">
             
-            {/* Left Telemetry Column */}
-            <div className="bg-black/85 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-56 sm:w-64 space-y-1 text-[11px] sm:text-xs text-emerald-400 shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+            {/* Left Telemetry Column: Real Coordinates & Distance */}
+            <div className="bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-64 sm:w-72 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 shadow-[0_0_25px_rgba(0,0,0,0.9)]">
               <div className="text-[10px] uppercase font-bold text-emerald-300 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
-                <span>🛸 Telemetría de Nave</span>
-                <span className="text-amber-400">SYS: NOMINAL</span>
+                <span>🛸 NAVEGACIÓN Y COORDENADAS</span>
+                <span className="text-amber-400">ENLACE ACTIVO</span>
               </div>
-              <div className="flex justify-between"><span>Spacecraft:</span><span className="text-white font-bold">Skylone Explorer</span></div>
-              <div className="flex justify-between"><span>Flight mode:</span><span className="text-cyan-300 font-bold">Interplanetary</span></div>
-              <div className="flex justify-between"><span>Ship velocity:</span><span className="text-amber-300 font-bold">{(parseFloat(flightVelocity || '0') + 29.33).toFixed(1)} km/s</span></div>
-              <div className="flex justify-between"><span>Rel velocity:</span><span className="text-emerald-200">{flightVelocity || '0.0'} km/s</span></div>
-              <div className="flex justify-between"><span>Grav accel:</span><span className="text-slate-300">0.61 m/s²</span></div>
-              <div className="flex justify-between"><span>Nearest body:</span><span className="text-white font-bold truncate max-w-[100px]">{activeTitle}</span></div>
-              <div className="flex justify-between"><span>Thrust power:</span><span className="text-emerald-300 font-bold">{parseFloat(flightVelocity || '0') > 0 ? '100%' : 'IDLE (0%)'}</span></div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Coordenada X:</span>
+                <span className="text-white font-bold font-mono">{flightTelemetry?.x || '0.0'} Mkm</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Coordenada Y (Cota):</span>
+                <span className="text-white font-bold font-mono">{flightTelemetry?.y || '0.0'} Mkm</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Coordenada Z:</span>
+                <span className="text-white font-bold font-mono">{flightTelemetry?.z || '0.0'} Mkm</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-800 pt-1">
+                <span className="text-slate-400">Astro de referencia:</span>
+                <span className="text-cyan-300 font-bold truncate max-w-[130px]">{flightTelemetry?.nearestName || activeTitle}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Distancia a referencia:</span>
+                <span className="text-amber-300 font-bold font-mono">{flightTelemetry?.nearestDist || '12.4'} Mkm</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Velocidad impulso:</span>
+                <span className="text-emerald-300 font-bold font-mono">{flightTelemetry?.speed || flightVelocity || '0.0'} km/s</span>
+              </div>
             </div>
 
-            {/* Right Orbital Parameters Column */}
-            <div className="bg-black/85 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-56 sm:w-64 space-y-1 text-[11px] sm:text-xs text-emerald-400 text-right shadow-[0_0_20px_rgba(0,0,0,0.8)] hidden sm:block">
+            {/* Right Orbital & Flight Status Column */}
+            <div className="bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-56 sm:w-64 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 text-right shadow-[0_0_20px_rgba(0,0,0,0.8)] hidden sm:block">
               <div className="text-[10px] uppercase font-bold text-emerald-300 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
-                <span className="text-cyan-300">KEPLERIAN</span>
-                <span>Parámetros Orbitales 🌐</span>
+                <span className="text-cyan-300">ESTADO DE VUELO</span>
+                <span>GIROSCÓPICO 🌐</span>
               </div>
-              <div className="flex justify-between"><span className="text-slate-400">Reference:</span><span className="text-white font-bold truncate max-w-[120px]">{activeTitle}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Period (P):</span><span className="text-emerald-300">3h 58m 57s</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Semi-major (a):</span><span className="text-slate-200">12,756.13 km</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Eccentricity (e):</span><span className="text-amber-300">1.000 (Hyperbolic)</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Inclination (i):</span><span className="text-emerald-300">174.68°</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Periapsis (Rperi):</span><span className="text-cyan-300">6,492 km</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">RCS Steering:</span><span className="text-emerald-400 font-bold">ARMED (4x Quad)</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Rumbo (Yaw):</span><span className="text-white font-bold font-mono">{currentHeading}°</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Cabeceo (Pitch):</span><span className="text-amber-300 font-bold font-mono">{currentPitch}°</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Propulsión:</span><span className="text-emerald-300 font-bold">{parseFloat(flightTelemetry?.speed || flightVelocity || '0') > 0 ? 'IMPULSO ACTIVO' : 'DERIVA INERCIAL'}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Sensores RCS:</span><span className="text-cyan-300 font-bold">ARMADOS (4x)</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Modo de vuelo:</span><span className="text-emerald-400 font-bold">Libre 360°</span></div>
             </div>
 
           </div>
 
-          {/* Center: Pitch Ladder & Reticle */}
+          {/* Center: Dynamic Pitch Ladder & Reticle (Artificial Horizon) */}
           <div className="flex-1 flex items-center justify-center relative my-2">
             
-            {/* Left & Right Pitch Degree Ladder */}
-            <div className="absolute flex items-center space-x-28 sm:space-x-44 text-emerald-400 text-xs font-mono select-none">
-              <div className="space-y-4 text-right">
-                <div className="opacity-60">-- +10°L</div>
-                <div className="text-emerald-300 font-bold">---- 0°</div>
-                <div className="opacity-60">-- -10°L</div>
+            {/* Left & Right Pitch Degree Ladder (Translates with flight pitch!) */}
+            <div 
+              className="absolute flex items-center space-x-16 sm:space-x-32 text-emerald-400 text-xs font-mono select-none transition-transform duration-75"
+              style={{ transform: `translateY(${currentPitch * 2.2}px)` }}
+            >
+              <div className="space-y-3.5 text-right">
+                <div className="opacity-70 text-[10px]">▲ +15° CABECEO</div>
+                <div className="opacity-90">-- +10°L</div>
+                <div className="text-emerald-300 font-black border-y border-emerald-400/60 py-0.5">── 0° HORIZONTE</div>
+                <div className="opacity-90">-- -10°L</div>
+                <div className="opacity-70 text-[10px]">▼ -15° CABECEO</div>
               </div>
 
               {/* Center Flight Reticle */}
-              <div className="w-14 h-14 border-2 border-emerald-400 rounded-none flex items-center justify-center relative shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                <div className="w-2 h-2 bg-emerald-400 rounded-none"></div>
-                <div className="absolute -top-6 text-[10px] text-emerald-300 font-bold bg-black/80 px-1 border border-emerald-500/40">
-                  {flightVelocity || '0.0'} km/s
+              <div className="w-16 h-16 border-2 border-emerald-400 rounded-none flex items-center justify-center relative shadow-[0_0_20px_rgba(16,185,129,0.4)] bg-black/40">
+                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-none"></div>
+                <div className="absolute -top-7 text-[10px] text-emerald-300 font-bold bg-black/90 px-1.5 py-0.5 border border-emerald-500/60">
+                  {flightTelemetry?.speed || flightVelocity || '0.0'} km/s
+                </div>
+                <div className="absolute -bottom-6 text-[9px] text-cyan-300 font-mono bg-black/80 px-1">
+                  HDG: {currentHeading}°
                 </div>
               </div>
 
-              <div className="space-y-4 text-left">
-                <div className="opacity-60">+10°R --</div>
-                <div className="text-emerald-300 font-bold">0° ----</div>
-                <div className="opacity-60">-10°R --</div>
+              <div className="space-y-3.5 text-left">
+                <div className="opacity-70 text-[10px]">CABECEO +15° ▲</div>
+                <div className="opacity-90">+10°R --</div>
+                <div className="text-emerald-300 font-black border-y border-emerald-400/60 py-0.5">HORIZONTE 0° ──</div>
+                <div className="opacity-90">-10°R --</div>
+                <div className="opacity-70 text-[10px]">CABECEO -15° ▼</div>
               </div>
             </div>
 
             {/* Simulated Spaceship Cockpit Silhouette at Bottom Center */}
             <div className="absolute bottom-1 flex flex-col items-center">
               <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-b-[28px] border-b-emerald-400/90 shadow-[0_0_20px_rgba(16,185,129,0.5)]"></div>
-              <span className="text-[9px] text-emerald-400 font-mono tracking-widest mt-1">SHIP VECTOR</span>
+              <span className="text-[9px] text-emerald-400 font-mono tracking-widest mt-1">VECTOR PROA // RCS</span>
             </div>
 
           </div>

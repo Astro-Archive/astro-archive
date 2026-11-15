@@ -11,6 +11,7 @@ export default function App() {
   const [selectedTarget, setSelectedTarget] = useState('OVERVIEW');
   const [isFlightMode, setIsFlightMode] = useState(false);
   const [flightVelocity, setFlightVelocity] = useState('0.0');
+  const [flightTelemetry, setFlightTelemetry] = useState(null);
   const [scannedIds, setScannedIds] = useState([]);
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -114,6 +115,7 @@ export default function App() {
         isFlightMode={isFlightMode}
         flightVelocity={flightVelocity}
         setFlightVelocity={setFlightVelocity}
+        onFlightTelemetry={setFlightTelemetry}
         settings={settings}
       />
 
@@ -124,6 +126,7 @@ export default function App() {
         isFlightMode={isFlightMode}
         onToggleFlightMode={handleToggleFlightMode}
         flightVelocity={flightVelocity}
+        flightTelemetry={flightTelemetry}
         artifacts={ARTIFACTS}
         onOpenBadges={() => setIsBadgesOpen(true)}
         scannedCount={scannedIds.length}

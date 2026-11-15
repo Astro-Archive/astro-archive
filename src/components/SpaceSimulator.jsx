@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 import { ARTIFACTS } from '../data/artifactsData';
@@ -13,6 +14,7 @@ export default function SpaceSimulator({
   isFlightMode,
   flightVelocity,
   setFlightVelocity,
+  onFlightTelemetry,
   settings = { showOrbits: true, reducedMotion: false }
 }) {
   const mountRef = useRef(null);
@@ -41,10 +43,15 @@ export default function SpaceSimulator({
   const selectedTargetRef = useRef(selectedTarget);
   const isFlightModeRef = useRef(isFlightMode);
   const onSelectTargetRef = useRef(onSelectTarget);
+  const onFlightTelemetryRef = useRef(onFlightTelemetry);
   const lastVelocityRef = useRef('0.0');
   const settingsRef = useRef(settings);
   const orbitLinesRef = useRef([]);
   const probeTrailsRef = useRef([]);
+
+  useEffect(() => {
+    onFlightTelemetryRef.current = onFlightTelemetry;
+  }, [onFlightTelemetry]);
 
   useEffect(() => {
     selectedTargetRef.current = selectedTarget;
@@ -250,9 +257,14 @@ export default function SpaceSimulator({
     planetMeshes.current['moon'] = { mesh: moonMesh, data: { radius: 0.75, name: 'La Luna', type: 'Satélite Natural' } };
     orbitalAngles.current['moon'] = 0.5;
 
-    // 10. LOAD 3D MODELS: VOYAGER 1, VOYAGER 2, ISS, APOLLO, INGENUITY
+    // 10. LOAD 3D MODELS: VOYAGER 1, VOYAGER 2, ISS, APOLLO, INGENUITY, HUBBLE
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
+
+    // DRACO Loader support for compressed models (e.g. Hubble HST)
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(getAssetPath('/draco/gltf/'));
+    loader.setDRACOLoader(dracoLoader);
 
     // Helper for probe beacon (glowing target ring so it's always easy to spot!)
     const createBeacon = (color = '#00f0ff') => {
@@ -465,39 +477,81 @@ export default function SpaceSimulator({
     });
 
     // 10C. HUBBLE SPACE TELESCOPE (HST in Low Earth Orbit - 28.5° inclination)
-    loader.load(getAssetPath('/models/hubble.glb'), (gltf) => {
-      const hst = gltf.scene;
-      hst.userData.targetId = 'hubble';
-      const box = new THREE.Box3().setFromObject(hst);
-      const size = box.getSize(new THREE.Vector3()).length() || 1;
-      const scale = 1.2 / size;
-      hst.scale.set(scale, scale, scale);
+    loader.load(
+      getAssetPath('/models/hubble.glb'),
+      (gltf) => {
+        const hst = gltf.scene;
+        hst.userData.targetId = 'hubble';
 
-      const hstLight = new THREE.PointLight('#38bdf8', 2.2, 16);
-      hst.add(hstLight);
-      hst.add(createBeacon('#38bdf8'));
+        // Properly center mesh pivot
+        const box = new THREE.Box3().setFromObject(hst);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3()).length() || 1;
+        hst.position.sub(center);
 
-      hst.position.set(initialEarthPos.x + 5.2, 1.4, initialEarthPos.z);
-      scene.add(hst);
-      probesMeshes.current['hubble'] = { 
-        mesh: hst, 
-        data: {
-          id: 'hubble',
-          name: 'Telescopio Espacial Hubble (HST)',
-          type: 'Gran Observatorio Orbital (LEO)',
-          speedKmH: '27,300 km/h'
-        } 
-      };
-      orbitalAngles.current['hubble'] = 1.6;
-    });
+        const wrapper = new THREE.Group();
+        wrapper.userData.targetId = 'hubble';
+        wrapper.add(hst);
 
-    // 10D. MAIN ASTEROID BELT (Between Mars & Jupiter: r = 125 to 168)
-    const asteroidCount = 1200;
-    const asteroidGeo = new THREE.DodecahedronGeometry(0.35, 1);
+        // Scale to ~2.6 units (distinct, impressive satellite size in LEO)
+        const scale = 2.6 / size;
+        wrapper.scale.set(scale, scale, scale);
+
+        // Dedicated solar illumination for Hubble
+        const hstLight = new THREE.PointLight('#38bdf8', 3.0, 25);
+        wrapper.add(hstLight);
+        wrapper.add(createBeacon('#38bdf8', 2.8));
+
+        wrapper.position.set(initialEarthPos.x + 5.2, 1.4, initialEarthPos.z);
+        scene.add(wrapper);
+        probesMeshes.current['hubble'] = { 
+          mesh: wrapper, 
+          data: {
+            id: 'hubble',
+            name: 'Telescopio Espacial Hubble (HST)',
+            type: 'Gran Observatorio Orbital (LEO)',
+            speedKmH: '27,300 km/h'
+          } 
+        };
+        orbitalAngles.current['hubble'] = 1.6;
+      },
+      undefined,
+      (err) => {
+        console.error('Error loading Hubble HST:', err);
+      }
+    );
+
+    // 10D. MAIN ASTEROID BELT (Rugged, faceted space rocks - NOT smooth balls!)
+    const asteroidCount = 1300;
+
+    const createRuggedRockGeometry = (baseRadius = 0.5) => {
+      const geo = new THREE.IcosahedronGeometry(baseRadius, 1);
+      const pos = geo.attributes.position;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        const dir = v.clone().normalize();
+        const noise = 
+          Math.sin(dir.x * 5.0 + dir.y * 3.0) * 0.14 +
+          Math.cos(dir.y * 6.0 + dir.z * 4.0) * 0.10 +
+          Math.sin(dir.z * 7.0 + dir.x * 2.0) * 0.08;
+        // Oblate potato-like deformation (like real asteroids Eros, Bennu)
+        v.x *= 1.35;
+        v.y *= 0.85;
+        v.z *= 1.10;
+        v.addScaledVector(dir, noise);
+        pos.setXYZ(i, v.x, v.y, v.z);
+      }
+      geo.computeVertexNormals();
+      return geo;
+    };
+
+    const asteroidGeo = createRuggedRockGeometry(0.42);
     const asteroidMat = new THREE.MeshStandardMaterial({
-      color: '#8c8275',
-      roughness: 0.9,
-      metalness: 0.1,
+      color: '#574f45', // Stony chondrite charcoal
+      roughness: 0.95,
+      metalness: 0.15,
+      flatShading: true, // Crucial: faceted shading catches directional solar light like real rocks!
     });
     const asteroidBelt = new THREE.InstancedMesh(asteroidGeo, asteroidMat, asteroidCount);
     const dummy = new THREE.Object3D();
@@ -508,8 +562,11 @@ export default function SpaceSimulator({
       const y = (Math.random() - 0.5) * 6.5;
       dummy.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
 
-      const s = 0.4 + Math.random() * 1.3;
-      dummy.scale.set(s, s * (0.8 + Math.random() * 0.4), s);
+      const s = 0.4 + Math.random() * 1.5;
+      const sx = s * (0.8 + Math.random() * 0.5);
+      const sy = s * (0.65 + Math.random() * 0.45);
+      const sz = s * (0.85 + Math.random() * 0.55);
+      dummy.scale.set(sx, sy, sz);
       dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
       dummy.updateMatrix();
       asteroidBelt.setMatrixAt(i, dummy.matrix);
@@ -517,13 +574,14 @@ export default function SpaceSimulator({
     asteroidBelt.instanceMatrix.needsUpdate = true;
     scene.add(asteroidBelt);
 
-    // 10E. KUIPER BELT (Outer icy asteroids: r = 380 to 465)
+    // 10E. KUIPER BELT (Icy outer asteroids)
     const kuiperCount = 750;
-    const kuiperGeo = new THREE.DodecahedronGeometry(0.42, 1);
+    const kuiperGeo = createRuggedRockGeometry(0.5);
     const kuiperMat = new THREE.MeshStandardMaterial({
-      color: '#94a3b8',
-      roughness: 0.8,
+      color: '#64748b',
+      roughness: 0.85,
       metalness: 0.2,
+      flatShading: true,
     });
     const kuiperBelt = new THREE.InstancedMesh(kuiperGeo, kuiperMat, kuiperCount);
     for (let i = 0; i < kuiperCount; i++) {
@@ -532,8 +590,8 @@ export default function SpaceSimulator({
       const y = (Math.random() - 0.5) * 16;
       dummy.position.set(r * Math.cos(theta), y, r * Math.sin(theta));
 
-      const s = 0.5 + Math.random() * 1.6;
-      dummy.scale.set(s, s, s);
+      const s = 0.5 + Math.random() * 1.8;
+      dummy.scale.set(s * 1.25, s * 0.8, s * 1.1);
       dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
       dummy.updateMatrix();
       kuiperBelt.setMatrixAt(i, dummy.matrix);
@@ -541,41 +599,82 @@ export default function SpaceSimulator({
     kuiperBelt.instanceMatrix.needsUpdate = true;
     scene.add(kuiperBelt);
 
-    // 10F. COMET HALLEY (1P/Halley) WITH PLASMA & DUST TAIL
+    // 10F. COMET HALLEY (1P/Halley) WITH ETHEREAL TAIL & GLOWING COMA (No Hard Cones!)
     const cometGroup = new THREE.Group();
     cometGroup.userData.targetId = 'halley';
 
-    const nucGeo = new THREE.DodecahedronGeometry(0.7, 1);
-    const nucMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.7 });
-    cometGroup.add(new THREE.Mesh(nucGeo, nucMat));
+    // Nucleus (irregular craggy dirty-snowball rock)
+    const cometNucleus = new THREE.Mesh(
+      createRuggedRockGeometry(0.65),
+      new THREE.MeshStandardMaterial({ color: '#334155', roughness: 0.9, flatShading: true })
+    );
+    cometGroup.add(cometNucleus);
 
-    const comaGeo = new THREE.SphereGeometry(1.5, 16, 16);
-    const comaMat = new THREE.MeshBasicMaterial({
-      color: '#67e8f9',
-      transparent: true,
-      opacity: 0.65,
+    // Glowing Coma Texture (soft radial atmospheric glow)
+    const createComaTexture = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.2, 'rgba(103, 232, 249, 0.9)');
+      grad.addColorStop(0.5, 'rgba(56, 189, 248, 0.35)');
+      grad.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 128);
+      return new THREE.CanvasTexture(canvas);
+    };
+
+    const comaMat = new THREE.SpriteMaterial({
+      map: createComaTexture(),
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-    });
-    cometGroup.add(new THREE.Mesh(comaGeo, comaMat));
-
-    const cometLight = new THREE.PointLight('#67e8f9', 2.0, 30);
-    cometGroup.add(cometLight);
-    cometGroup.add(createBeacon('#06b6d4'));
-
-    const tailGeo = new THREE.ConeGeometry(3.5, 45, 20, 1, true);
-    const tailMat = new THREE.MeshBasicMaterial({
-      color: '#38bdf8',
       transparent: true,
-      opacity: 0.32,
+    });
+    const comaSprite = new THREE.Sprite(comaMat);
+    comaSprite.scale.set(7.5, 7.5, 1);
+    cometGroup.add(comaSprite);
+
+    const cometLight = new THREE.PointLight('#67e8f9', 2.8, 35);
+    cometGroup.add(cometLight);
+    cometGroup.add(createBeacon('#06b6d4', 2.5));
+
+    // Ethereal Tapering Gradient Tail (Soft billboard ribbons with alpha gradient)
+    const createTailTexture = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(64, 0, 64, 512);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+      grad.addColorStop(0.12, 'rgba(103, 232, 249, 0.75)');
+      grad.addColorStop(0.4, 'rgba(56, 189, 248, 0.30)');
+      grad.addColorStop(0.75, 'rgba(14, 165, 233, 0.12)');
+      grad.addColorStop(1, 'rgba(2, 132, 199, 0.0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 512);
+      return new THREE.CanvasTexture(canvas);
+    };
+
+    const tailMaterial = new THREE.MeshBasicMaterial({
+      map: createTailTexture(),
+      transparent: true,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
       depthWrite: false,
     });
-    const cometTail = new THREE.Mesh(tailGeo, tailMat);
-    cometTail.rotation.x = Math.PI / 2;
-    cometTail.position.z = 22.5;
-    cometGroup.add(cometTail);
+
+    const tailGeo1 = new THREE.PlaneGeometry(8, 65);
+    tailGeo1.translate(0, 32.5, 0); // Tail extends back from head
+    const tailMesh1 = new THREE.Mesh(tailGeo1, tailMaterial);
+    tailMesh1.rotation.x = -Math.PI / 2;
+    cometGroup.add(tailMesh1);
+
+    const tailMesh2 = new THREE.Mesh(tailGeo1, tailMaterial);
+    tailMesh2.rotation.x = -Math.PI / 2;
+    tailMesh2.rotation.z = Math.PI / 2;
+    cometGroup.add(tailMesh2);
 
     scene.add(cometGroup);
     probesMeshes.current['halley'] = {
@@ -588,39 +687,6 @@ export default function SpaceSimulator({
       }
     };
     orbitalAngles.current['halley'] = 0.6;
-
-    // 10G. DEEP SPACE RADIANT NEBULAE (Orion, Carina, Eagle)
-    const nebulaeData = [
-      { name: 'Nebulosa de Orión (M42)', pos: [1900, 500, -1700], color: '#f43f5e', size: 340 },
-      { name: 'Nebulosa Carina (NGC 3372)', pos: [-2000, -550, 1500], color: '#38bdf8', size: 400 },
-      { name: 'Nebulosa del Águila (M16)', pos: [1500, -650, 2000], color: '#a855f7', size: 360 }
-    ];
-
-    nebulaeData.forEach((neb) => {
-      const nebGeo = new THREE.SphereGeometry(neb.size, 20, 20);
-      const nebMat = new THREE.MeshBasicMaterial({
-        color: neb.color,
-        transparent: true,
-        opacity: 0.16,
-        blending: THREE.AdditiveBlending,
-        side: THREE.BackSide,
-        depthWrite: false,
-      });
-      const nebMesh = new THREE.Mesh(nebGeo, nebMat);
-      nebMesh.position.set(neb.pos[0], neb.pos[1], neb.pos[2]);
-      scene.add(nebMesh);
-
-      const coreGeo = new THREE.SphereGeometry(neb.size * 0.45, 16, 16);
-      const coreMat = new THREE.MeshBasicMaterial({
-        color: '#ffffff',
-        transparent: true,
-        opacity: 0.10,
-        blending: THREE.AdditiveBlending,
-        side: THREE.BackSide,
-        depthWrite: false,
-      });
-      nebMesh.add(new THREE.Mesh(coreGeo, coreMat));
-    });
 
     // 11. KEYBOARD LISTENERS FOR FLIGHT MODE
     const handleKeyDown = (e) => {
@@ -870,12 +936,38 @@ export default function SpaceSimulator({
 
         controls.target.copy(camera.position).add(forward.multiplyScalar(20));
 
-        if (setFlightVelocity) {
-          const nextVelocity = (Math.abs(flightSpeed.current) * 28.5).toFixed(1);
-          if (nextVelocity !== lastVelocityRef.current) {
-            lastVelocityRef.current = nextVelocity;
-            setFlightVelocity(nextVelocity);
-          }
+        const nextVelocity = (Math.abs(flightSpeed.current) * 28.5).toFixed(1);
+        if (setFlightVelocity && nextVelocity !== lastVelocityRef.current) {
+          lastVelocityRef.current = nextVelocity;
+          setFlightVelocity(nextVelocity);
+        }
+
+        if (onFlightTelemetryRef.current) {
+          const headingDeg = Math.round(((((-flightYaw.current * 180 / Math.PI) % 360) + 360) % 360));
+          const pitchDeg = Math.round(((-flightPitch.current * 180 / Math.PI)));
+
+          let nearestName = 'SOL';
+          let nearestDist = camera.position.length();
+          Object.entries(planetMeshes.current).forEach(([k, item]) => {
+            if (item?.mesh && k !== 'sun') {
+              const d = camera.position.distanceTo(item.mesh.position);
+              if (d < nearestDist) {
+                nearestDist = d;
+                nearestName = item.data?.shortName || item.data?.name || k.toUpperCase();
+              }
+            }
+          });
+
+          onFlightTelemetryRef.current({
+            speed: nextVelocity,
+            heading: headingDeg,
+            pitch: pitchDeg,
+            x: (camera.position.x * 0.35).toFixed(1),
+            y: (camera.position.y * 0.35).toFixed(1),
+            z: (camera.position.z * 0.35).toFixed(1),
+            nearestName,
+            nearestDist: (nearestDist * 0.35).toFixed(1)
+          });
         }
       } else {
         controls.enabled = true;
