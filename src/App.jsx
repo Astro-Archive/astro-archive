@@ -7,7 +7,8 @@ import { ARTIFACTS } from './data/artifactsData';
 export default function App() {
   const [selectedTarget, setSelectedTarget] = useState('OVERVIEW');
   const [isFlightMode, setIsFlightMode] = useState(false);
-  const [scannedIds, setScannedIds] = useState(['apollo11', 'ingenuity']);
+  const [flightVelocity, setFlightVelocity] = useState('0.0');
+  const [scannedIds, setScannedIds] = useState(['apollo11', 'ingenuity', 'voyager1']);
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const audioRef = useRef(null);
@@ -19,13 +20,15 @@ export default function App() {
 
   const handleSelectTarget = (target) => {
     setSelectedTarget(target);
-    setIsFlightMode(false); // Disengage flight mode when locking onto a new body
+    setIsFlightMode(false); // Stop manual flight when clicking a target to allow clean tracking
 
     // Track badges
     if (target === 'APOLLO' && !scannedIds.includes('apollo11')) {
       setScannedIds(prev => [...prev, 'apollo11']);
     } else if (target === 'INGENUITY' && !scannedIds.includes('ingenuity')) {
       setScannedIds(prev => [...prev, 'ingenuity']);
+    } else if (target === 'VOYAGER1' && !scannedIds.includes('voyager1')) {
+      setScannedIds(prev => [...prev, 'voyager1']);
     }
 
     // Stop audio on target change
@@ -55,21 +58,24 @@ export default function App() {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
+    <div className="relative w-screen h-screen overflow-hidden bg-black select-none font-mono">
       
       {/* 1. Fullscreen Three.js WebGL Universe Canvas (Smooth 60FPS Space Engine with Orbiting Planets & Spacecraft) */}
       <SpaceSimulator
         selectedTarget={selectedTarget}
         onSelectTarget={handleSelectTarget}
         isFlightMode={isFlightMode}
+        flightVelocity={flightVelocity}
+        setFlightVelocity={setFlightVelocity}
       />
 
-      {/* 2. SpaceX ISS Docking Simulator Style HUD Overlay */}
+      {/* 2. Space Engine Inspired Sharp HUD Overlay */}
       <SpaceXHUD
         selectedTarget={selectedTarget}
         onSelectTarget={handleSelectTarget}
         isFlightMode={isFlightMode}
         onToggleFlightMode={handleToggleFlightMode}
+        flightVelocity={flightVelocity}
         artifacts={ARTIFACTS}
         onOpenBadges={() => setIsBadgesOpen(true)}
         scannedCount={scannedIds.length}

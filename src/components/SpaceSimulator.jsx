@@ -5,11 +5,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
 
 export default function SpaceSimulator({
-  selectedTarget, // 'OVERVIEW' | 'SUN' | 'MERCURY' | 'VENUS' | 'EARTH' | 'MOON' | 'MARS' | 'JUPITER' | 'SATURN' | 'URANUS' | 'NEPTUNE' | 'PLUTO' | 'VOYAGER1' | 'VOYAGER2' | 'ISS' | 'APOLLO' | 'INGENUITY'
+  selectedTarget,
   onSelectTarget,
   isFlightMode,
-  flightSpeed,
-  flightVelocity
+  flightVelocity,
+  setFlightVelocity
 }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -17,20 +17,23 @@ export default function SpaceSimulator({
   const controlsRef = useRef(null);
   const rendererRef = useRef(null);
 
-  // Entities & tracking dictionary
+  // Entities dictionaries
   const planetMeshes = useRef({});
   const probesMeshes = useRef({});
   const orbitalAngles = useRef({});
   const lastTargetPos = useRef(new THREE.Vector3(0, 0, 0));
 
-  // Spaceship flight state
-  const shipVelocity = useRef(new THREE.Vector3(0, 0, 0));
-  const activeKeys = useRef({});
-
-  // Camera smooth transition state
+  // Camera transition state
   const isTransitioning = useRef(false);
-  const targetCamPos = useRef(new THREE.Vector3(0, 220, 520));
+  const targetCamPos = useRef(new THREE.Vector3(0, 240, 580));
   const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
+
+  // Flight mode controls state
+  const flightSpeed = useRef(0);
+  const flightYaw = useRef(0);
+  const flightPitch = useRef(0);
+  const activeKeys = useRef({});
+  const mouseDragRef = useRef({ isDown: false, startX: 0, startY: 0 });
 
   useEffect(() => {
     const container = mountRef.current;
@@ -41,7 +44,7 @@ export default function SpaceSimulator({
     sceneRef.current = scene;
 
     // 2. Camera
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.5, 12000);
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.2, 12000);
     camera.position.set(0, 240, 580);
     cameraRef.current = camera;
 
@@ -57,9 +60,9 @@ export default function SpaceSimulator({
     // 4. OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.maxDistance = 2800;
-    controls.minDistance = 1.5;
+    controls.dampingFactor = 0.08;
+    controls.maxDistance = 3000;
+    controls.minDistance = 1.2;
     controls.target.set(0, 0, 0);
     controlsRef.current = controls;
 
@@ -71,7 +74,7 @@ export default function SpaceSimulator({
     const textureLoader = new THREE.TextureLoader();
 
     // 6. Deep Space Skybox (Milky Way & Stars)
-    const skyGeo = new THREE.SphereGeometry(3500, 32, 32);
+    const skyGeo = new THREE.SphereGeometry(3800, 32, 32);
     const starTex = textureLoader.load('/textures/stars.jpg');
     starTex.wrapS = THREE.RepeatWrapping;
     starTex.wrapT = THREE.RepeatWrapping;
@@ -85,15 +88,15 @@ export default function SpaceSimulator({
     scene.add(skybox);
 
     // 7. Lighting
-    const ambientLight = new THREE.AmbientLight('#1e293b', 0.95);
+    const ambientLight = new THREE.AmbientLight('#1e293b', 1.0);
     scene.add(ambientLight);
 
-    // Central Sun PointLight
-    const sunLight = new THREE.PointLight('#fffbf0', 4.8, 3000, 0.5);
+    // PointLight at the center of the Sun
+    const sunLight = new THREE.PointLight('#fffbf0', 5.0, 3500, 0.4);
     sunLight.position.set(0, 0, 0);
     scene.add(sunLight);
 
-    // 8. BUILD ALL SOLAR SYSTEM BODIES & INITIAL ANGLES
+    // 8. BUILD SOLAR SYSTEM BODIES
     SOLAR_BODIES.forEach((body, idx) => {
       const geo = new THREE.SphereGeometry(body.radius, 48, 48);
       const tex = textureLoader.load(body.texture);
@@ -111,8 +114,8 @@ export default function SpaceSimulator({
 
       const mesh = new THREE.Mesh(geo, mat);
 
-      // Random starting orbital angle
-      const initialAngle = (idx * (Math.PI * 2 / SOLAR_BODIES.length)) + 0.2;
+      // Stagger initial orbit angles so planets are nicely spread out
+      const initialAngle = (idx * (Math.PI * 2 / 10)) + 0.3;
       orbitalAngles.current[body.id] = initialAngle;
 
       if (body.orbitDistance > 0) {
@@ -122,8 +125,8 @@ export default function SpaceSimulator({
           body.orbitDistance * Math.sin(initialAngle)
         );
 
-        // Orbit Trajectory Ring Line
-        const ringGeo = new THREE.RingGeometry(body.orbitDistance - 0.25, body.orbitDistance + 0.25, 120);
+        // Orbit Trajectory Ring Line (Clean, high-precision)
+        const ringGeo = new THREE.RingGeometry(body.orbitDistance - 0.25, body.orbitDistance + 0.25, 128);
         const ringMat = new THREE.MeshBasicMaterial({
           color: body.color || '#38bdf8',
           opacity: 0.22,
@@ -137,19 +140,20 @@ export default function SpaceSimulator({
         }
         scene.add(orbitLine);
       } else {
+        // ONLY the Sun is at (0,0,0)
         mesh.position.set(0, 0, 0);
       }
 
       scene.add(mesh);
       planetMeshes.current[body.id] = { mesh, data: body };
 
-      // Sun Corona Halo
+      // Sun Corona Glow
       if (body.id === 'sun') {
         const coronaGeo = new THREE.SphereGeometry(body.radius * 1.15, 32, 32);
         const coronaMat = new THREE.MeshBasicMaterial({
           color: '#f59e0b',
           transparent: true,
-          opacity: 0.22,
+          opacity: 0.2,
           side: THREE.BackSide,
         });
         mesh.add(new THREE.Mesh(coronaGeo, coronaMat));
@@ -171,7 +175,7 @@ export default function SpaceSimulator({
         mesh.add(ringMesh);
       }
 
-      // Mars Atmospheric Halo
+      // Mars Atmosphere Glow
       if (body.id === 'mars') {
         const atmoGeo = new THREE.SphereGeometry(body.radius * 1.05, 32, 32);
         const atmoMat = new THREE.MeshBasicMaterial({
@@ -184,94 +188,124 @@ export default function SpaceSimulator({
       }
     });
 
-    // 9. THE MOON (Orbiting Earth dynamically)
-    const earthObj = planetMeshes.current['earth'];
+    // 9. THE MOON (Properly initialized at Earth's position, NEVER at 0,0,0)
+    const earthMesh = planetMeshes.current['earth']?.mesh;
+    const initialEarthPos = earthMesh ? earthMesh.position : new THREE.Vector3(82, 0, 0);
     const moonGeo = new THREE.SphereGeometry(0.75, 32, 32);
     const moonTex = textureLoader.load('/textures/moon.jpg');
     const moonMat = new THREE.MeshStandardMaterial({ map: moonTex, roughness: 0.9 });
     const moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    moonMesh.position.set(initialEarthPos.x + 7.2, 0, initialEarthPos.z);
     scene.add(moonMesh);
     planetMeshes.current['moon'] = { mesh: moonMesh, data: { radius: 0.75, name: 'La Luna', type: 'Satélite Natural' } };
     orbitalAngles.current['moon'] = 0.5;
 
-    // 10. GLTF 3D LOADER: VOYAGER 1, VOYAGER 2, ISS, APOLLO, INGENUITY
+    // 10. LOAD 3D MODELS: VOYAGER 1, VOYAGER 2, ISS, APOLLO, INGENUITY
     const loader = new GLTFLoader();
 
-    // VOYAGER 1 (Deep Space Hyperbolic Trajectory North)
+    // Helper for probe beacon (glowing target ring so it's always easy to spot!)
+    const createBeacon = (color = '#00f0ff') => {
+      const geo = new THREE.RingGeometry(2.0, 2.3, 32);
+      const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+      const ring = new THREE.Mesh(geo, mat);
+      ring.rotation.x = Math.PI / 2;
+      return ring;
+    };
+
+    // VOYAGER 1 (Positioned in deep space with dedicated beacon & light)
     loader.load('/models/voyager.glb', (gltf) => {
       const v1 = gltf.scene;
       const box = new THREE.Box3().setFromObject(v1);
-      const scale = 2.5 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const scale = 4.5 / (box.getSize(new THREE.Vector3()).length() || 1);
       v1.scale.set(scale, scale, scale);
-      v1.position.set(440, 180, 220);
+      v1.position.set(340, 120, 200);
       v1.rotation.set(0.6, 0.4, 0.2);
+
+      // Light up Voyager in deep space
+      const vLight = new THREE.PointLight('#fff', 2.5, 30);
+      vLight.position.set(2, 3, 4);
+      v1.add(vLight);
+      v1.add(createBeacon('#f59e0b'));
+
       scene.add(v1);
       probesMeshes.current['voyager1'] = { mesh: v1, data: SPECIAL_PROBES[0] };
 
-      // Voyager 1 Trajectory Golden Trail
+      // Golden Trajectory line
       const points = [
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(120, 20, 80),
+        new THREE.Vector3(70, 0, 70),
+        new THREE.Vector3(160, 40, 110),
         new THREE.Vector3(250, 80, 160),
-        new THREE.Vector3(440, 180, 220)
+        new THREE.Vector3(340, 120, 200)
       ];
       const curve = new THREE.CatmullRomCurve3(points);
       const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#f59e0b', opacity: 0.6, transparent: true }));
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#f59e0b', opacity: 0.7, transparent: true }));
       scene.add(line);
     });
 
-    // VOYAGER 2 (Deep Space Hyperbolic Trajectory South)
+    // VOYAGER 2 (Deep space south)
     loader.load('/models/voyager.glb', (gltf) => {
       const v2 = gltf.scene.clone();
       const box = new THREE.Box3().setFromObject(v2);
-      const scale = 2.5 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const scale = 4.5 / (box.getSize(new THREE.Vector3()).length() || 1);
       v2.scale.set(scale, scale, scale);
-      v2.position.set(420, -210, 260);
+      v2.position.set(310, -140, 240);
       v2.rotation.set(-0.8, -0.2, 0.5);
+
+      const vLight = new THREE.PointLight('#fff', 2.5, 30);
+      vLight.position.set(2, 3, 4);
+      v2.add(vLight);
+      v2.add(createBeacon('#38bdf8'));
+
       scene.add(v2);
       probesMeshes.current['voyager2'] = { mesh: v2, data: SPECIAL_PROBES[1] };
 
-      // Voyager 2 Trajectory Golden Trail
       const points = [
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(100, -30, 90),
-        new THREE.Vector3(260, -110, 190),
-        new THREE.Vector3(420, -210, 260)
+        new THREE.Vector3(80, 0, 80),
+        new THREE.Vector3(150, -40, 130),
+        new THREE.Vector3(230, -90, 180),
+        new THREE.Vector3(310, -140, 240)
       ];
       const curve = new THREE.CatmullRomCurve3(points);
       const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#38bdf8', opacity: 0.6, transparent: true }));
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#38bdf8', opacity: 0.7, transparent: true }));
       scene.add(line);
     });
 
-    // ISS (International Space Station - in orbit around Earth)
+    // ISS (International Space Station in Earth orbit)
     loader.load('/models/iss.glb', (gltf) => {
       const iss = gltf.scene;
       const box = new THREE.Box3().setFromObject(iss);
-      const scale = 0.8 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const scale = 1.2 / (box.getSize(new THREE.Vector3()).length() || 1);
       iss.scale.set(scale, scale, scale);
+
+      const issLight = new THREE.PointLight('#fff', 2.0, 15);
+      iss.add(issLight);
+      iss.add(createBeacon('#60a5fa'));
+
+      // Start at Earth's position
+      iss.position.set(initialEarthPos.x + 4.2, 0.8, initialEarthPos.z);
       scene.add(iss);
       probesMeshes.current['iss'] = { mesh: iss, data: SPECIAL_PROBES[2] };
       orbitalAngles.current['iss'] = 0;
     });
 
-    // Apollo 11 Lunar Module (on the Moon)
+    // Apollo 11 (on the Moon)
     loader.load('/models/apollo-lunar-module.glb', (gltf) => {
       const model = gltf.scene;
       const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.35 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const scale = 0.45 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
-      moonMesh.add(model);
       model.position.set(0, 0.76, 0);
+      moonMesh.add(model);
       probesMeshes.current['apollo'] = { mesh: model, parentMesh: moonMesh };
     });
 
-    // Ingenuity Mars Helicopter (on Mars)
+    // Ingenuity (on Mars)
     loader.load('/models/ingenuity-mars-helicopter.glb', (gltf) => {
       const model = gltf.scene;
       const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.45 / (box.getSize(new THREE.Vector3()).length() || 1);
+      const scale = 0.55 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
       const marsObj = planetMeshes.current['mars'];
       if (marsObj && marsObj.mesh) {
@@ -281,7 +315,7 @@ export default function SpaceSimulator({
       }
     });
 
-    // 11. KEYBOARD LISTENERS FOR SPACESHIP FLIGHT MODE
+    // 11. KEYBOARD LISTENERS FOR FLIGHT MODE
     const handleKeyDown = (e) => {
       activeKeys.current[e.code] = true;
     };
@@ -290,6 +324,27 @@ export default function SpaceSimulator({
     };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+
+    // Mouse drag steering for flight mode
+    const handleMouseDown = (e) => {
+      mouseDragRef.current = { isDown: true, startX: e.clientX, startY: e.clientY };
+    };
+    const handleMouseUp = () => {
+      mouseDragRef.current.isDown = false;
+    };
+    const handleMouseMove = (e) => {
+      if (mouseDragRef.current.isDown && isFlightMode) {
+        const dx = e.clientX - mouseDragRef.current.startX;
+        const dy = e.clientY - mouseDragRef.current.startY;
+        flightYaw.current -= dx * 0.002;
+        flightPitch.current -= dy * 0.002;
+        mouseDragRef.current.startX = e.clientX;
+        mouseDragRef.current.startY = e.clientY;
+      }
+    };
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMouseMove);
 
     // 12. RESIZE HANDLER
     const handleResize = () => {
@@ -305,12 +360,11 @@ export default function SpaceSimulator({
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
-      // A. PLANETS ORBIT THE SUN (Revolution)
+      // A. PLANETS ORBIT THE SUN
       SOLAR_BODIES.forEach((body) => {
         const item = planetMeshes.current[body.id];
         if (item && item.mesh && body.orbitDistance > 0) {
-          // Update orbit angle at proportional speed
-          orbitalAngles.current[body.id] += (body.orbitSpeed || 0.01) * 0.15;
+          orbitalAngles.current[body.id] += (body.orbitSpeed || 0.01) * 0.12;
           const theta = orbitalAngles.current[body.id];
 
           item.mesh.position.x = body.orbitDistance * Math.cos(theta);
@@ -318,72 +372,63 @@ export default function SpaceSimulator({
           if (body.inclination) {
             item.mesh.position.y = Math.sin((body.inclination * Math.PI) / 180) * body.orbitDistance * 0.3;
           }
-
-          // Axial rotation
           item.mesh.rotation.y += body.rotationSpeed || 0.005;
         } else if (item && item.mesh) {
-          item.mesh.rotation.y += 0.002; // Sun rotation
+          item.mesh.rotation.y += 0.002;
         }
       });
 
       // B. MOON ORBITS EARTH
-      const earthMesh = planetMeshes.current['earth']?.mesh;
+      const earthMeshCurrent = planetMeshes.current['earth']?.mesh;
       const moonObj = planetMeshes.current['moon'];
-      if (earthMesh && moonObj && moonObj.mesh) {
+      if (earthMeshCurrent && moonObj && moonObj.mesh) {
         orbitalAngles.current['moon'] += 0.025;
         const mTheta = orbitalAngles.current['moon'];
-        const mDist = 6.8;
         moonObj.mesh.position.set(
-          earthMesh.position.x + mDist * Math.cos(mTheta),
-          earthMesh.position.y + 0.3 * Math.sin(mTheta),
-          earthMesh.position.z + mDist * Math.sin(mTheta)
+          earthMeshCurrent.position.x + 7.2 * Math.cos(mTheta),
+          earthMeshCurrent.position.y + 0.3 * Math.sin(mTheta),
+          earthMeshCurrent.position.z + 7.2 * Math.sin(mTheta)
         );
         moonObj.mesh.rotation.y += 0.005;
       }
 
-      // C. ISS ORBITS EARTH (Rapid Low Earth Orbit)
+      // C. ISS ORBITS EARTH
       const issObj = probesMeshes.current['iss'];
-      if (earthMesh && issObj && issObj.mesh) {
-        orbitalAngles.current['iss'] += 0.05;
-        const issTheta = orbitalAngles.current['iss'];
-        const issDist = 3.8;
+      if (earthMeshCurrent && issObj && issObj.mesh) {
+        orbitalAngles.current['iss'] += 0.045;
+        const iTheta = orbitalAngles.current['iss'];
         issObj.mesh.position.set(
-          earthMesh.position.x + issDist * Math.cos(issTheta),
-          earthMesh.position.y + issDist * 0.6 * Math.sin(issTheta), // 51.6° LEO inclination
-          earthMesh.position.z + issDist * Math.sin(issTheta)
+          earthMeshCurrent.position.x + 4.2 * Math.cos(iTheta),
+          earthMeshCurrent.position.y + 2.2 * Math.sin(iTheta),
+          earthMeshCurrent.position.z + 4.2 * Math.sin(iTheta)
         );
         issObj.mesh.rotation.y += 0.02;
       }
 
-      // D. CAMERA FOLLOWS THE SELECTED BODY IN REAL TIME
+      // D. CAMERA TRACKING & ORBITAL LOCK
       if (selectedTarget && selectedTarget !== 'OVERVIEW' && !isFlightMode) {
         let currentTargetPos = null;
 
-        // Check if selected target is planet or moon
         const pObj = planetMeshes.current[selectedTarget.toLowerCase()];
-        if (pObj && pObj.mesh) {
-          currentTargetPos = pObj.mesh.position;
-        }
+        if (pObj && pObj.mesh) currentTargetPos = pObj.mesh.position;
 
-        // Check if probe (Voyager 1, 2, ISS, Apollo, Ingenuity)
-        const probeObj = probesMeshes.current[selectedTarget.toLowerCase()];
-        if (probeObj && probeObj.mesh) {
+        const prObj = probesMeshes.current[selectedTarget.toLowerCase()];
+        if (prObj && prObj.mesh) {
           const wp = new THREE.Vector3();
-          probeObj.mesh.getWorldPosition(wp);
+          prObj.mesh.getWorldPosition(wp);
           currentTargetPos = wp;
         }
 
         if (currentTargetPos) {
-          // If we are actively transitioning (flying to the target)
           if (isTransitioning.current) {
-            camera.position.lerp(targetCamPos.current, 0.06);
-            controls.target.lerp(targetLookAt.current, 0.06);
+            camera.position.lerp(targetCamPos.current, 0.07);
+            controls.target.lerp(targetLookAt.current, 0.07);
 
-            if (camera.position.distanceTo(targetCamPos.current) < 1.0) {
-              isTransitioning.current = false; // Arrival! Start tight lock
+            if (camera.position.distanceTo(targetCamPos.current) < 1.2) {
+              isTransitioning.current = false;
             }
           } else {
-            // Tight orbital lock: camera moves WITH the planet as it orbits!
+            // Move camera with planet orbit
             const delta = new THREE.Vector3().subVectors(currentTargetPos, lastTargetPos.current);
             camera.position.add(delta);
             controls.target.copy(currentTargetPos);
@@ -392,36 +437,47 @@ export default function SpaceSimulator({
         }
       }
 
-      // E. SPACESHIP FLIGHT MODE CONTROLS (WASD / Flight Thrusters)
+      // E. SPACESHIP FLIGHT MODE (SPACE ENGINE STYLE)
       if (isFlightMode) {
-        controls.enabled = false; // Disable orbit controls to pilot ship
-        const moveSpeed = activeKeys.current['ShiftLeft'] || activeKeys.current['ShiftRight'] ? 2.5 : 0.8;
-        const forward = new THREE.Vector3();
-        camera.getWorldDirection(forward);
+        controls.enabled = false;
 
-        const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+        // Thrust Speed control (W/S)
+        const isBoost = activeKeys.current['ShiftLeft'] || activeKeys.current['ShiftRight'];
+        const accel = isBoost ? 3.0 : 0.8;
 
-        // Thrust forward / back (W / S)
         if (activeKeys.current['KeyW'] || activeKeys.current['ArrowUp']) {
-          camera.position.addScaledVector(forward, moveSpeed);
-        }
-        if (activeKeys.current['KeyS'] || activeKeys.current['ArrowDown']) {
-          camera.position.addScaledVector(forward, -moveSpeed);
+          flightSpeed.current = Math.min(flightSpeed.current + accel * 0.1, isBoost ? 4.5 : 1.5);
+        } else if (activeKeys.current['KeyS'] || activeKeys.current['ArrowDown']) {
+          flightSpeed.current = Math.max(flightSpeed.current - accel * 0.1, -1.0);
+        } else {
+          flightSpeed.current *= 0.96; // Dampen velocity
         }
 
-        // Yaw left / right (A / D)
+        // Steer with A / D
         if (activeKeys.current['KeyA'] || activeKeys.current['ArrowLeft']) {
-          camera.position.addScaledVector(right, -moveSpeed * 0.7);
+          flightYaw.current += 0.025;
         }
         if (activeKeys.current['KeyD'] || activeKeys.current['ArrowRight']) {
-          camera.position.addScaledVector(right, moveSpeed * 0.7);
+          flightYaw.current -= 0.025;
         }
 
+        // Apply orientation to camera
+        const euler = new THREE.Euler(flightPitch.current, flightYaw.current, 0, 'YXZ');
+        camera.quaternion.setFromEuler(euler);
+
+        // Move forward along look direction
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        camera.position.addScaledVector(forward, flightSpeed.current);
+
         // Vertical thrusters (R / F)
-        if (activeKeys.current['KeyR']) camera.position.y += moveSpeed * 0.7;
-        if (activeKeys.current['KeyF']) camera.position.y -= moveSpeed * 0.7;
+        if (activeKeys.current['KeyR']) camera.position.y += 0.6;
+        if (activeKeys.current['KeyF']) camera.position.y -= 0.6;
 
         controls.target.copy(camera.position).add(forward.multiplyScalar(20));
+
+        if (setFlightVelocity) {
+          setFlightVelocity((Math.abs(flightSpeed.current) * 28.5).toFixed(1));
+        }
       } else {
         controls.enabled = true;
       }
@@ -436,6 +492,9 @@ export default function SpaceSimulator({
       cancelAnimationFrame(animationId);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       if (container && renderer.domElement) {
         container.removeChild(renderer.domElement);
@@ -444,7 +503,7 @@ export default function SpaceSimulator({
     };
   }, [isFlightMode]);
 
-  // Initiate camera warp towards target whenever selectedTarget changes
+  // Handle Target Switching
   useEffect(() => {
     if (!selectedTarget) return;
 
@@ -455,26 +514,26 @@ export default function SpaceSimulator({
       return;
     }
 
-    // Target a planet / Moon
+    // Celestial Bodies
     const targetObj = planetMeshes.current[selectedTarget.toLowerCase()];
     if (targetObj && targetObj.mesh) {
       const pos = targetObj.mesh.position;
       const rad = targetObj.data.radius || 3;
-      const zoomDist = rad * 4.2;
+      const zoomDist = rad * 3.8;
 
-      targetCamPos.current.set(pos.x, pos.y + rad * 1.5, pos.z + zoomDist);
+      targetCamPos.current.set(pos.x, pos.y + rad * 1.4, pos.z + zoomDist);
       targetLookAt.current.copy(pos);
       lastTargetPos.current.copy(pos);
       isTransitioning.current = true;
       return;
     }
 
-    // Target a special probe (Voyager 1, 2, ISS, Apollo, Ingenuity)
+    // Special Probes (Voyager 1, 2, ISS, Apollo, Ingenuity)
     const probeObj = probesMeshes.current[selectedTarget.toLowerCase()];
     if (probeObj && probeObj.mesh) {
       const wp = new THREE.Vector3();
       probeObj.mesh.getWorldPosition(wp);
-      targetCamPos.current.set(wp.x + 3.5, wp.y + 2.0, wp.z + 5.5);
+      targetCamPos.current.set(wp.x + 3.0, wp.y + 1.8, wp.z + 5.0);
       targetLookAt.current.copy(wp);
       lastTargetPos.current.copy(wp);
       isTransitioning.current = true;

@@ -1,9 +1,10 @@
 export const SOLAR_BODIES = [
   {
     id: 'sun',
-    name: 'El Sol (Sol)',
+    shortName: 'Sol',
+    name: 'El Sol',
     type: 'Estrella (Enana Amarilla G2V)',
-    radius: 18,
+    radius: 14, // Scaled so Mercury at distance 40 is clearly visible outside
     orbitDistance: 0,
     orbitSpeed: 0,
     rotationSpeed: 0.002,
@@ -22,11 +23,12 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'mercury',
+    shortName: 'Mercurio',
     name: 'Mercurio',
     type: 'Planeta Rocoso',
     radius: 1.4,
     orbitDistance: 38,
-    orbitSpeed: 0.035, // Rápido
+    orbitSpeed: 0.035,
     rotationSpeed: 0.004,
     texture: '/textures/mercury.jpg',
     color: '#94a3b8',
@@ -42,12 +44,13 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'venus',
+    shortName: 'Venus',
     name: 'Venus',
-    type: 'Planeta Rocoso (Efecto Invernadero Extremo)',
+    type: 'Planeta Rocoso (Efecto Invernadero)',
     radius: 2.5,
-    orbitDistance: 56,
+    orbitDistance: 58,
     orbitSpeed: 0.024,
-    rotationSpeed: -0.002, // Retrógrado
+    rotationSpeed: -0.002,
     texture: '/textures/venus.jpg',
     color: '#fde047',
     realDiameter: '12,104 km (~95% de la Tierra)',
@@ -62,10 +65,11 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'earth',
+    shortName: 'Tierra',
     name: 'La Tierra',
-    type: 'Planeta Terrestre (Biósfera Activa)',
+    type: 'Planeta Terrestre (Hogar)',
     radius: 2.7,
-    orbitDistance: 80,
+    orbitDistance: 82,
     orbitSpeed: 0.018,
     rotationSpeed: 0.01,
     texture: '/textures/earth.jpg',
@@ -75,7 +79,7 @@ export const SOLAR_BODIES = [
     orbitalPeriod: '365.25 días',
     hasMoon: true,
     moonRadius: 0.75,
-    moonDistance: 6.8,
+    moonDistance: 7.2,
     moonTexture: '/textures/moon.jpg',
     hasIss: true,
     funFacts: [
@@ -87,17 +91,18 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'moon',
-    name: 'La Luna (Selene)',
+    shortName: 'Luna',
+    name: 'La Luna',
     type: 'Satélite Natural Terrestre',
     radius: 0.75,
-    orbitDistance: 6.8, // Respecto a la Tierra
+    orbitDistance: 7.2,
     orbitSpeed: 0.045,
     rotationSpeed: 0.005,
     texture: '/textures/moon.jpg',
     color: '#e2e8f0',
     realDiameter: '3,474 km',
     surfaceTemp: '-173 °C a +127 °C',
-    orbitalPeriod: '27.3 días (Bloqueo de marea)',
+    orbitalPeriod: '27.3 días',
     hasApollo: true,
     funFacts: [
       'Muestra siempre la misma cara a la Tierra debido al anclaje de marea gravitacional.',
@@ -108,10 +113,11 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'mars',
+    shortName: 'Marte',
     name: 'Marte',
     type: 'Planeta Desértico Rojo',
     radius: 1.8,
-    orbitDistance: 112,
+    orbitDistance: 116,
     orbitSpeed: 0.014,
     rotationSpeed: 0.009,
     texture: '/textures/mars.jpg',
@@ -130,12 +136,13 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'jupiter',
+    shortName: 'Júpiter',
     name: 'Júpiter',
-    type: 'Gigante Gaseoso (Rey Planetario)',
+    type: 'Gigante Gaseoso',
     radius: 7.2,
-    orbitDistance: 170,
+    orbitDistance: 175,
     orbitSpeed: 0.008,
-    rotationSpeed: 0.02, // Rota en solo 10 horas
+    rotationSpeed: 0.02,
     texture: '/textures/jupiter.jpg',
     color: '#d97706',
     realDiameter: '139,820 km (Caben más de 1,300 Tierras)',
@@ -150,10 +157,11 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'saturn',
+    shortName: 'Saturno',
     name: 'Saturno',
     type: 'Gigante Gaseoso Anillado',
     radius: 6.0,
-    orbitDistance: 230,
+    orbitDistance: 235,
     orbitSpeed: 0.006,
     rotationSpeed: 0.018,
     texture: '/textures/saturn.jpg',
@@ -172,10 +180,11 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'uranus',
+    shortName: 'Urano',
     name: 'Urano',
     type: 'Gigante Helado Inclinado',
     radius: 3.6,
-    orbitDistance: 290,
+    orbitDistance: 295,
     orbitSpeed: 0.004,
     rotationSpeed: 0.012,
     texture: '/textures/uranus.jpg',
@@ -192,10 +201,11 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'neptune',
+    shortName: 'Neptuno',
     name: 'Neptuno',
     type: 'Gigante Helado Azur',
     radius: 3.5,
-    orbitDistance: 350,
+    orbitDistance: 355,
     orbitSpeed: 0.003,
     rotationSpeed: 0.012,
     texture: '/textures/neptune.jpg',
@@ -212,10 +222,11 @@ export const SOLAR_BODIES = [
   },
   {
     id: 'pluto',
+    shortName: 'Plutón',
     name: 'Plutón',
     type: 'Planeta Enano (Cinturón de Kuiper)',
     radius: 0.9,
-    orbitDistance: 410,
+    orbitDistance: 415,
     orbitSpeed: 0.002,
     rotationSpeed: 0.003,
     texture: '/textures/pluto.jpg',
@@ -236,13 +247,13 @@ export const SOLAR_BODIES = [
 export const SPECIAL_PROBES = [
   {
     id: 'voyager1',
-    name: 'Voyager 1 (Frontera Interestelar)',
+    shortName: 'Voyager 1',
+    name: 'Voyager 1 (Espacio Interestelar)',
     type: 'Sonda Interestelar de Espacio Profundo',
     launchYear: '5 de Septiembre de 1977',
-    distanceAU: '163 AU (~24,400,000,000 km de la Tierra)',
+    distanceAU: '163 AU (~24,400,000,000 km)',
     speedKmH: '61,200 km/h (17 km/s)',
-    coordinates: { x: 440, y: 180, z: 220 }, // Salida hiperbólica al norte del plano
-    trajectoryAngle: 35,
+    coordinates: { x: 340, y: 120, z: 200 },
     status: 'Activa en Espacio Interestelar',
     modelPath: '/models/voyager.glb',
     funFacts: [
@@ -254,13 +265,13 @@ export const SPECIAL_PROBES = [
   },
   {
     id: 'voyager2',
+    shortName: 'Voyager 2',
     name: 'Voyager 2 (El Gran Tour Planetario)',
     type: 'Sonda Interestelar de Espacio Profundo',
     launchYear: '20 de Agosto de 1977',
     distanceAU: '136 AU (~20,300,000,000 km)',
     speedKmH: '55,300 km/h (15.4 km/s)',
-    coordinates: { x: 420, y: -210, z: 260 }, // Salida hiperbólica al sur del plano
-    trajectoryAngle: -48,
+    coordinates: { x: 310, y: -140, z: 240 },
     status: 'Activa en Espacio Interestelar',
     modelPath: '/models/voyager.glb',
     funFacts: [
@@ -272,6 +283,7 @@ export const SPECIAL_PROBES = [
   },
   {
     id: 'iss',
+    shortName: 'ISS',
     name: 'Estación Espacial Internacional (ISS)',
     type: 'Laboratorio Orbital Tripulado',
     launchYear: 'Noviembre de 1998 (Módulo Zarya)',
