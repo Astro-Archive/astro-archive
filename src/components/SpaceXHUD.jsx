@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { 
   Compass, Radio, Volume2, VolumeX, Award, ExternalLink, Activity, 
   Sparkles, Layers, Maximize2, ShieldCheck, Terminal, Eye, Info,
-  Navigation, Plane, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Zap, Target
+  Navigation, Plane, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Zap, Target, Settings
 } from 'lucide-react';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
+import CuriosityPanel from './CuriosityPanel';
 
 export default function SpaceXHUD({
   selectedTarget,
@@ -16,17 +17,25 @@ export default function SpaceXHUD({
   onOpenBadges,
   scannedCount,
   isPlayingAudio,
-  onToggleAudio
+  onToggleAudio,
+  onOpenSurface,
+  settings,
+  onUpdateSettings
 }) {
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Look up target
   const currentBody = SOLAR_BODIES.find(b => b.id.toUpperCase() === selectedTarget.toUpperCase());
   const currentProbe = SPECIAL_PROBES.find(p => p.id.toUpperCase() === selectedTarget.toUpperCase());
-  const currentArtifact = artifacts.find(a => 
-    (selectedTarget === 'APOLLO' && a.id === 'apollo11') ||
-    (selectedTarget === 'INGENUITY' && a.id === 'ingenuity')
-  );
+  const artifactTargetIds = {
+    APOLLO: 'apollo11',
+    INGENUITY: 'ingenuity',
+    OPPORTUNITY: 'opportunity',
+    VIKING: 'viking',
+    PERSEVERANCE: 'perseverance',
+  };
+  const currentArtifact = artifacts.find(a => a.id === artifactTargetIds[selectedTarget]);
 
   const activeTitle = currentProbe ? currentProbe.name : currentBody ? currentBody.name : currentArtifact ? currentArtifact.name : selectedTarget;
   const activeType = currentProbe ? currentProbe.type : currentBody ? currentBody.type : 'Objeto Espacial';
@@ -65,7 +74,7 @@ export default function SpaceXHUD({
             }`}
           >
             <Eye className="w-4 h-4" />
-            <span className="font-bold">🌌 Sistema Completo</span>
+              <span className="font-bold">Sistema completo</span>
           </button>
 
           {/* SPACESHIP FLIGHT MODE TOGGLE */}
@@ -78,7 +87,7 @@ export default function SpaceXHUD({
             }`}
           >
             <Plane className="w-4 h-4" />
-            <span>{isFlightMode ? '⚡ PILOTANDO NAVE' : '🚀 PILOTAR NAVE'}</span>
+            <span>{isFlightMode ? 'Pilotando nave' : 'Pilotar nave'}</span>
           </button>
 
         </div>
@@ -161,7 +170,7 @@ export default function SpaceXHUD({
                   onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' }))}
                   className="px-3 py-2 bg-emerald-950 border border-emerald-400 text-white font-bold"
                 >
-                  ▲ IMPULSO
+                  IMPULSO
                 </button>
                 <button
                   onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS' }))}
@@ -170,7 +179,7 @@ export default function SpaceXHUD({
                   onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyS' }))}
                   className="px-3 py-2 bg-emerald-950 border border-emerald-400 text-white font-bold"
                 >
-                  ▼ FRENAR
+                  FRENAR
                 </button>
                 <button
                   onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }))}
@@ -179,7 +188,7 @@ export default function SpaceXHUD({
                   onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyA' }))}
                   className="px-3 py-2 bg-emerald-950 border border-emerald-400 text-white font-bold"
                 >
-                  ◄
+                  IZQUIERDA
                 </button>
                 <button
                   onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }))}
@@ -188,7 +197,7 @@ export default function SpaceXHUD({
                   onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyD' }))}
                   className="px-3 py-2 bg-emerald-950 border border-emerald-400 text-white font-bold"
                 >
-                  ►
+                  DERECHA
                 </button>
               </div>
             </div>
@@ -204,7 +213,7 @@ export default function SpaceXHUD({
           </div>
           <div className="absolute bottom-20 text-center">
             <div className="text-xs sm:text-sm text-slate-300 font-mono tracking-widest bg-black/75 px-4 py-1.5 border border-slate-700 rounded-none backdrop-blur-md">
-              🖱️ Clic en un astro para seguirlo // Arrastra el ratón para rotar 360° // Rueda para Zoom
+              Clic en un astro para seguirlo // Arrastra el ratón para rotar 360 grados // Rueda para zoom
             </div>
           </div>
         </div>
@@ -212,9 +221,25 @@ export default function SpaceXHUD({
 
       {/* 3. BOTTOM PANEL: RESPONSIVE PLANETARY & SPACECRAFT RIBBON (Sharp borders, larger font, no cutoffs) */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pointer-events-auto w-full">
+
+        <label className="flex w-full items-center gap-2 border border-cyan-500/40 bg-black/95 p-2 text-xs text-cyan-300 sm:w-56">
+          <span className="shrink-0 font-bold">Destino</span>
+          <select value={selectedTarget} onChange={(event) => onSelectTarget(event.target.value)} aria-label="Seleccionar destino" className="min-w-0 flex-1 bg-slate-950 px-2 py-2 text-slate-100 outline-none">
+            <option value="OVERVIEW">Sistema completo</option>
+            <optgroup label="Astros">
+              {SOLAR_BODIES.map((body) => <option key={body.id} value={body.id.toUpperCase()}>{body.name}</option>)}
+            </optgroup>
+            <optgroup label="Sondas y estación">
+              <option value="VOYAGER1">Voyager 1</option><option value="VOYAGER2">Voyager 2</option><option value="ISS">ISS</option>
+            </optgroup>
+            <optgroup label="Tecnología en superficie">
+              <option value="APOLLO">Apollo 11</option><option value="INGENUITY">Ingenuity</option><option value="OPPORTUNITY">Opportunity</option><option value="VIKING">Viking 1</option><option value="PERSEVERANCE">Perseverance</option>
+            </optgroup>
+          </select>
+        </label>
         
         {/* Horizontal Scrollable Ribbon with Clean Short Names */}
-        <div className="flex-1 bg-black/95 backdrop-blur-md p-2 border border-slate-700 rounded-none overflow-x-auto flex items-center space-x-2 text-xs sm:text-sm">
+        <div className="hidden flex-1 bg-black/95 backdrop-blur-md p-2 border border-slate-700 rounded-none overflow-x-auto sm:flex sm:items-center sm:space-x-2 text-xs sm:text-sm">
           
           {/* Astros Sol a Plutón */}
           {SOLAR_BODIES.map((body) => {
@@ -246,7 +271,6 @@ export default function SpaceXHUD({
                 : 'text-amber-400/90 hover:text-amber-200 border-amber-500/30 hover:bg-amber-950/30'
             }`}
           >
-            <span>🛰️</span>
             <span>Voyager 1</span>
           </button>
 
@@ -258,7 +282,6 @@ export default function SpaceXHUD({
                 : 'text-amber-400/90 hover:text-amber-200 border-amber-500/30 hover:bg-amber-950/30'
             }`}
           >
-            <span>🛰️</span>
             <span>Voyager 2</span>
           </button>
 
@@ -270,7 +293,6 @@ export default function SpaceXHUD({
                 : 'text-blue-400/90 hover:text-blue-200 border-blue-500/30 hover:bg-blue-950/30'
             }`}
           >
-            <span>🛸</span>
             <span>ISS</span>
           </button>
 
@@ -282,7 +304,6 @@ export default function SpaceXHUD({
                 : 'text-emerald-400/90 hover:text-emerald-200 border-emerald-500/30 hover:bg-emerald-950/30'
             }`}
           >
-            <span>🌙</span>
             <span>Apolo 11</span>
           </button>
 
@@ -294,9 +315,22 @@ export default function SpaceXHUD({
                 : 'text-red-400/90 hover:text-red-200 border-red-500/30 hover:bg-red-950/30'
             }`}
           >
-            <span>🚁</span>
             <span>Ingenuity</span>
           </button>
+
+          {artifacts.filter((artifact) => !['apollo11', 'ingenuity'].includes(artifact.id)).map((artifact) => (
+            <button
+              key={artifact.id}
+              onClick={() => onSelectTarget(artifact.id.toUpperCase())}
+              className={`px-3 py-2 rounded-none flex items-center space-x-1.5 flex-shrink-0 font-bold border transition-all ${
+                selectedTarget === artifact.id.toUpperCase() && !isFlightMode
+                  ? 'bg-cyan-500/30 text-cyan-300 border-cyan-400'
+                  : 'text-slate-400 hover:text-white border-slate-700 hover:bg-white/10'
+              }`}
+            >
+              <span>{artifact.name.split(' (')[0]}</span>
+            </button>
+          ))}
 
         </div>
 
@@ -329,80 +363,26 @@ export default function SpaceXHUD({
             <span className="font-bold">{isTelemetryOpen ? 'Ocultar' : 'Curiosidades'}</span>
           </button>
 
+          <button onClick={() => setIsSettingsOpen((value) => !value)} aria-label="Abrir configuración" title="Configuración" className={`p-2.5 border transition-all ${isSettingsOpen ? 'border-amber-400 bg-amber-500/20 text-amber-300' : 'border-slate-700 bg-space-900 text-slate-300 hover:border-amber-400'}`}>
+            <Settings className="h-4 w-4" />
+          </button>
+
         </div>
 
       </div>
 
-      {/* 4. RIGHT SIDE: Collapsible Data & Curiosities Drawer (Sharp rounded-none, larger font) */}
+      {/* 4. Curiosities panel */}
       {isTelemetryOpen && (
-        <div className="absolute right-2 sm:right-4 top-16 bottom-24 w-80 sm:w-[420px] bg-black/95 backdrop-blur-xl border border-cyan-500/40 rounded-none p-4 sm:p-5 overflow-y-auto pointer-events-auto shadow-[0_0_35px_rgba(0,0,0,0.95)] animate-slide-left text-xs sm:text-sm">
-          
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-700 pb-3 mb-3">
-            <div>
-              <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">
-                {activeType}
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-white mt-0.5 tracking-wide">
-                {activeTitle}
-              </h2>
-            </div>
-            
-            <button
-              onClick={() => setIsTelemetryOpen(false)}
-              className="text-slate-400 hover:text-white p-1 text-base font-bold"
-            >
-              ✕
-            </button>
-          </div>
+        <CuriosityPanel artifact={currentArtifact} body={currentBody} probe={currentProbe} onClose={() => setIsTelemetryOpen(false)} onOpenSurface={onOpenSurface} />
+      )}
 
-          {/* Special Probe Details */}
-          {currentProbe && (
-            <div className="mb-4">
-              <span className="text-xs uppercase font-bold text-amber-400 block mb-1.5 flex items-center space-x-1">
-                <Terminal className="w-4 h-4" />
-                <span>Estado de Telemetría Espacial</span>
-              </span>
-              <div className="space-y-2 text-xs sm:text-sm bg-space-950/90 p-3 border border-slate-700 rounded-none">
-                <div className="flex justify-between"><span className="text-slate-400">Lanzamiento:</span><span className="font-bold text-slate-200">{currentProbe.launchYear}</span></div>
-                {currentProbe.distanceAU && <div className="flex justify-between"><span className="text-slate-400">Distancia Actual:</span><span className="font-bold text-cyan-300">{currentProbe.distanceAU}</span></div>}
-                <div className="flex justify-between"><span className="text-slate-400">Velocidad:</span><span className="font-bold text-amber-300">{currentProbe.speedKmH}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Estado:</span><span className="font-bold text-emerald-400">{currentProbe.status}</span></div>
-              </div>
-            </div>
-          )}
-
-          {/* Curiosidades y Secretos Científicos (Ages 10-16) */}
-          <div className="mb-4">
-            <span className="text-xs uppercase font-bold text-cyan-400 block mb-2 flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Curiosidades Científicas Destacadas</span>
-            </span>
-            <div className="space-y-2.5">
-              {(currentProbe?.funFacts || currentBody?.funFacts || []).map((fact, idx) => (
-                <div key={idx} className="bg-space-950/90 p-3 border border-slate-800 rounded-none hover:border-cyan-500/40 transition-all">
-                  <p className="text-xs sm:text-sm text-slate-200 font-sans leading-relaxed">
-                    ✨ {fact}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* NASA Mission Link */}
-          <div className="pt-3 border-t border-slate-700 flex items-center justify-between text-xs">
-            <span className="text-slate-400">NASA Science Open Data</span>
-            <a
-              href="https://science.nasa.gov/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-200 underline flex items-center space-x-1 font-bold"
-            >
-              <span>Portal Oficial NASA</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
+      {isSettingsOpen && (
+        <div className="absolute bottom-24 right-2 z-40 w-[calc(100vw-1rem)] max-w-80 border border-amber-500/40 bg-black/95 p-4 text-xs shadow-2xl sm:right-4">
+          <div className="mb-3 flex items-center justify-between border-b border-slate-700 pb-2"><span className="font-bold uppercase tracking-wider text-amber-300">Configuración</span><button onClick={() => setIsSettingsOpen(false)} aria-label="Cerrar configuración" className="text-slate-400 hover:text-white">Cerrar</button></div>
+          <label className="mb-3 flex items-center justify-between gap-3 text-slate-200"><span>Mostrar órbitas</span><input type="checkbox" checked={settings.showOrbits} onChange={(event) => onUpdateSettings({ showOrbits: event.target.checked })} /></label>
+          <label className="mb-3 flex items-center justify-between gap-3 text-slate-200"><span>Reducir movimiento</span><input type="checkbox" checked={settings.reducedMotion} onChange={(event) => onUpdateSettings({ reducedMotion: event.target.checked })} /></label>
+          <label className="flex items-center justify-between gap-3 text-slate-200"><span>Contraste alto</span><input type="checkbox" checked={settings.highContrast} onChange={(event) => onUpdateSettings({ highContrast: event.target.checked })} /></label>
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[10px] leading-relaxed text-slate-500">Este menú queda preparado para futuras personalizaciones visuales y de simulación.</p>
         </div>
       )}
 

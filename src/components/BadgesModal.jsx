@@ -94,7 +94,7 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
               className="mt-2 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center space-x-1.5 transition-all shadow-[0_0_15px_rgba(245,158,11,0.4)]"
             >
               <Award className="w-4 h-4" />
-              <span>Celebrate Certification! 🚀</span>
+              <span>Celebrate Certification</span>
             </button>
           </div>
         ) : (

@@ -84,7 +84,7 @@ export default function Viewer3D({ artifact, onInspectHardware }) {
       {/* Interactive Helper Text */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center">
         <span className="text-[11px] font-mono text-slate-400/80 bg-space-950/80 px-3 py-1 rounded-full border border-slate-800 backdrop-blur-md">
-          🖱️ Click & Drag to Rotate // Scroll to Zoom // Touch-friendly
+          Click and drag to rotate // Scroll to zoom // Touch-friendly
         </span>
       </div>
 

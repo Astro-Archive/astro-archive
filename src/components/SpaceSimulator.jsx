@@ -2,14 +2,17 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
+import { ARTIFACTS } from '../data/artifactsData';
 
 export default function SpaceSimulator({
   selectedTarget,
   onSelectTarget,
   isFlightMode,
   flightVelocity,
-  setFlightVelocity
+  setFlightVelocity,
+  settings = { showOrbits: true, reducedMotion: false }
 }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -34,6 +37,29 @@ export default function SpaceSimulator({
   const flightPitch = useRef(0);
   const activeKeys = useRef({});
   const mouseDragRef = useRef({ isDown: false, startX: 0, startY: 0 });
+  const selectedTargetRef = useRef(selectedTarget);
+  const isFlightModeRef = useRef(isFlightMode);
+  const onSelectTargetRef = useRef(onSelectTarget);
+  const lastVelocityRef = useRef('0.0');
+  const settingsRef = useRef(settings);
+  const orbitLinesRef = useRef([]);
+
+  useEffect(() => {
+    selectedTargetRef.current = selectedTarget;
+  }, [selectedTarget]);
+
+  useEffect(() => {
+    isFlightModeRef.current = isFlightMode;
+  }, [isFlightMode]);
+
+  useEffect(() => {
+    onSelectTargetRef.current = onSelectTarget;
+  }, [onSelectTarget]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+    orbitLinesRef.current.forEach((line) => { line.visible = settings.showOrbits; });
+  }, [settings]);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -113,6 +139,7 @@ export default function SpaceSimulator({
       }
 
       const mesh = new THREE.Mesh(geo, mat);
+      mesh.userData.targetId = body.id;
 
       // Stagger initial orbit angles so planets are nicely spread out
       const initialAngle = (idx * (Math.PI * 2 / 10)) + 0.3;
@@ -139,6 +166,8 @@ export default function SpaceSimulator({
           orbitLine.rotation.z = (body.inclination * Math.PI) / 180;
         }
         scene.add(orbitLine);
+        orbitLine.visible = settingsRef.current.showOrbits;
+        orbitLinesRef.current.push(orbitLine);
       } else {
         // ONLY the Sun is at (0,0,0)
         mesh.position.set(0, 0, 0);
@@ -195,6 +224,7 @@ export default function SpaceSimulator({
     const moonTex = textureLoader.load('/textures/moon.jpg');
     const moonMat = new THREE.MeshStandardMaterial({ map: moonTex, roughness: 0.9 });
     const moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    moonMesh.userData.targetId = 'moon';
     moonMesh.position.set(initialEarthPos.x + 7.2, 0, initialEarthPos.z);
     scene.add(moonMesh);
     planetMeshes.current['moon'] = { mesh: moonMesh, data: { radius: 0.75, name: 'La Luna', type: 'Satélite Natural' } };
@@ -202,6 +232,7 @@ export default function SpaceSimulator({
 
     // 10. LOAD 3D MODELS: VOYAGER 1, VOYAGER 2, ISS, APOLLO, INGENUITY
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
 
     // Helper for probe beacon (glowing target ring so it's always easy to spot!)
     const createBeacon = (color = '#00f0ff') => {
@@ -215,6 +246,7 @@ export default function SpaceSimulator({
     // VOYAGER 1 (Positioned in deep space with dedicated beacon & light)
     loader.load('/models/voyager.glb', (gltf) => {
       const v1 = gltf.scene;
+      v1.userData.targetId = 'voyager1';
       const box = new THREE.Box3().setFromObject(v1);
       const scale = 4.5 / (box.getSize(new THREE.Vector3()).length() || 1);
       v1.scale.set(scale, scale, scale);
@@ -246,6 +278,7 @@ export default function SpaceSimulator({
     // VOYAGER 2 (Deep space south)
     loader.load('/models/voyager.glb', (gltf) => {
       const v2 = gltf.scene.clone();
+      v2.userData.targetId = 'voyager2';
       const box = new THREE.Box3().setFromObject(v2);
       const scale = 4.5 / (box.getSize(new THREE.Vector3()).length() || 1);
       v2.scale.set(scale, scale, scale);
@@ -275,6 +308,7 @@ export default function SpaceSimulator({
     // ISS (International Space Station in Earth orbit)
     loader.load('/models/iss.glb', (gltf) => {
       const iss = gltf.scene;
+      iss.userData.targetId = 'iss';
       const box = new THREE.Box3().setFromObject(iss);
       const scale = 1.2 / (box.getSize(new THREE.Vector3()).length() || 1);
       iss.scale.set(scale, scale, scale);
@@ -293,6 +327,7 @@ export default function SpaceSimulator({
     // Apollo 11 (on the Moon)
     loader.load('/models/apollo-lunar-module.glb', (gltf) => {
       const model = gltf.scene;
+      model.userData.targetId = 'apollo';
       const box = new THREE.Box3().setFromObject(model);
       const scale = 0.45 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
@@ -304,6 +339,7 @@ export default function SpaceSimulator({
     // Ingenuity (on Mars)
     loader.load('/models/ingenuity-mars-helicopter.glb', (gltf) => {
       const model = gltf.scene;
+      model.userData.targetId = 'ingenuity';
       const box = new THREE.Box3().setFromObject(model);
       const scale = 0.55 / (box.getSize(new THREE.Vector3()).length() || 1);
       model.scale.set(scale, scale, scale);
@@ -327,13 +363,13 @@ export default function SpaceSimulator({
 
     // Mouse drag steering for flight mode
     const handleMouseDown = (e) => {
-      mouseDragRef.current = { isDown: true, startX: e.clientX, startY: e.clientY };
+      mouseDragRef.current = { ...mouseDragRef.current, isDown: true, startX: e.clientX, startY: e.clientY };
     };
     const handleMouseUp = () => {
       mouseDragRef.current.isDown = false;
     };
     const handleMouseMove = (e) => {
-      if (mouseDragRef.current.isDown && isFlightMode) {
+      if (mouseDragRef.current.isDown && isFlightModeRef.current) {
         const dx = e.clientX - mouseDragRef.current.startX;
         const dy = e.clientY - mouseDragRef.current.startY;
         flightYaw.current -= dx * 0.002;
@@ -345,6 +381,36 @@ export default function SpaceSimulator({
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const handlePointerDown = (event) => {
+      mouseDragRef.current.pointerStartX = event.clientX;
+      mouseDragRef.current.pointerStartY = event.clientY;
+    };
+    const handlePointerUp = (event) => {
+      if (isFlightModeRef.current) return;
+      const moved = Math.hypot(
+        event.clientX - mouseDragRef.current.pointerStartX,
+        event.clientY - mouseDragRef.current.pointerStartY
+      );
+      if (moved > 6) return;
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const selectable = [
+        ...Object.values(planetMeshes.current).map((item) => item.mesh),
+        ...Object.values(probesMeshes.current).map((item) => item.mesh),
+      ];
+      const hit = raycaster.intersectObjects(selectable, true)[0];
+      let object = hit?.object;
+      while (object && !object.userData.targetId) object = object.parent;
+      if (object?.userData.targetId) onSelectTargetRef.current(object.userData.targetId.toUpperCase());
+    };
+    renderer.domElement.addEventListener('pointerdown', handlePointerDown);
+    renderer.domElement.addEventListener('pointerup', handlePointerUp);
 
     // 12. RESIZE HANDLER
     const handleResize = () => {
@@ -364,7 +430,8 @@ export default function SpaceSimulator({
       SOLAR_BODIES.forEach((body) => {
         const item = planetMeshes.current[body.id];
         if (item && item.mesh && body.orbitDistance > 0) {
-          orbitalAngles.current[body.id] += (body.orbitSpeed || 0.01) * 0.12;
+          const motionScale = settingsRef.current.reducedMotion ? 0 : 1;
+          orbitalAngles.current[body.id] += (body.orbitSpeed || 0.01) * 0.12 * motionScale;
           const theta = orbitalAngles.current[body.id];
 
           item.mesh.position.x = body.orbitDistance * Math.cos(theta);
@@ -372,9 +439,9 @@ export default function SpaceSimulator({
           if (body.inclination) {
             item.mesh.position.y = Math.sin((body.inclination * Math.PI) / 180) * body.orbitDistance * 0.3;
           }
-          item.mesh.rotation.y += body.rotationSpeed || 0.005;
+          item.mesh.rotation.y += (body.rotationSpeed || 0.005) * motionScale;
         } else if (item && item.mesh) {
-          item.mesh.rotation.y += 0.002;
+          item.mesh.rotation.y += settingsRef.current.reducedMotion ? 0 : 0.002;
         }
       });
 
@@ -382,37 +449,41 @@ export default function SpaceSimulator({
       const earthMeshCurrent = planetMeshes.current['earth']?.mesh;
       const moonObj = planetMeshes.current['moon'];
       if (earthMeshCurrent && moonObj && moonObj.mesh) {
-        orbitalAngles.current['moon'] += 0.025;
+        orbitalAngles.current['moon'] += settingsRef.current.reducedMotion ? 0 : 0.025;
         const mTheta = orbitalAngles.current['moon'];
         moonObj.mesh.position.set(
           earthMeshCurrent.position.x + 7.2 * Math.cos(mTheta),
           earthMeshCurrent.position.y + 0.3 * Math.sin(mTheta),
           earthMeshCurrent.position.z + 7.2 * Math.sin(mTheta)
         );
-        moonObj.mesh.rotation.y += 0.005;
+        moonObj.mesh.rotation.y += settingsRef.current.reducedMotion ? 0 : 0.005;
       }
 
       // C. ISS ORBITS EARTH
       const issObj = probesMeshes.current['iss'];
       if (earthMeshCurrent && issObj && issObj.mesh) {
-        orbitalAngles.current['iss'] += 0.045;
+        orbitalAngles.current['iss'] += settingsRef.current.reducedMotion ? 0 : 0.045;
         const iTheta = orbitalAngles.current['iss'];
         issObj.mesh.position.set(
           earthMeshCurrent.position.x + 4.2 * Math.cos(iTheta),
           earthMeshCurrent.position.y + 2.2 * Math.sin(iTheta),
           earthMeshCurrent.position.z + 4.2 * Math.sin(iTheta)
         );
-        issObj.mesh.rotation.y += 0.02;
+        issObj.mesh.rotation.y += settingsRef.current.reducedMotion ? 0 : 0.02;
       }
 
       // D. CAMERA TRACKING & ORBITAL LOCK
-      if (selectedTarget && selectedTarget !== 'OVERVIEW' && !isFlightMode) {
+      const activeTarget = selectedTargetRef.current;
+      const activeFlightMode = isFlightModeRef.current;
+      if (activeTarget && activeTarget !== 'OVERVIEW' && !activeFlightMode) {
         let currentTargetPos = null;
 
-        const pObj = planetMeshes.current[selectedTarget.toLowerCase()];
+        const artifact = ARTIFACTS.find((item) => item.id.toUpperCase() === activeTarget);
+        const planetTarget = artifact?.body?.toLowerCase();
+        const pObj = planetMeshes.current[activeTarget.toLowerCase()] || planetMeshes.current[planetTarget];
         if (pObj && pObj.mesh) currentTargetPos = pObj.mesh.position;
 
-        const prObj = probesMeshes.current[selectedTarget.toLowerCase()];
+        const prObj = probesMeshes.current[activeTarget.toLowerCase()];
         if (prObj && prObj.mesh) {
           const wp = new THREE.Vector3();
           prObj.mesh.getWorldPosition(wp);
@@ -438,7 +509,7 @@ export default function SpaceSimulator({
       }
 
       // E. SPACESHIP FLIGHT MODE (SPACE ENGINE STYLE)
-      if (isFlightMode) {
+      if (activeFlightMode) {
         controls.enabled = false;
 
         // Thrust Speed control (W/S)
@@ -476,7 +547,11 @@ export default function SpaceSimulator({
         controls.target.copy(camera.position).add(forward.multiplyScalar(20));
 
         if (setFlightVelocity) {
-          setFlightVelocity((Math.abs(flightSpeed.current) * 28.5).toFixed(1));
+          const nextVelocity = (Math.abs(flightSpeed.current) * 28.5).toFixed(1);
+          if (nextVelocity !== lastVelocityRef.current) {
+            lastVelocityRef.current = nextVelocity;
+            setFlightVelocity(nextVelocity);
+          }
         }
       } else {
         controls.enabled = true;
@@ -496,12 +571,30 @@ export default function SpaceSimulator({
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
-      if (container && renderer.domElement) {
+      renderer.domElement.removeEventListener('pointerdown', handlePointerDown);
+      renderer.domElement.removeEventListener('pointerup', handlePointerUp);
+      controls.dispose();
+      scene.traverse((object) => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          materials.forEach((material) => {
+            Object.values(material).forEach((value) => {
+              if (value?.isTexture) value.dispose();
+            });
+            material.dispose();
+          });
+        }
+      });
+      planetMeshes.current = {};
+      probesMeshes.current = {};
+      orbitLinesRef.current = [];
+      if (container && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
-  }, [isFlightMode]);
+  }, []);
 
   // Handle Target Switching
   useEffect(() => {
@@ -515,7 +608,9 @@ export default function SpaceSimulator({
     }
 
     // Celestial Bodies
-    const targetObj = planetMeshes.current[selectedTarget.toLowerCase()];
+    const artifact = ARTIFACTS.find((item) => item.id.toUpperCase() === selectedTarget);
+    const targetObj = planetMeshes.current[selectedTarget.toLowerCase()] ||
+      planetMeshes.current[artifact?.body?.toLowerCase()];
     if (targetObj && targetObj.mesh) {
       const pos = targetObj.mesh.position;
       const rad = targetObj.data.radius || 3;

@@ -42,7 +42,6 @@ export default function Navbar({ activeFilter, setFilter, unlockedCount, totalCo
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>🌙</span>
             <span>Moon (2)</span>
           </button>
           <button
@@ -53,7 +52,6 @@ export default function Navbar({ activeFilter, setFilter, unlockedCount, totalCo
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>🔴</span>
             <span>Mars (2)</span>
           </button>
         </div>
