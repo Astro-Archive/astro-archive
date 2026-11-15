@@ -13,12 +13,36 @@ export default function App() {
   const [isBadgesOpen, setIsBadgesOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isSurfaceOpen, setIsSurfaceOpen] = useState(false);
-  const [settings, setSettings] = useState({ showOrbits: true, reducedMotion: false, highContrast: false });
+  const [settings, setSettings] = useState({
+    showOrbits: true,
+    showTrails: true,
+    simSpeed: 1,
+    reducedMotion: false,
+    highContrast: false,
+  });
   const audioRef = useRef(null);
 
   const getActiveAudio = () => {
-    if (selectedTarget === 'APOLLO') return '/audio/eagle_landed.mp3';
-    return '/audio/space_ambient.mp3';
+    switch (selectedTarget) {
+      case 'APOLLO':
+        return '/audio/eagle_landed.mp3';
+      case 'MOON':
+        return '/audio/one_small_step.mp3';
+      case 'INGENUITY':
+        return '/audio/ingenuity_flight.wav';
+      case 'MARS':
+      case 'PERSEVERANCE':
+      case 'OPPORTUNITY':
+      case 'VIKING':
+        return '/audio/mars_wind.wav';
+      case 'JUPITER':
+        return '/audio/jupiter_waves.wav';
+      case 'EARTH':
+      case 'ISS':
+        return '/audio/we_came_in_peace.mp3';
+      default:
+        return '/audio/space_ambient.mp3';
+    }
   };
 
   const handleSelectTarget = (target) => {

@@ -43,6 +43,7 @@ export default function SpaceSimulator({
   const lastVelocityRef = useRef('0.0');
   const settingsRef = useRef(settings);
   const orbitLinesRef = useRef([]);
+  const probeTrailsRef = useRef([]);
 
   useEffect(() => {
     selectedTargetRef.current = selectedTarget;
@@ -58,7 +59,12 @@ export default function SpaceSimulator({
 
   useEffect(() => {
     settingsRef.current = settings;
-    orbitLinesRef.current.forEach((line) => { line.visible = settings.showOrbits; });
+    orbitLinesRef.current.forEach((line) => {
+      line.visible = settings.showOrbits !== false;
+    });
+    probeTrailsRef.current.forEach((trail) => {
+      trail.visible = settings.showTrails !== false;
+    });
   }, [settings]);
 
   useEffect(() => {
@@ -272,7 +278,9 @@ export default function SpaceSimulator({
       const curve = new THREE.CatmullRomCurve3(points);
       const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
       const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#f59e0b', opacity: 0.7, transparent: true }));
+      line.visible = settingsRef.current.showTrails !== false;
       scene.add(line);
+      probeTrailsRef.current.push(line);
     });
 
     // VOYAGER 2 (Deep space south)
@@ -302,7 +310,9 @@ export default function SpaceSimulator({
       const curve = new THREE.CatmullRomCurve3(points);
       const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
       const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#38bdf8', opacity: 0.7, transparent: true }));
+      line.visible = settingsRef.current.showTrails !== false;
       scene.add(line);
+      probeTrailsRef.current.push(line);
     });
 
     // ISS (International Space Station in Earth orbit)
@@ -427,10 +437,12 @@ export default function SpaceSimulator({
       animationId = requestAnimationFrame(animate);
 
       // A. PLANETS ORBIT THE SUN
+      const speedMultiplier = settingsRef.current.simSpeed ?? 1;
+      const motionScale = settingsRef.current.reducedMotion ? 0 : speedMultiplier;
+
       SOLAR_BODIES.forEach((body) => {
         const item = planetMeshes.current[body.id];
         if (item && item.mesh && body.orbitDistance > 0) {
-          const motionScale = settingsRef.current.reducedMotion ? 0 : 1;
           orbitalAngles.current[body.id] += (body.orbitSpeed || 0.01) * 0.12 * motionScale;
           const theta = orbitalAngles.current[body.id];
 
@@ -441,7 +453,7 @@ export default function SpaceSimulator({
           }
           item.mesh.rotation.y += (body.rotationSpeed || 0.005) * motionScale;
         } else if (item && item.mesh) {
-          item.mesh.rotation.y += settingsRef.current.reducedMotion ? 0 : 0.002;
+          item.mesh.rotation.y += 0.002 * motionScale;
         }
       });
 
@@ -449,27 +461,27 @@ export default function SpaceSimulator({
       const earthMeshCurrent = planetMeshes.current['earth']?.mesh;
       const moonObj = planetMeshes.current['moon'];
       if (earthMeshCurrent && moonObj && moonObj.mesh) {
-        orbitalAngles.current['moon'] += settingsRef.current.reducedMotion ? 0 : 0.025;
+        orbitalAngles.current['moon'] += 0.025 * motionScale;
         const mTheta = orbitalAngles.current['moon'];
         moonObj.mesh.position.set(
           earthMeshCurrent.position.x + 7.2 * Math.cos(mTheta),
           earthMeshCurrent.position.y + 0.3 * Math.sin(mTheta),
           earthMeshCurrent.position.z + 7.2 * Math.sin(mTheta)
         );
-        moonObj.mesh.rotation.y += settingsRef.current.reducedMotion ? 0 : 0.005;
+        moonObj.mesh.rotation.y += 0.005 * motionScale;
       }
 
       // C. ISS ORBITS EARTH
       const issObj = probesMeshes.current['iss'];
       if (earthMeshCurrent && issObj && issObj.mesh) {
-        orbitalAngles.current['iss'] += settingsRef.current.reducedMotion ? 0 : 0.045;
+        orbitalAngles.current['iss'] += 0.045 * motionScale;
         const iTheta = orbitalAngles.current['iss'];
         issObj.mesh.position.set(
           earthMeshCurrent.position.x + 4.2 * Math.cos(iTheta),
           earthMeshCurrent.position.y + 2.2 * Math.sin(iTheta),
           earthMeshCurrent.position.z + 4.2 * Math.sin(iTheta)
         );
-        issObj.mesh.rotation.y += settingsRef.current.reducedMotion ? 0 : 0.02;
+        issObj.mesh.rotation.y += 0.02 * motionScale;
       }
 
       // D. CAMERA TRACKING & ORBITAL LOCK
