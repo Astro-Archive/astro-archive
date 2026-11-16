@@ -275,24 +275,24 @@ export const CURIOSITIES = {
     ],
     photos: [
       {
-        src: 'https://images-assets.nasa.gov/image/webb-telescope-deployment/webb-telescope-deployment~large.jpg',
+        src: 'https://assets.science.nasa.gov/content/dam/science/missions/webb/science/2022/07/STScI-01GA6KKWG229B16K4Q38CH3BXS.png/jcr%3Acontent/renditions/cq5dam.web.1280.1280.png',
         caption: {
-          en: 'The James Webb telescope during its deployment and optical alignment in space',
-          es: 'El telescopio James Webb durante su despliegue y alineación óptica en el espacio'
+          en: 'Cosmic Cliffs in the Carina Nebula, captured by Webb\'s NIRCam',
+          es: 'Acantilados Cósmicos en la Nebulosa de Carina, captados por la NIRCam de Webb'
         }
       },
       {
-        src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001738/GSFC_20171208_Archive_e001738~large.jpg',
+        src: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01G8H19MA6SV3PC914WR1MGGH5.png?fit=clip&h=2000&w=1473',
         caption: {
-          en: 'The iconic golden 18-segment beryllium primary mirror',
-          es: 'El icónico espejo primario dorado de 18 segmentos de berilio'
+          en: 'Webb\'s First Deep Field: galaxy cluster SMACS 0723 observed in infrared',
+          es: 'Primer Campo Profundo de Webb: cúmulo de galaxias SMACS 0723 observado en infrarrojo'
         }
       },
       {
-        src: 'https://images-assets.nasa.gov/image/PIA23763/PIA23763~large.jpg',
+        src: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01G8GZQ3ZFJRD8YF8YZWMAXCE3.png?fit=clip&h=1863&w=2000',
         caption: {
-          en: 'The five-layer Kapton thermal sunshield',
-          es: 'El escudo solar térmico de cinco capas de Kapton'
+          en: 'Southern Ring Nebula captured by Webb\'s NIRCam',
+          es: 'Nebulosa del Anillo del Sur captada por la NIRCam de Webb'
         }
       }
     ]

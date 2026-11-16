@@ -265,7 +265,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '7,600 light-years', es: '7,600 años luz' },
     coordinates: { ra: '10h 45m 08s', dec: '-59° 52′ 04″' },
     targetOffset: { x: -38, y: -28 },
-    image: 'https://images-assets.nasa.gov/image/PIA23768/PIA23768~large.jpg',
+    image: 'https://assets.science.nasa.gov/content/dam/science/missions/webb/science/2022/07/STScI-01GA6KKWG229B16K4Q38CH3BXS.png/jcr%3Acontent/renditions/cq5dam.web.1280.1280.png',
     filter: { en: 'NIRCam F090W / F187N / F200W', es: 'NIRCam F090W / F187N / F200W' },
     summary: {
       en: 'The colossal "Cosmic Cliffs": a three-dimensional landscape of glowing gas and interstellar dust sculpted by the fierce ultraviolet radiation of young stars still forming.',
@@ -289,7 +289,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: 'More than 13 billion light-years', es: 'Más de 13,000 millones de años luz' },
     coordinates: { ra: '07h 23m 19s', dec: '-73° 27′ 15″' },
     targetOffset: { x: 42, y: 35 },
-    image: 'https://images-assets.nasa.gov/image/PIA24921/PIA24921~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01G8H19MA6SV3PC914WR1MGGH5.png?fit=clip&h=2000&w=1473',
     filter: { en: 'NIRCam 12.5-Hour Mosaic (0.9 – 4.4 µm)', es: 'NIRCam Mosaico 12.5 Horas (0.9 – 4.4 µm)' },
     summary: {
       en: 'The deepest, sharpest infrared image of the distant universe ever taken, covering a patch of sky equivalent to holding a grain of sand at arm\u2019s length.',
@@ -313,7 +313,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '1,150 light-years', es: '1,150 años luz' },
     coordinates: { ra: '00h 04m 11s', dec: '-47° 21′ 38″' },
     targetOffset: { x: 30, y: -45 },
-    image: 'https://images-assets.nasa.gov/image/PIA23405/PIA23405~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01G819JERH8PYTBDTS7YNDSTAB.png?fit=clip&h=1345&w=2000',
     filter: { en: 'NIRISS Transit Spectroscopy (0.6 – 2.8 µm)', es: 'NIRISS Espectroscopia de Tránsito (0.6 – 2.8 µm)' },
     summary: {
       en: 'A hot gas giant orbiting very close to its host star every 3.4 Earth days.',
@@ -337,7 +337,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '6,500 light-years', es: '6,500 años luz' },
     coordinates: { ra: '18h 18m 48s', dec: '-13° 49′ 00″' },
     targetOffset: { x: -25, y: 40 },
-    image: 'https://images-assets.nasa.gov/image/PIA21454/PIA21454~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/10/STScI-01GGF8H15VZ09MET9HFBRQX4S3.png?fit=clip&h=2000&w=1155',
     filter: { en: 'NIRCam F187N + F200W + F444W', es: 'NIRCam F187N + F200W + F444W' },
     summary: {
       en: 'The legendary columns of gas and dust seen at infrared wavelengths, where the dust becomes semi-transparent.',
@@ -361,7 +361,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '2,500 light-years', es: '2,500 años luz' },
     coordinates: { ra: '10h 07m 01s', dec: '-40° 26′ 11″' },
     targetOffset: { x: 15, y: -55 },
-    image: 'https://images-assets.nasa.gov/image/PIA24568/PIA24568~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01G8GZQ3ZFJRD8YF8YZWMAXCE3.png?fit=clip&h=1863&w=2000',
     filter: { en: 'NIRCam + MIRI Mid-Infrared', es: 'NIRCam + MIRI Infrarrojo Medio' },
     summary: {
       en: 'Concentric layers of gas and dust expelled by a dying star over thousands of years.',
@@ -385,7 +385,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '500 million light-years', es: '500 millones de años luz' },
     coordinates: { ra: '00h 37m 41s', dec: '-33° 42′ 58″' },
     targetOffset: { x: 50, y: -20 },
-    image: 'https://images-assets.nasa.gov/image/PIA24917/PIA24917~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/08/STScI-01G9DMX676QGH3B6Q63FFQPE4X.png?fit=clip&h=1484&w=1108',
     filter: { en: 'NIRCam / MIRI Infrared Composite', es: 'NIRCam / MIRI Compuesto Infrarrojo' },
     summary: {
       en: 'The violent result of a high-speed head-on collision between a giant spiral galaxy and a smaller one, like throwing a stone into a pond.',
@@ -409,7 +409,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '290 million light-years', es: '290 millones de años luz' },
     coordinates: { ra: '22h 35m 57s', dec: '+33° 57′ 36″' },
     targetOffset: { x: -48, y: 18 },
-    image: 'https://images-assets.nasa.gov/image/PIA24914/PIA24914~large.jpg',
+    image: 'https://assets.science.nasa.gov/content/dam/science/missions/webb/science/2022/07/STScI-01G8H49RQ0E48YDM8WKW9PP5XS.png/jcr%3Acontent/renditions/cq5dam.web.1280.1280.png',
     filter: { en: '150-Megapixel NIRCam Mosaic', es: 'Mosaico NIRCam de 150 Millones de Píxeles' },
     summary: {
       en: 'Five closely grouped galaxies, four of which are caught in a dramatic dance of gravitational collisions.',
@@ -433,7 +433,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '161,000 light-years', es: '161,000 años luz' },
     coordinates: { ra: '05h 38m 38s', dec: '-69° 05′ 38″' },
     targetOffset: { x: -20, y: -40 },
-    image: 'https://images-assets.nasa.gov/image/PIA25110/PIA25110~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/09/STScI-01GA76Q01D09HFEV174SVMQDMV.png?fit=clip&h=1059&w=1397',
     filter: { en: 'High-Resolution NIRCam Mosaic', es: 'NIRCam Mosaico de Alta Resolución' },
     summary: {
       en: 'The largest and brightest star-forming region in the entire Local Group of galaxies.',
@@ -457,7 +457,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '32 million light-years', es: '32 millones de años luz' },
     coordinates: { ra: '01h 36m 41s', dec: '+15° 47′ 01″' },
     targetOffset: { x: 38, y: 45 },
-    image: 'https://images-assets.nasa.gov/image/PIA24920/PIA24920~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2024/01/STScI-01HM9SJJYK57J82GWPYVV2292X.png?fit=clip&h=1252&w=2000',
     filter: { en: 'MIRI Mid-Infrared (Warm Dust)', es: 'MIRI Infrarrojo Medio (Polvo Cálido)' },
     summary: {
       en: 'A spiral galaxy with symmetrical, majestic arms seen face-on from Earth.',
@@ -484,7 +484,7 @@ export const WEBB_OBSERVATION_TARGETS = [
       dec: { en: 'Ecliptic', es: 'Eclíptica' }
     },
     targetOffset: { x: -45, y: -18 },
-    image: 'https://images-assets.nasa.gov/image/PIA18182/PIA18182~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2023/04/STScI-01GWQDPJTF1MY8ZGN4WBMWMACJ.png?fit=clip&h=1268&w=1268',
     filter: { en: 'NIRCam F140M / F300M (Infrared)', es: 'NIRCam F140M / F300M (Infrarrojo)' },
     summary: {
       en: 'The enigmatic tilted planet observed with unprecedented sensitivity for faint rings.',
@@ -511,7 +511,7 @@ export const WEBB_OBSERVATION_TARGETS = [
       dec: { en: 'Ecliptic', es: 'Eclíptica' }
     },
     targetOffset: { x: 52, y: 12 },
-    image: 'https://images-assets.nasa.gov/image/PIA01492/PIA01492~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/09/STScI-01GCVNDSA55PFHD0JP3JSEKAZ1.png?fit=clip&h=2000&w=2000',
     filter: { en: 'NIRCam (0.6 – 5.0 µm)', es: 'NIRCam (0.6 – 5.0 µm)' },
     summary: {
       en: 'The first clear look at Neptune\u2019s rings in more than three decades, since the Voyager 2 flyby.',
@@ -538,7 +538,7 @@ export const WEBB_OBSERVATION_TARGETS = [
       dec: { en: 'Ecliptic', es: 'Eclíptica' }
     },
     targetOffset: { x: 18, y: 50 },
-    image: 'https://images-assets.nasa.gov/image/PIA22946/PIA22946~large.jpg',
+    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2025/05/STScI-01JT64REJP62AJFDFZ853S2MVW.png?w=2000',
     filter: { en: 'NIRCam Composite Filter F360M / F212N', es: 'NIRCam Filtro Compuesto F360M / F212N' },
     summary: {
       en: 'Jupiter observed in infrared, showing gigantic luminous auroras at its north and south poles.',
