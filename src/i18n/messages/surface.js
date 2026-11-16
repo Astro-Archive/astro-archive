@@ -12,7 +12,7 @@ export default {
     'surface.badge.landing': '🚀 MANUAL DPS DESCENT PHASE',
     'surface.badge.flight': '🚁 360° ATMOSPHERIC FLIGHT MODE',
     'surface.badge.rover': '🚜 360° GROUND ROVER',
-    'surface.audio.mars.title': 'Ambient Martian wind audio from Perseverance',
+    'surface.audio.mars.title': 'Ambient Martian wind audio',
     'surface.audio.moon.title': 'Apollo 11 Capcom radio ambient audio',
     'surface.audio.mars.label': 'Mars Wind',
     'surface.audio.moon.label': 'Houston Capcom Radio',
@@ -40,6 +40,7 @@ export default {
     'surface.mission.moon': 'MISSION: TRANQUILITY BASE',
     'surface.mission.mars': 'MISSION: JEZERO WITNESSES',
     'surface.mission.opportunity': 'MISSION: MERIDIANI & ENDEAVOUR',
+    'surface.mission.viking': 'MISSION: CHRYSE PLANITIA',
     'surface.mission.objectives': '{collected} / {total} OBJECTIVES',
     'surface.target.completed': 'COMPLETE',
     'surface.target.radar': 'Radar',
@@ -68,11 +69,19 @@ export default {
     'surface.sampling.mars.step1': 'Phase 1/3: SuperCam — Laser vaporization and spectral analysis...',
     'surface.sampling.mars.step2': 'Phase 2/3: Percussive drill — Extracting core at 5.8 cm...',
     'surface.sampling.mars.step3': 'Phase 3/3: Robotic arm — Hermetic sealing in titanium tube...',
+    'surface.sampling.mer.step1': 'Phase 1/3: RAT — Grinding 5 mm into the rock surface...',
+    'surface.sampling.mer.step2': 'Phase 2/3: Mössbauer & APXS — Reading iron mineralogy and elemental chemistry...',
+    'surface.sampling.mer.step3': 'Phase 3/3: Microscopic Imager & Pancam — Recording the target at microscopic scale...',
+    'surface.sampling.viking.step1': 'Phase 1/3: Sampler arm — Scooping regolith from the surface...',
+    'surface.sampling.viking.step2': 'Phase 2/3: GC-MS oven — Heating the sample to 500 °C to look for organic molecules...',
+    'surface.sampling.viking.step3': 'Phase 3/3: Biology package — Running the labeled-release and gas-exchange experiments...',
     'surface.sampling.tool': 'Tool:',
 
     // Scientific dossier
     'surface.dossier.historicTitle': 'HISTORIC OBJECTIVE COMPLETE',
     'surface.dossier.sampleTitle': 'SEALED ROCK CORE',
+    'surface.dossier.merTitle': 'MER-B SAMPLE DOSSIER',
+    'surface.dossier.vikingTitle': 'VIKING 1 SURFACE DOSSIER',
     'surface.dossier.finding': 'Historic Finding:',
     'surface.dossier.engineering': 'Engineering / Material Data:',
     'surface.dossier.mineralogy': 'Detected Mineralogy:',
@@ -87,6 +96,12 @@ export default {
       'All experiments have been deployed and the lunar samples are secured for their return to Earth aboard the Columbia module.',
     'surface.complete.mars.body':
       "All 3 key Martian rock cores have been secured in Perseverance's carousel for the Mars Sample Return mission.",
+    'surface.complete.opportunity.title': 'MERIDIANI WATER-EVIDENCE CAMPAIGN COMPLETE!',
+    'surface.complete.opportunity.body':
+      'Opportunity ground into all three targets and confirmed that liquid water once flowed through Meridiani Planum and the rim of Endeavour Crater.',
+    'surface.complete.viking.title': 'VIKING 1 SURFACE SCIENCE CAMPAIGN COMPLETE!',
+    'surface.complete.viking.body':
+      'The lander delivered its samples to the GC-MS and the biology package, and logged the first long-term weather record from Chryse Planitia.',
 
     // On-screen controls
     'surface.controls.dpsThrust': 'DPS THRUST',
@@ -113,6 +128,7 @@ export default {
     'surface.footer.rover.pre': 'Drive with',
     'surface.footer.rover.afterSpeed': '. Press',
     'surface.footer.rover.tail': ' to drill rocks in range.',
+    'surface.footer.viking.tail': ' to collect soil samples in range.',
     'surface.footer.location.moon': 'Sea of Tranquility // Earth visible in the lunar sky',
     'surface.footer.location.mars': 'Jezero Crater // Martian Dunes',
     'surface.footer.location.opportunity': 'Perseverance Valley, Endeavour Crater // Meridiani Planum',
@@ -130,7 +146,7 @@ export default {
     'surface.badge.landing': '🚀 FASE DE ALUNIZAJE MANUAL DPS',
     'surface.badge.flight': '🚁 MODO VUELO ATMOSFÉRICO 360°',
     'surface.badge.rover': '🚜 ROVER TERRESTRE 360°',
-    'surface.audio.mars.title': 'Audio ambiental de viento marciano de Perseverance',
+    'surface.audio.mars.title': 'Audio ambiental de viento marciano',
     'surface.audio.moon.title': 'Audio ambiental radio Capcom de la misión Apolo 11',
     'surface.audio.mars.label': 'Viento de Marte',
     'surface.audio.moon.label': 'Radio Capcom Houston',
@@ -158,6 +174,7 @@ export default {
     'surface.mission.moon': 'MISIÓN: BASE TRANQUILIDAD',
     'surface.mission.mars': 'MISIÓN: TESTIGOS DE JEZERO',
     'surface.mission.opportunity': 'MISIÓN: MERIDIANI Y ENDEAVOUR',
+    'surface.mission.viking': 'MISIÓN: CHRYSE PLANITIA',
     'surface.mission.objectives': '{collected} / {total} OBJETIVOS',
     'surface.target.completed': 'COMPLETADO',
     'surface.target.radar': 'Radar',
@@ -186,11 +203,19 @@ export default {
     'surface.sampling.mars.step1': 'Fase 1/3: SuperCam — Vaporización láser y análisis espectral...',
     'surface.sampling.mars.step2': 'Fase 2/3: Taladro percutor — Extrayendo testigo a 5.8 cm...',
     'surface.sampling.mars.step3': 'Fase 3/3: Brazo robótico — Sellado hermético en tubo de titanio...',
+    'surface.sampling.mer.step1': 'Fase 1/3: RAT — Rectificando 5 mm de la superficie rocosa...',
+    'surface.sampling.mer.step2': 'Fase 2/3: Mössbauer y APXS — Leyendo mineralogía de hierro y química elemental...',
+    'surface.sampling.mer.step3': 'Fase 3/3: Cámara microscópica y Pancam — Registrando el objetivo a escala microscópica...',
+    'surface.sampling.viking.step1': 'Fase 1/3: Brazo recolector — Tomando una muestra de regolito superficial...',
+    'surface.sampling.viking.step2': 'Fase 2/3: Horno GC-MS — Calentando la muestra a 500 °C para buscar moléculas orgánicas...',
+    'surface.sampling.viking.step3': 'Fase 3/3: Paquete de biología — Ejecutando los experimentos de liberación marcada e intercambio de gases...',
     'surface.sampling.tool': 'Herramienta:',
 
     // Dosier científico
     'surface.dossier.historicTitle': 'OBJETIVO HISTÓRICO COMPLETADO',
     'surface.dossier.sampleTitle': 'TESTIGO DE ROCA SELLADO',
+    'surface.dossier.merTitle': 'DOSIER DE MUESTRA MER-B',
+    'surface.dossier.vikingTitle': 'DOSIER DE SUPERFICIE VIKING 1',
     'surface.dossier.finding': 'Hallazgo Histórico:',
     'surface.dossier.engineering': 'Datos de Ingeniería / Materiales:',
     'surface.dossier.mineralogy': 'Mineralogía Detectada:',
@@ -205,6 +230,12 @@ export default {
       'Todos los experimentos han sido desplegados y las muestras lunares quedan aseguradas para su retorno a la Tierra en el módulo Columbia.',
     'surface.complete.mars.body':
       'Los 3 testigos clave de roca marciana han sido asegurados en el carrusel de Perseverance para la misión Mars Sample Return.',
+    'surface.complete.opportunity.title': '¡CAMPAÑA DE EVIDENCIA DE AGUA EN MERIDIANI COMPLETADA!',
+    'surface.complete.opportunity.body':
+      'Opportunity analizó los tres objetivos y confirmó que el agua líquida fluyó por Meridiani Planum y el borde del cráter Endeavour.',
+    'surface.complete.viking.title': '¡CAMPAÑA CIENTÍFICA DE SUPERFICIE VIKING 1 COMPLETADA!',
+    'surface.complete.viking.body':
+      'El módulo entregó sus muestras al GC-MS y al paquete de biología, y registró el primer historial meteorológico de largo plazo en Chryse Planitia.',
 
     // Controles en pantalla
     'surface.controls.dpsThrust': 'EMPUJE DPS',
@@ -231,6 +262,7 @@ export default {
     'surface.footer.rover.pre': 'Conduce con',
     'surface.footer.rover.afterSpeed': '. Presiona',
     'surface.footer.rover.tail': ' para perforar rocas en rango.',
+    'surface.footer.viking.tail': ' para recolectar muestras de suelo en rango.',
     'surface.footer.location.moon': 'Mar de la Tranquilidad // La Tierra visible en el cielo lunar',
     'surface.footer.location.mars': 'Cráter Jezero // Dunas Marcianas',
     'surface.footer.location.opportunity': 'Valle Perseverance, Cráter Endeavour // Meridiani Planum',

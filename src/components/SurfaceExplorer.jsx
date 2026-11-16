@@ -3,7 +3,7 @@ import {
   Compass, Gauge, Map, Navigation, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
   Plane, Wind, CheckCircle2, Circle, AlertCircle, Award, Volume2, VolumeX, Sparkles, Radio
 } from 'lucide-react';
-import SurfaceMap3D, { MARS_SAMPLE_TARGETS, OPPORTUNITY_MER_TARGETS, MOON_APOLLO_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
+import SurfaceMap3D, { MARS_SAMPLE_TARGETS, OPPORTUNITY_MER_TARGETS, VIKING_TARGETS, MOON_APOLLO_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
 import { getAssetPath } from '../utils/assets';
 import SciFiButton from './ui/SciFiButton';
 import { useI18n } from '../i18n';
@@ -106,11 +106,53 @@ export default function SurfaceExplorer({ artifact, onClose }) {
 
   const activeMissionTargets = isOpportunity
     ? OPPORTUNITY_MER_TARGETS
+    : isViking
+    ? VIKING_TARGETS
     : isMars
     ? MARS_SAMPLE_TARGETS
     : MOON_APOLLO_TARGETS;
   // Resolved on every language change so the list re-renders translated.
   const missionTargets = useMemo(() => localize(activeMissionTargets, lang), [activeMissionTargets, lang]);
+
+  const missionLabelKey = isApollo
+    ? 'surface.mission.moon'
+    : isOpportunity
+    ? 'surface.mission.opportunity'
+    : isViking
+    ? 'surface.mission.viking'
+    : 'surface.mission.mars';
+
+  const samplingStepKey = isApollo
+    ? `surface.sampling.eva.step${samplingStep}`
+    : isOpportunity
+    ? `surface.sampling.mer.step${samplingStep}`
+    : isViking
+    ? `surface.sampling.viking.step${samplingStep}`
+    : `surface.sampling.mars.step${samplingStep}`;
+
+  const dossierTitleKey = isApollo
+    ? 'surface.dossier.historicTitle'
+    : isOpportunity
+    ? 'surface.dossier.merTitle'
+    : isViking
+    ? 'surface.dossier.vikingTitle'
+    : 'surface.dossier.sampleTitle';
+
+  const completionTitleKey = isApollo
+    ? 'surface.complete.moon.title'
+    : isOpportunity
+    ? 'surface.complete.opportunity.title'
+    : isViking
+    ? 'surface.complete.viking.title'
+    : 'surface.complete.mars.title';
+
+  const completionBodyKey = isApollo
+    ? 'surface.complete.moon.body'
+    : isOpportunity
+    ? 'surface.complete.opportunity.body'
+    : isViking
+    ? 'surface.complete.viking.body'
+    : 'surface.complete.mars.body';
 
   const sendKey = (code, isDown) => {
     window.dispatchEvent(new KeyboardEvent(isDown ? 'keydown' : 'keyup', { code }));
@@ -339,7 +381,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="border-b border-cyan-500/30 pb-1 mb-2 flex items-center justify-between">
               <span className="font-bold text-cyan-300 flex items-center space-x-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>{isApollo ? t('surface.mission.moon') : isOpportunity ? t('surface.mission.opportunity') : t('surface.mission.mars')}</span>
+                <span>{t(missionLabelKey)}</span>
               </span>
               <span className="text-amber-400 font-bold px-1.5 py-0.5 bg-amber-950/60 border border-amber-500/40 text-[10px]">
                 {t('surface.mission.objectives', { collected: collectedSampleIds.length, total: activeMissionTargets.length })}
@@ -460,15 +502,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 </div>
 
                 <div className="text-xs text-amber-300 font-bold">
-                  {isApollo ? (
-                    samplingStep === 1 ? t('surface.sampling.eva.step1') :
-                    samplingStep === 2 ? t('surface.sampling.eva.step2') :
-                    t('surface.sampling.eva.step3')
-                  ) : (
-                    samplingStep === 1 ? t('surface.sampling.mars.step1') :
-                    samplingStep === 2 ? t('surface.sampling.mars.step2') :
-                    t('surface.sampling.mars.step3')
-                  )}
+                  {t(samplingStepKey)}
                 </div>
 
                 <p className="text-[11px] text-slate-400">
@@ -485,7 +519,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 <div className="flex items-center justify-between border-b border-emerald-500/40 pb-2">
                   <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center space-x-1.5">
                     <Award className="w-4 h-4 text-emerald-400" />
-                    <span>{isApollo ? t('surface.dossier.historicTitle') : t('surface.dossier.sampleTitle')}</span>
+                    <span>{t(dossierTitleKey)}</span>
                   </span>
                   <span className="text-xs px-2 py-0.5 bg-emerald-950 border border-emerald-500 text-emerald-300 font-bold">
                     {localizeValue(dossierTarget.tubeId)}
@@ -520,10 +554,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="pointer-events-none absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-md bg-emerald-950/90 border border-emerald-400 p-3 shadow-2xl backdrop-blur-md z-30">
               <div className="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
                 <Award className="w-4 h-4 text-amber-400" />
-                <span>{isApollo ? t('surface.complete.moon.title') : t('surface.complete.mars.title')}</span>
+                <span>{t(completionTitleKey)}</span>
               </div>
               <p className="text-[10px] text-slate-300 mt-1">
-                {isApollo ? t('surface.complete.moon.body') : t('surface.complete.mars.body')}
+                {t(completionBodyKey)}
               </p>
             </div>
           )}
@@ -617,7 +651,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             ) : isApollo && apolloLandingDone ? (
               <span> {t('surface.footer.eva.pre')} <strong className="text-white">[W / A / S / D]</strong>{t('surface.footer.eva.afterSpeed')} <strong className="text-amber-300">[E]</strong>{t('surface.footer.eva.tail')}</span>
             ) : (
-              <span> {t('surface.footer.rover.pre')} <strong className="text-white">[W / A / S / D]</strong>{t('surface.footer.rover.afterSpeed')} <strong className="text-amber-300">[E]</strong>{t('surface.footer.rover.tail')}</span>
+              <span> {t('surface.footer.rover.pre')} <strong className="text-white">[W / A / S / D]</strong>{t('surface.footer.rover.afterSpeed')} <strong className="text-amber-300">[E]</strong>{t(isViking ? 'surface.footer.viking.tail' : 'surface.footer.rover.tail')}</span>
             )}
           </div>
           <div className="text-slate-400 text-[10px]">

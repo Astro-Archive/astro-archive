@@ -147,6 +147,76 @@ export const OPPORTUNITY_MER_TARGETS = [
   }
 ];
 
+// Objetivos científicos reales del módulo de aterrizaje Viking 1 en Chryse Planitia
+export const VIKING_TARGETS = [
+  {
+    id: 'big_joe',
+    name: { en: 'Big Joe Rock', es: 'Roca Big Joe' },
+    type: { en: 'Dark Basaltic Boulder', es: 'Bloque Basáltico Oscuro' },
+    x: 22,
+    z: 16,
+    color: '#f59e0b',
+    tubeId: { en: 'VL-1 / Big Joe Site', es: 'VL-1 / Sitio Big Joe' },
+    summary: {
+      en: 'One of the largest rocks in the Viking 1 landing site, imaged a few metres from the lander. Its dark, fine-grained surface pointed to a basaltic composition, a sample of the volcanic crust beneath the Chryse Planitia plains.',
+      es: 'Una de las rocas más grandes del sitio de aterrizaje de Viking 1, fotografiada a pocos metros del módulo. Su superficie oscura y de grano fino apuntaba a una composición basáltica, una muestra de la corteza volcánica bajo las llanuras de Chryse Planitia.'
+    },
+    mineralogy: {
+      en: 'Basaltic silicates, Iron–titanium oxides, Dust-coated surface',
+      es: 'Silicatos basálticos, Óxidos de hierro y titanio, Superficie cubierta de polvo'
+    },
+    scienceValue: {
+      en: 'First close-range study of a Martian rock: it showed the northern plains are built from dark volcanic rock mantled by oxidised dust.',
+      es: 'Primer estudio cercano de una roca marciana: mostró que las llanuras del norte están formadas por roca volcánica oscura cubierta de polvo oxidado.'
+    },
+    tool: { en: 'Viking Facsimile Cameras 1 & 2', es: 'Cámaras Facsímil 1 y 2 de Viking' }
+  },
+  {
+    id: 'chryse_soil',
+    name: { en: 'Fine Soil Drift (Biology Sample)', es: 'Depósito de Suelo Fino (Muestra de Biología)' },
+    type: { en: 'Wind-Blown Regolith Sample', es: 'Muestra de Regolito Transportado por el Viento' },
+    x: -24,
+    z: 24,
+    color: '#a78bfa',
+    tubeId: { en: 'VL-1 / First Soil Sample', es: 'VL-1 / Primera Muestra de Suelo' },
+    summary: {
+      en: 'Patch of fine wind-deposited soil beside the lander, chosen for the first trenching campaign. The sampler arm delivered it to the gas chromatograph–mass spectrometer and to the three biology experiments.',
+      es: 'Depósito de suelo fino depositado por el viento junto al módulo, elegido para la primera campaña de excavación. El brazo recolector lo entregó al cromatógrafo de gases acoplado a espectrómetro de masas y a los tres experimentos de biología.'
+    },
+    mineralogy: {
+      en: 'Iron-oxide-rich clay dust, Silicates, Chlorinated hydrocarbons later traced to terrestrial cleaning solvents',
+      es: 'Polvo arcilloso rico en óxidos de hierro, Silicatos, Hidrocarburos clorados después atribuidos a disolventes de limpieza terrestres'
+    },
+    scienceValue: {
+      en: 'Produced the first in-situ soil chemistry on Mars and the still-debated positive Labeled Release result, today read as reactive soil chemistry rather than biology.',
+      es: 'Produjo la primera química del suelo marciano in situ y el todavía debatido resultado positivo del experimento de Liberación Marcada, hoy interpretado como química reactiva del suelo y no como biología.'
+    },
+    tool: { en: 'Sampler Arm, GC-MS & Biology Package', es: 'Brazo Recolector, GC-MS y Paquete de Biología' }
+  },
+  {
+    id: 'dust_magnets',
+    name: { en: 'Magnetic Dust Collector', es: 'Colector Magnético de Polvo' },
+    type: { en: 'Airborne Dust & Magnetic Particles', es: 'Polvo Atmosférico y Partículas Magnéticas' },
+    x: -18,
+    z: -26,
+    color: '#22d3ee',
+    tubeId: { en: 'VL-1 / Dust Magnet Array', es: 'VL-1 / Matriz de Imanes de Polvo' },
+    summary: {
+      en: 'Permanent magnets mounted on the lander captured the airborne dust that gives Mars its colour, while the cameras tracked how the trapped particles settled over the following weeks.',
+      es: 'Los imanes permanentes montados en el módulo capturaron el polvo atmosférico que da su color a Marte, mientras las cámaras registraban cómo se asentaban las partículas atrapadas en las semanas siguientes.'
+    },
+    mineralogy: {
+      en: 'Nanophase iron oxides (maghemite candidate), Silicate dust, Clay minerals',
+      es: 'Óxidos de hierro nanofásicos (candidato maghemita), Polvo de silicatos, Minerales arcillosos'
+    },
+    scienceValue: {
+      en: 'Showed the reddish dust is strongly magnetic, pointing to iron-oxide particles such as maghemite as the pigment of Mars.',
+      es: 'Demostró que el polvo rojizo es fuertemente magnético, señalando a partículas de óxido de hierro como la maghemita como el pigmento de Marte.'
+    },
+    tool: { en: 'Magnetic Properties Experiment & Cameras', es: 'Experimento de Propiedades Magnéticas y Cámaras' }
+  }
+];
+
 // NASA Apollo 11 Lunar EVA Historical Objectives (Moon)
 export const MOON_APOLLO_TARGETS = [
   {
@@ -348,10 +418,13 @@ export default function SurfaceMap3D({
   const isMars = !artifact || artifact.body === 'Marte' || ['perseverance', 'ingenuity', 'opportunity', 'viking'].includes(artifact.id);
   const isApollo = artifact?.id === 'apollo11';
   const isOpportunity = artifact?.id === 'opportunity';
+  const isViking = artifact?.id === 'viking';
   const isFlying = artifact?.id === 'ingenuity' || (isApollo && !apolloLandingDone);
 
   const activeMissionTargets = isOpportunity
     ? OPPORTUNITY_MER_TARGETS
+    : isViking
+    ? VIKING_TARGETS
     : isMars
     ? MARS_SAMPLE_TARGETS
     : MOON_APOLLO_TARGETS;
