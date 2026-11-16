@@ -51,6 +51,8 @@ export default {
     'hud.brake': '▼ BRAKE',
     'hud.orbitHint':
       'Drag the mouse to rotate 360° // Scroll to zoom // Click a body to track',
+    'hud.orbitHintTouch':
+      'Drag to rotate // Pinch to zoom // Tap a body to track',
 
     // Menú de destinos
     'hud.destination': 'Destination',
@@ -155,6 +157,8 @@ export default {
     'hud.brake': '▼ FRENAR',
     'hud.orbitHint':
       'Arrastra el ratón para rotar en 360° // Rueda para zoom // Clic en astro para seguimiento',
+    'hud.orbitHintTouch':
+      'Arrastra para rotar // Pellizca para zoom // Toca un astro para seguirlo',
 
     // Menú de destinos
     'hud.destination': 'Destino',

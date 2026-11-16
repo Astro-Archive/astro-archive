@@ -74,7 +74,7 @@ export default function CuriosityPanel({ artifact, body, probe, telescope, onClo
   const photoCaption = (photo) => pick(photo.caption, lang);
 
   return (
-    <div className="absolute inset-x-2 top-16 bottom-24 sm:left-auto sm:right-4 sm:w-[min(560px,calc(100vw-2rem))] bg-black/95 backdrop-blur-xl border border-cyan-500/40 p-3 sm:p-5 overflow-y-auto pointer-events-auto shadow-[0_0_35px_rgba(0,0,0,0.95)] text-xs sm:text-sm">
+    <div className="absolute inset-x-2 top-[7.5rem] bottom-24 sm:left-auto sm:right-4 sm:w-[min(560px,calc(100vw-2rem))] lg:top-16 bg-black/95 backdrop-blur-xl border border-cyan-500/40 p-3 sm:p-5 overflow-y-auto pointer-events-auto shadow-[0_0_35px_rgba(0,0,0,0.95)] text-xs sm:text-sm">
       <div className="flex items-start justify-between gap-3 border-b border-slate-700 pb-3 mb-4">
         <div className="min-w-0">
           <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400">{t('curiosity.title')}</span>

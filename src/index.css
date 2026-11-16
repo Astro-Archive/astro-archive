@@ -51,6 +51,21 @@ model-viewer {
   --poster-color: transparent;
 }
 
+/* Dock inferior del HUD: en escritorio se mantienen las etiquetas de texto
+   y los iconos solo aparecen en la botonera móvil. */
+.hud-dock-icon {
+  display: none;
+}
+
+.hud-hint-touch {
+  display: none;
+}
+
+/* El botón de ajustes usa el marco del kit solo en el dock móvil. */
+.flight-hud-root .hud-dock-settings-mobile {
+  display: none;
+}
+
 /* Mobile flight deck: scoped only to the pilot HUD. */
 .flight-control-button {
   min-width: 3.25rem;
@@ -297,53 +312,135 @@ model-viewer {
     min-height: 0;
   }
 
+  /* Dock inferior móvil: 4 accesos estables (destino + 3 acciones) sin solapes.
+     El destino conserva texto recortado con puntos suspensivos; las acciones
+     pasan a icono para mantener una superficie táctil cómoda. */
   .flight-bottom-panel {
     position: fixed;
     left: 0.5rem;
     right: 0.5rem;
-    bottom: 0.35rem;
+    bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
     z-index: 44;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     gap: 0.35rem;
-    min-height: 2.8rem;
+    min-height: 3.1rem;
     padding: 0.3rem;
     background: rgba(0, 0, 0, 0.94);
     border: 1px solid rgba(34, 211, 238, 0.45);
   }
 
   .flight-bottom-panel > :first-child {
-    width: auto;
+    flex: 1.6 1 0;
     min-width: 0;
-    flex: 0 0 auto;
   }
 
   .flight-bottom-panel > :first-child > button {
-    width: auto;
-    max-width: 8rem;
+    width: 100%;
+    height: 2.625rem;
     min-width: 0;
     padding-inline: 0.55rem;
+  }
+
+  /* El texto del destino se recorta, nunca desborda ni empuja a los vecinos */
+  .flight-bottom-panel .sf-body-fill {
+    min-width: 0;
+  }
+
+  /* El kit fija 12px de padding interno en el botón; el disparador del dock
+     lo reduce para que el nombre del destino quepa completo a 320px. */
+  .flight-bottom-panel .sf-btn.hud-dock-trigger .sf-body-fill {
+    padding-inline: 0.2rem;
+  }
+
+  .flight-bottom-panel .sf-label {
+    display: block;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .flight-bottom-panel > :last-child {
-    width: auto;
+    flex: 3 1 0;
     min-width: 0;
-    flex: 1 1 auto;
-    justify-content: flex-end;
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.35rem;
     padding: 0;
     background: transparent;
     border: 0;
+    box-shadow: none;
   }
 
-  .flight-bottom-panel > :last-child > button {
-    flex: 0 0 auto;
-    padding-inline: 0.55rem;
-    white-space: nowrap;
+  .flight-bottom-panel > :last-child > * {
+    min-width: 0;
+    width: 100%;
+    height: 2.625rem;
+  }
+
+  /* Iconos con etiqueta oculta: 42px de alto y sin texto cortado */
+  .flight-bottom-panel .hud-dock-icon {
+    display: inline-flex;
+    flex: none;
+    margin-inline-end: 0.35rem;
+  }
+
+  /* Las acciones del dock se leen como iconos; el marco queda solo para el
+     destino y para los estados activos (variante primary). */
+  .flight-bottom-panel > :last-child .sf-btn--secondary .sf-ring {
+    display: none;
+  }
+
+  /* Acción con panel abierto: el icono se enciende en cian */
+  .flight-bottom-panel .hud-dock-action[aria-expanded='true']:not(.sf-btn--primary) {
+    --sf-label: #22d3ee;
+  }
+
+  /* Acciones contextuales (superficie/telescopio): viven en la ficha del
+     destino para que el dock mantenga 4 accesos estables. */
+  .flight-bottom-panel .hud-dock-contextual {
+    display: none;
+  }
+
+  .flight-bottom-panel .hud-dock-settings-desktop {
+    display: none;
+  }
+
+  .flight-hud-root .hud-dock-settings-mobile {
+    display: inline-flex;
+  }
+
+  /* El aviso de interacción se separa del dock y usa lenguaje táctil */
+  .hud-orbit-hint {
+    bottom: 4.75rem;
+  }
+
+  .hud-hint-desktop {
+    display: none;
+  }
+
+  .hud-hint-touch {
+    display: block;
+  }
+}
+
+/* En pantallas muy estrechas no cabe texto: las acciones pasan a icono
+   (el destino conserva su etiqueta, recortada con puntos suspensivos). */
+@media (max-width: 600px) {
+  .flight-bottom-panel .hud-dock-label,
+  .flight-bottom-panel .hud-dock-prefix {
+    display: none;
+  }
+
+  /* 11px: el nombre del destino cabe completo incluso en 320px */
+  .flight-bottom-panel .hud-dock-target {
+    font-size: 0.6875rem;
+  }
+
+  /* Sin etiquetas, el icono se centra sin margen extra */
+  .flight-bottom-panel .hud-dock-icon {
+    margin-inline-end: 0;
   }
 }
 

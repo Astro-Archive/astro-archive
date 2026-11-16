@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { 
   Compass, Radio, Volume2, VolumeX, Award, ExternalLink, Activity, 
-  Sparkles, Layers, Maximize2, ShieldCheck, Terminal, Eye, Info,
+  Sparkles, Layers, Maximize2, ShieldCheck, Terminal, Info,
   Navigation, Plane, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Zap, Target, Settings, ChevronUp, ChevronDown, Map
 } from 'lucide-react';
 import { getSolarBodies, getSpecialProbes } from '../data/solarSystemData';
@@ -321,9 +321,12 @@ export default function SpaceXHUD({
             <div className="w-1.5 h-1.5 bg-cyan-400 rounded-none"></div>
           </div>
           {!isTelemetryOpen && !isDestinoMenuOpen && !isSettingsOpen && (
-            <div className="absolute bottom-16 text-center">
-              <div className="text-[11px] sm:text-xs text-slate-300 font-mono tracking-widest bg-black/80 px-4 py-1 border border-slate-700 rounded-none backdrop-blur-md">
+            <div className="hud-orbit-hint absolute bottom-16 text-center">
+              <div className="hud-hint-desktop text-[11px] sm:text-xs text-slate-300 font-mono tracking-widest bg-black/80 px-4 py-1 border border-slate-700 rounded-none backdrop-blur-md">
                 {t('hud.orbitHint')}
+              </div>
+              <div className="hud-hint-touch text-[11px] text-slate-300 font-mono tracking-widest bg-black/80 px-4 py-1 border border-slate-700 rounded-none backdrop-blur-md">
+                {t('hud.orbitHintTouch')}
               </div>
             </div>
           )}
@@ -334,19 +337,29 @@ export default function SpaceXHUD({
       <div className="flight-bottom-panel relative flex items-center justify-between gap-2 pointer-events-auto w-full pt-2">
 
         {/* Custom Interactive Destino Menu Trigger Button */}
-        <div className="relative">
+        <div className="hud-dock-destination relative">
           <SciFiButton
             variant="secondary"
             onClick={() => setIsDestinoMenuOpen(!isDestinoMenuOpen)}
             showArrow={false}
-            icon={isDestinoMenuOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            aria-label={t('hud.destinationValue', { target: activeTitle })}
+            title={t('hud.destination')}
+            aria-expanded={isDestinoMenuOpen}
+            aria-controls="hud-destination-menu"
+            className="hud-dock-trigger"
           >
-            {t('hud.destinationValue', { target: activeTitle })}
+            <span className="hud-dock-icon" aria-hidden="true">
+              {isDestinoMenuOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+            </span>
+            <span className="hud-dock-target">
+              <span className="hud-dock-prefix">{t('hud.destination')}: </span>
+              {activeTitle}
+            </span>
           </SciFiButton>
 
           {/* ELEVATED CUSTOM DROPDOWN MENU */}
           {isDestinoMenuOpen && (
-            <div className="absolute bottom-12 left-0 w-80 sm:w-96 max-h-[72vh] overflow-y-auto bg-black/95 backdrop-blur-xl border border-cyan-500/70 p-3 shadow-2xl z-50 pointer-events-auto space-y-3">
+            <div className="absolute bottom-12 left-0 w-80 sm:w-96 max-h-[min(72vh,calc(100vh-11.5rem))] overflow-y-auto bg-black/95 backdrop-blur-xl border border-cyan-500/70 p-3 shadow-2xl z-50 pointer-events-auto space-y-3" id="hud-destination-menu">
               
               {/* Menu Header */}
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/40 pb-2">
@@ -467,16 +480,21 @@ export default function SpaceXHUD({
         </div>
 
         {/* Audio, Telemetry & Settings Controls (Right Side) */}
-        <div className="flex flex-wrap items-center justify-end gap-2 bg-black/95 backdrop-blur-md p-1.5 border border-cyan-500/40 rounded-none shadow-[0_0_15px_rgba(0,0,0,0.8)] max-w-[calc(100vw-1rem)]">
+        <div className="hud-dock-actions flex flex-wrap items-center justify-end gap-2 bg-black/95 backdrop-blur-md p-1.5 border border-cyan-500/40 rounded-none shadow-[0_0_15px_rgba(0,0,0,0.8)] max-w-[calc(100vw-1rem)]">
           
           <SciFiButton
             variant={isPlayingAudio ? 'primary' : 'secondary'}
             onClick={onToggleAudio}
             showArrow={false}
-            icon={isPlayingAudio ? <SciFiLoader size="sm" /> : <Volume2 className="w-4 h-4" />}
+            aria-label={isPlayingAudio ? t('hud.mute') : t('hud.nasaAudio')}
             title={t('hud.audioTitle')}
+            aria-pressed={isPlayingAudio}
+            className="hud-dock-action"
           >
-            {isPlayingAudio ? t('hud.mute') : t('hud.nasaAudio')}
+            <span className="hud-dock-icon" aria-hidden="true">
+              {isPlayingAudio ? <SciFiLoader size="sm" /> : <Volume2 className="w-4 h-4" />}
+            </span>
+            <span className="hud-dock-label">{isPlayingAudio ? t('hud.mute') : t('hud.nasaAudio')}</span>
           </SciFiButton>
 
           {currentArtifact && ['Moon', 'Mars'].includes(currentArtifact.body) && (
@@ -484,6 +502,7 @@ export default function SpaceXHUD({
               onClick={onOpenSurface}
               showArrow={false}
               title={t('hud.surfaceTitle')}
+              className="hud-dock-contextual"
             >
               {t('hud.exploreSurface')}
             </SciFiButton>
@@ -493,8 +512,8 @@ export default function SpaceXHUD({
             <SciFiButton
               onClick={() => onOpenHubble(selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'jwst' : 'hubble')}
               showArrow={false}
-              icon={<Eye className="w-4 h-4" />}
               title={t('hud.telescopeTitle')}
+              className="hud-dock-contextual"
             >
               {selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? t('hud.operateJwst') : t('hud.operateHubble')}
             </SciFiButton>
@@ -505,21 +524,43 @@ export default function SpaceXHUD({
             variant={isTelemetryOpen ? 'secondary' : 'transparent'}
             onClick={() => setIsTelemetryOpen(!isTelemetryOpen)}
             showArrow={false}
+            aria-label={t('hud.curiosityTitle')}
             title={t('hud.curiosityTitle')}
+            aria-expanded={isTelemetryOpen}
+            className="hud-dock-action"
           >
-            {isTelemetryOpen ? t('hud.hide') : t('hud.curiosities')}
+            <span className="hud-dock-icon" aria-hidden="true">
+              <Info className="w-4 h-4" />
+            </span>
+            <span className="hud-dock-label">{isTelemetryOpen ? t('hud.hide') : t('hud.curiosities')}</span>
           </SciFiButton>
 
           <button
             onClick={() => setIsSettingsOpen((value) => !value)}
             aria-label={t('hud.openSettings')}
             title={t('hud.settings')}
-            className={`p-2 border transition-all ${
+            aria-expanded={isSettingsOpen}
+            className={`hud-dock-action hud-dock-settings-desktop p-2 border transition-all ${
               isSettingsOpen ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-slate-700 bg-space-900 text-slate-300 hover:border-amber-400'
             }`}
           >
             <Settings className="h-4 w-4" />
           </button>
+
+          {/* Mismo control con el marco del kit para el dock móvil */}
+          <SciFiButton
+            variant={isSettingsOpen ? 'primary' : 'secondary'}
+            onClick={() => setIsSettingsOpen((value) => !value)}
+            showArrow={false}
+            aria-label={t('hud.openSettings')}
+            title={t('hud.settings')}
+            aria-expanded={isSettingsOpen}
+            className="hud-dock-action hud-dock-settings-mobile"
+          >
+            <span className="hud-dock-icon" aria-hidden="true">
+              <Settings className="w-4 h-4" />
+            </span>
+          </SciFiButton>
 
         </div>
 
