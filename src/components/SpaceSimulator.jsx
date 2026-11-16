@@ -530,8 +530,8 @@ export default function SpaceSimulator({
         issWrapper.add(issLight);
       }
 
-      // Start at safe altitude 4.4 units from Earth center (Earth radius is 2.7)
-      issWrapper.position.set(initialEarthPos.x + 4.4, 0, initialEarthPos.z);
+      // Start at safe altitude 5.2 units from Earth center (Earth radius is 2.7)
+      issWrapper.position.set(initialEarthPos.x + 5.2, 0, initialEarthPos.z);
       scene.add(issWrapper);
       probesMeshes.current['iss'] = { mesh: issWrapper, data: SPECIAL_PROBES[2] };
       orbitalAngles.current['iss'] = 0;
@@ -1160,7 +1160,7 @@ export default function SpaceSimulator({
       if (earthMeshCurrent && issObj && issObj.mesh) {
         orbitalAngles.current['iss'] += 0.045 * motionScale;
         const iTheta = orbitalAngles.current['iss'];
-        const rISS = 4.4;
+        const rISS = 5.2;
         const inclISS = (51.6 * Math.PI) / 180;
         const cosI = Math.cos(iTheta);
         const sinI = Math.sin(iTheta);
@@ -1182,16 +1182,17 @@ export default function SpaceSimulator({
           sinI * Math.sin(inclISS),
           sinI * Math.cos(inclISS)
         ).normalize();
-        const issMat = new THREE.Matrix4().lookAt(new THREE.Vector3(0, 0, 0), tangentISS, upISS);
-        issObj.mesh.quaternion.setFromRotationMatrix(issMat);
+        const forwardTarget = issObj.mesh.position.clone().add(tangentISS);
+        issObj.mesh.up.copy(upISS);
+        issObj.mesh.lookAt(forwardTarget);
       }
 
-      // C2. HUBBLE SPACE TELESCOPE ORBITS EARTH (Calibrated circular LEO orbit, R = 5.4, inclination 28.5°)
+      // C2. HUBBLE SPACE TELESCOPE ORBITS EARTH (Calibrated circular LEO orbit, R = 6.2, inclination 28.5°)
       const hstObj = probesMeshes.current['hubble'];
       if (earthMeshCurrent && hstObj && hstObj.mesh) {
         orbitalAngles.current['hubble'] += 0.038 * motionScale;
         const hTheta = orbitalAngles.current['hubble'];
-        const rHST = 5.4;
+        const rHST = 6.2;
         const inclHST = (28.5 * Math.PI) / 180;
         const cosH = Math.cos(hTheta);
         const sinH = Math.sin(hTheta);
@@ -1213,8 +1214,9 @@ export default function SpaceSimulator({
           sinH * Math.sin(inclHST),
           sinH * Math.cos(inclHST)
         ).normalize();
-        const hstMat = new THREE.Matrix4().lookAt(new THREE.Vector3(0, 0, 0), tangentHST, upHST);
-        hstObj.mesh.quaternion.setFromRotationMatrix(hstMat);
+        const forwardHST = hstObj.mesh.position.clone().add(tangentHST);
+        hstObj.mesh.up.copy(upHST);
+        hstObj.mesh.lookAt(forwardHST);
       }
 
       // C2b. JAMES WEBB SPACE TELESCOPE (Halo Orbit around Sun-Earth L2 Lagrangian Point)
