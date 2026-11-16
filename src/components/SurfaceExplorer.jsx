@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Compass, Gauge, Map, Navigation, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
   Plane, Wind, CheckCircle2, Circle, AlertCircle, Award, Volume2, VolumeX, Sparkles, Radio
@@ -6,6 +6,8 @@ import {
 import SurfaceMap3D, { MARS_SAMPLE_TARGETS, MOON_APOLLO_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
 import { getAssetPath } from '../utils/assets';
 import SciFiButton from './ui/SciFiButton';
+import { useI18n } from '../i18n';
+import { localize } from '../i18n/localize';
 
 /**
  * Web Audio API synthesizer for instant zero-latency sound effects.
@@ -61,6 +63,7 @@ function playSfx(type) {
 }
 
 export default function SurfaceExplorer({ artifact, onClose }) {
+  const { t, lang, localizeValue } = useI18n();
   const isMars = !artifact || artifact.body === 'Marte' || ['perseverance', 'ingenuity', 'opportunity', 'viking'].includes(artifact.id);
   const isApollo = artifact?.id === 'apollo11';
   const isFlying = artifact?.id === 'ingenuity';
@@ -100,6 +103,8 @@ export default function SurfaceExplorer({ artifact, onClose }) {
   const historicAudioRef = useRef(null);
 
   const activeMissionTargets = isMars ? MARS_SAMPLE_TARGETS : MOON_APOLLO_TARGETS;
+  // Resolved on every language change so the list re-renders translated.
+  const missionTargets = useMemo(() => localize(activeMissionTargets, lang), [activeMissionTargets, lang]);
 
   const sendKey = (code, isDown) => {
     window.dispatchEvent(new KeyboardEvent(isDown ? 'keydown' : 'keyup', { code }));
@@ -221,10 +226,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             }`}></div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-emerald-400">
-                {isMars ? '🪐 Superficie Marciana // Cráter Jezero' : '🌕 Superficie Lunar // Mar de la Tranquilidad (Base Tranquilidad)'}
+                {isMars ? t('surface.header.mars') : t('surface.header.moon')}
               </p>
               <h2 className="text-sm font-bold text-white sm:text-base tracking-wide flex items-center space-x-2">
-                <span>{isApollo ? (apolloLandingDone ? 'Neil Armstrong (EVA Apolo 11)' : 'Módulo Lunar LEM Eagle (Apolo 11)') : artifact.name}</span>
+                <span>{isApollo ? (apolloLandingDone ? t('surface.title.astronaut') : t('surface.title.lem')) : localizeValue(artifact.name)}</span>
                 <span className={`text-[10px] px-2 py-0.5 border font-mono ${
                   isApollo
                     ? (apolloLandingDone ? 'border-cyan-400 bg-cyan-950/70 text-cyan-300' : 'border-amber-400 bg-amber-950/70 text-amber-300 animate-pulse')
@@ -233,10 +238,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                     : 'border-emerald-500/60 bg-emerald-950/60 text-emerald-300'
                 }`}>
                   {isApollo
-                    ? (apolloLandingDone ? '👨‍🚀 NEIL ARMSTRONG (CAMINATA LUNAR 1/6 g)' : '🚀 FASE DE ALUNIZAJE MANUAL DPS')
+                    ? (apolloLandingDone ? t('surface.badge.astronaut') : t('surface.badge.landing'))
                     : isFlying
-                    ? '🚁 MODO VUELO ATMOSFÉRICO 360°'
-                    : '🚜 ROVER TERRESTRE 360°'}
+                    ? t('surface.badge.flight')
+                    : t('surface.badge.rover')}
                 </span>
               </h2>
             </div>
@@ -251,15 +256,15 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                   ? 'border-emerald-400 bg-emerald-950/60 text-emerald-300'
                   : 'border-slate-700 bg-black text-slate-400 hover:text-white'
               }`}
-              title={isMars ? 'Audio ambiental de viento marciano de Perseverance' : 'Audio ambiental radio Capcom de la misión Apolo 11'}
+              title={isMars ? t('surface.audio.mars.title') : t('surface.audio.moon.title')}
             >
               {isAmbientPlaying ? (isMars ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <Radio className="w-3.5 h-3.5 text-cyan-400" />) : <VolumeX className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{isMars ? 'Viento de Marte' : 'Radio Capcom Houston'}</span>
+              <span className="hidden sm:inline">{isMars ? t('surface.audio.mars.label') : t('surface.audio.moon.label')}</span>
             </button>
 
             <button
               onClick={onClose}
-              aria-label="Cerrar simulación de superficie"
+              aria-label={t('surface.close')}
               className="text-slate-400 hover:text-white p-1 hover:bg-white/10 transition-all font-bold"
             >
               <X className="h-5 w-5" />
@@ -285,34 +290,34 @@ export default function SurfaceExplorer({ artifact, onClose }) {
           {/* Top-Left Telemetry HUD Overlay */}
           <div className="pointer-events-none absolute top-3 left-3 bg-black/85 border border-emerald-500/50 p-2.5 text-[11px] sm:text-xs text-emerald-300 space-y-1 shadow-2xl backdrop-blur-md max-w-xs">
             <div className="text-[10px] uppercase font-bold text-emerald-400 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
-              <span>{isApollo ? (apolloLandingDone ? '👨‍🚀 Telemetría de Astronauta' : '🚀 Telemetría Alunizaje LEM') : (isFlying ? '🚁 Telemetría de Vuelo' : '📡 Telemetría de Superficie')}</span>
-              <span className="text-amber-400">{isApollo && !apolloLandingDone ? 'MOTOR DPS: ACTIVO' : 'RADAR: ACTIVO'}</span>
+              <span>{isApollo ? (apolloLandingDone ? t('surface.telemetry.astronaut') : t('surface.telemetry.lem')) : (isFlying ? t('surface.telemetry.flight') : t('surface.telemetry.surface'))}</span>
+              <span className="text-amber-400">{isApollo && !apolloLandingDone ? t('surface.telemetry.dpsActive') : t('surface.telemetry.radarActive')}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">{isApollo ? (apolloLandingDone ? 'Vel. de Pasos:' : 'Velocidad:') : (isFlying ? 'Vel. de Vuelo:' : 'Velocidad:')}</span>
+              <span className="text-slate-400">{isApollo ? (apolloLandingDone ? t('surface.telemetry.stepSpeed') : t('surface.telemetry.speed')) : (isFlying ? t('surface.telemetry.flightSpeed') : t('surface.telemetry.speed'))}</span>
               <span className="font-bold text-amber-300">{telemetry.speedKmh} km/h</span>
             </div>
             {(!apolloLandingDone || isFlying) && (
               <div className="flex justify-between">
-                <span className="text-slate-400">Altitud Radar:</span>
-                <span className="font-bold text-cyan-300">{telemetry.altitude} m {isApollo ? '(sobre regolito)' : '(sobre dunas)'}</span>
+                <span className="text-slate-400">{t('surface.telemetry.altitude')}</span>
+                <span className="font-bold text-cyan-300">{telemetry.altitude} m {isApollo ? t('surface.telemetry.overRegolith') : t('surface.telemetry.overDunes')}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-slate-400">Rumbo (Yaw):</span>
+              <span className="text-slate-400">{t('surface.telemetry.heading')}</span>
               <span className="font-bold text-white">{telemetry.headingDeg}°</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Cota Terreno:</span>
+              <span className="text-slate-400">{t('surface.telemetry.terrain')}</span>
               <span className="font-bold text-emerald-200">{telemetry.elevation} m</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Coordenadas:</span>
+              <span className="text-slate-400">{t('surface.telemetry.coords')}</span>
               <span className="font-mono text-[10px] text-cyan-300">X: {telemetry.x} | Z: {telemetry.z}</span>
             </div>
             {isApollo && !apolloLandingDone && (
               <div className="border-t border-amber-500/40 pt-1 text-[10px] text-amber-300 font-bold animate-pulse">
-                ▼ DESCENDER A MENOS DE 0.2 m PARA ALUNIZAR
+                {t('surface.telemetry.descendHint')}
               </div>
             )}
           </div>
@@ -322,15 +327,15 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="border-b border-cyan-500/30 pb-1 mb-2 flex items-center justify-between">
               <span className="font-bold text-cyan-300 flex items-center space-x-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>{isApollo ? 'MISIÓN: BASE TRANQUILIDAD' : 'MISIÓN: TESTIGOS DE JEZERO'}</span>
+                <span>{isApollo ? t('surface.mission.moon') : t('surface.mission.mars')}</span>
               </span>
               <span className="text-amber-400 font-bold px-1.5 py-0.5 bg-amber-950/60 border border-amber-500/40 text-[10px]">
-                {collectedSampleIds.length} / {activeMissionTargets.length} OBJETIVOS
+                {t('surface.mission.objectives', { collected: collectedSampleIds.length, total: activeMissionTargets.length })}
               </span>
             </div>
 
             <div className="space-y-1.5">
-              {activeMissionTargets.map((target) => {
+              {missionTargets.map((target) => {
                 const isCollected = collectedSampleIds.includes(target.id);
                 const isNear = proximityInfo.nearestTarget?.id === target.id;
                 return (
@@ -357,10 +362,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                     </div>
                     <div className="text-right">
                       {isCollected ? (
-                        <span className="text-emerald-400 font-bold">COMPLETADO</span>
+                        <span className="text-emerald-400 font-bold">{t('surface.target.completed')}</span>
                       ) : (
                         <span className="text-cyan-300 font-mono">
-                          {isNear ? `${proximityInfo.distance}m` : 'Radar'}
+                          {isNear ? `${proximityInfo.distance}m` : t('surface.target.radar')}
                         </span>
                       )}
                     </div>
@@ -374,16 +379,16 @@ export default function SurfaceExplorer({ artifact, onClose }) {
           {showLandingBanner && (
             <div className="pointer-events-none absolute top-20 left-1/2 -translate-x-1/2 bg-black/95 border-2 border-emerald-400 p-4 text-center shadow-[0_0_35px_rgba(16,185,129,0.7)] backdrop-blur-xl z-40 max-w-lg w-[92%] animate-pulse">
               <div className="text-xs uppercase font-bold text-emerald-400 tracking-wider mb-1">
-                🎙️ TRANSMISIÓN HISTÓRICA DESDE EL MAR DE LA TRANQUILIDAD
+                {t('surface.landing.kicker')}
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white mb-1">
-                "Houston, Tranquility Base here. The Eagle has landed."
+                {t('surface.landing.quote')}
               </h3>
               <p className="text-xs text-amber-300">
-                — Neil Armstrong (20 de julio de 1969)
+                {t('surface.landing.author')}
               </p>
               <div className="mt-2 text-[11px] text-slate-300 border-t border-emerald-500/40 pt-1">
-                Alunizaje exitoso. El módulo Eagle queda posado fijo. Control transferido a Neil Armstrong para la caminata lunar EVA.
+                {t('surface.landing.body')}
               </div>
             </div>
           )}
@@ -392,13 +397,13 @@ export default function SurfaceExplorer({ artifact, onClose }) {
           {showFirstStepBanner && (
             <div className="pointer-events-none absolute top-20 left-1/2 -translate-x-1/2 bg-black/95 border-2 border-cyan-400 p-4 text-center shadow-[0_0_35px_rgba(0,240,255,0.7)] backdrop-blur-xl z-40 max-w-lg w-[92%] animate-pulse">
               <div className="text-xs uppercase font-bold text-cyan-400 tracking-wider mb-1">
-                🎙️ PRIMER PASO DE LA HUMANIDAD EN OTRO MUNDO
+                {t('surface.firstStep.kicker')}
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white mb-1">
-                "That's one small step for [a] man, one giant leap for mankind."
+                {t('surface.firstStep.quote')}
               </h3>
               <p className="text-xs text-cyan-300">
-                — Neil Armstrong al pisar el regolito lunar
+                {t('surface.firstStep.author')}
               </p>
             </div>
           )}
@@ -408,10 +413,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="pointer-events-auto absolute bottom-24 left-1/2 -translate-x-1/2 bg-black/95 border-2 border-amber-400 p-3 sm:p-4 text-center shadow-[0_0_25px_rgba(245,158,11,0.5)] backdrop-blur-xl animate-bounce max-w-md w-[92%] sm:w-auto z-30">
               <div className="text-[10px] uppercase font-bold text-amber-300 tracking-wider flex items-center justify-center space-x-1.5 mb-1">
                 <AlertCircle className="w-4 h-4 text-amber-400" />
-                <span>OBJETIVO CIENTÍFICO EN RANGO</span>
+                <span>{t('surface.prompt.kicker')}</span>
               </div>
               <h3 className="text-sm sm:text-base font-bold text-white mb-2">
-                {proximityInfo.targetInRange.name}
+                {localizeValue(proximityInfo.targetInRange.name)}
               </h3>
               <SciFiButton
                 size="lg"
@@ -419,7 +424,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 className="w-full"
                 icon={<span className="text-[10px] font-bold leading-none">E</span>}
               >
-                {isApollo ? 'Completar objetivo lunar' : 'Perforar y recolectar'}
+                {isApollo ? t('surface.prompt.astronautAction') : t('surface.prompt.drillAction')}
               </SciFiButton>
             </div>
           )}
@@ -429,10 +434,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
               <div className="w-full max-w-md border-2 border-cyan-400 bg-black/95 p-5 text-white shadow-[0_0_30px_rgba(0,240,255,0.4)] font-mono text-center space-y-4">
                 <div className="text-cyan-400 text-xs font-bold uppercase tracking-widest animate-pulse">
-                  {isApollo ? 'OPERACIÓN EXTRAVEHICULAR EVA' : 'OPERACIÓN CIENTÍFICA EN CURSO'}
+                  {isApollo ? t('surface.sampling.eva') : t('surface.sampling.science')}
                 </div>
                 <h3 className="text-lg font-bold text-white">
-                  {samplingTarget.name}
+                  {localizeValue(samplingTarget.name)}
                 </h3>
 
                 <div className="w-full bg-slate-900 border border-cyan-500/50 h-3 p-0.5">
@@ -444,18 +449,18 @@ export default function SurfaceExplorer({ artifact, onClose }) {
 
                 <div className="text-xs text-amber-300 font-bold">
                   {isApollo ? (
-                    samplingStep === 1 ? 'Paso 1/3: Desplegando instrumental en el regolito lunar...' :
-                    samplingStep === 2 ? 'Paso 2/3: Ajustando fijaciones y alineación con la Tierra...' :
-                    'Paso 3/3: Verificación de telemetría con Capcom Houston...'
+                    samplingStep === 1 ? t('surface.sampling.eva.step1') :
+                    samplingStep === 2 ? t('surface.sampling.eva.step2') :
+                    t('surface.sampling.eva.step3')
                   ) : (
-                    samplingStep === 1 ? 'Fase 1/3: SuperCam — Vaporización láser y análisis espectral...' :
-                    samplingStep === 2 ? 'Fase 2/3: Taladro percutor — Extrayendo testigo a 5.8 cm...' :
-                    'Fase 3/3: Brazo robótico — Sellado hermético en tubo de titanio...'
+                    samplingStep === 1 ? t('surface.sampling.mars.step1') :
+                    samplingStep === 2 ? t('surface.sampling.mars.step2') :
+                    t('surface.sampling.mars.step3')
                   )}
                 </div>
 
                 <p className="text-[11px] text-slate-400">
-                  Herramienta: <span className="text-emerald-300">{samplingTarget.tool}</span>
+                  {t('surface.sampling.tool')} <span className="text-emerald-300">{localizeValue(samplingTarget.tool)}</span>
                 </p>
               </div>
             </div>
@@ -468,30 +473,30 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 <div className="flex items-center justify-between border-b border-emerald-500/40 pb-2">
                   <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center space-x-1.5">
                     <Award className="w-4 h-4 text-emerald-400" />
-                    <span>{isApollo ? 'OBJETIVO HISTÓRICO COMPLETADO' : 'TESTIGO DE ROCA SELLADO'}</span>
+                    <span>{isApollo ? t('surface.dossier.historicTitle') : t('surface.dossier.sampleTitle')}</span>
                   </span>
                   <span className="text-xs px-2 py-0.5 bg-emerald-950 border border-emerald-500 text-emerald-300 font-bold">
-                    {dossierTarget.tubeId}
+                    {localizeValue(dossierTarget.tubeId)}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-white">{dossierTarget.name}</h3>
-                  <p className="text-xs text-cyan-300">{dossierTarget.type}</p>
+                  <h3 className="text-base sm:text-lg font-bold text-white">{localizeValue(dossierTarget.name)}</h3>
+                  <p className="text-xs text-cyan-300">{localizeValue(dossierTarget.type)}</p>
                 </div>
 
                 <div className="space-y-2 text-xs text-slate-300 leading-relaxed border-y border-slate-800 py-3">
-                  <p><strong className="text-emerald-400">Hallazgo Histórico:</strong> {dossierTarget.summary}</p>
-                  <p><strong className="text-amber-400">{isApollo ? 'Datos de Ingeniería / Materiales:' : 'Mineralogía Detectada:'}</strong> {dossierTarget.mineralogy}</p>
-                  <p><strong className="text-cyan-400">Relevancia Científica NASA:</strong> {dossierTarget.scienceValue}</p>
+                  <p><strong className="text-emerald-400">{t('surface.dossier.finding')}</strong> {localizeValue(dossierTarget.summary)}</p>
+                  <p><strong className="text-amber-400">{isApollo ? t('surface.dossier.engineering') : t('surface.dossier.mineralogy')}</strong> {localizeValue(dossierTarget.mineralogy)}</p>
+                  <p><strong className="text-cyan-400">{t('surface.dossier.science')}</strong> {localizeValue(dossierTarget.scienceValue)}</p>
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-[11px] text-slate-400">
-                    Completados: <strong className="text-white">{collectedSampleIds.length}/{activeMissionTargets.length}</strong>
+                    {t('surface.dossier.completed')} <strong className="text-white">{collectedSampleIds.length}/{activeMissionTargets.length}</strong>
                   </span>
                   <SciFiButton onClick={() => setDossierTarget(null)} showArrow={false}>
-                    Continuar exploración
+                    {t('surface.dossier.continue')}
                   </SciFiButton>
                 </div>
               </div>
@@ -503,12 +508,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="pointer-events-none absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-md bg-emerald-950/90 border border-emerald-400 p-3 shadow-2xl backdrop-blur-md z-30">
               <div className="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
                 <Award className="w-4 h-4 text-amber-400" />
-                <span>{isApollo ? '¡MISIÓN APOLO 11 EN EL MAR DE LA TRANQUILIDAD CUMPLIDA!' : '¡CAMPAÑA DE MUESTREO DE JEZERO COMPLETADA!'}</span>
+                <span>{isApollo ? t('surface.complete.moon.title') : t('surface.complete.mars.title')}</span>
               </div>
               <p className="text-[10px] text-slate-300 mt-1">
-                {isApollo
-                  ? 'Todos los experimentos han sido desplegados y las muestras lunares quedan aseguradas para su retorno a la Tierra en el módulo Columbia.'
-                  : 'Los 3 testigos clave de roca marciana han sido asegurados en el carrusel de Perseverance para la misión Mars Sample Return.'}
+                {isApollo ? t('surface.complete.moon.body') : t('surface.complete.mars.body')}
               </p>
             </div>
           )}
@@ -518,26 +521,26 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             {/* Descent / Climb controls (For LEM Landing or Ingenuity Drone) */}
             {(!apolloLandingDone || isFlying) && (
               <div className="flex flex-col space-y-1 bg-black/90 p-2 border border-amber-500/50">
-                <span className="text-[9px] text-amber-300 text-center font-bold">{isApollo ? 'EMPUJE DPS' : 'ALTITUD'}</span>
+                <span className="text-[9px] text-amber-300 text-center font-bold">{isApollo ? t('surface.controls.dpsThrust') : t('surface.controls.altitude')}</span>
                 <button
                   onMouseDown={() => sendKey('KeyR', true)}
                   onMouseUp={() => sendKey('KeyR', false)}
                   onTouchStart={() => sendKey('KeyR', true)}
                   onTouchEnd={() => sendKey('KeyR', false)}
-                  aria-label="Subir altitud o frenar descenso"
+                  aria-label={t('surface.controls.ascendAria')}
                   className="px-3 py-2 bg-amber-950/80 hover:bg-amber-800 border border-amber-400 text-white font-bold text-xs"
                 >
-                  ▲ {isApollo ? 'FRENAR' : 'SUBIR'}
+                  {isApollo ? t('surface.controls.brake') : t('surface.controls.climb')}
                 </button>
                 <button
                   onMouseDown={() => sendKey('KeyF', true)}
                   onMouseUp={() => sendKey('KeyF', false)}
                   onTouchStart={() => sendKey('KeyF', true)}
                   onTouchEnd={() => sendKey('KeyF', false)}
-                  aria-label="Descender"
+                  aria-label={t('surface.controls.descendAria')}
                   className="px-3 py-2 bg-amber-950/80 hover:bg-amber-800 border border-amber-400 text-white font-bold text-xs"
                 >
-                  ▼ BAJAR
+                  {t('surface.controls.descend')}
                 </button>
               </div>
             )}
@@ -550,7 +553,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 onMouseUp={() => sendKey('KeyW', false)}
                 onTouchStart={() => sendKey('KeyW', true)}
                 onTouchEnd={() => sendKey('KeyW', false)}
-                aria-label="Avanzar"
+                aria-label={t('surface.controls.forwardAria')}
                 className="px-3 py-2.5 bg-emerald-950/80 hover:bg-emerald-800 border border-emerald-400/80 text-white font-bold text-xs"
               >
                 ▲
@@ -561,7 +564,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 onMouseUp={() => sendKey('KeyA', false)}
                 onTouchStart={() => sendKey('KeyA', true)}
                 onTouchEnd={() => sendKey('KeyA', false)}
-                aria-label="Girar izquierda"
+                aria-label={t('surface.controls.leftAria')}
                 className="px-3 py-2.5 bg-emerald-950/80 hover:bg-emerald-800 border border-emerald-400/80 text-white font-bold text-xs"
               >
                 ◄
@@ -571,7 +574,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 onMouseUp={() => sendKey('KeyS', false)}
                 onTouchStart={() => sendKey('KeyS', true)}
                 onTouchEnd={() => sendKey('KeyS', false)}
-                aria-label="Retroceder"
+                aria-label={t('surface.controls.backAria')}
                 className="px-3 py-2.5 bg-emerald-950/80 hover:bg-emerald-800 border border-emerald-400/80 text-white font-bold text-xs"
               >
                 ▼
@@ -581,7 +584,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
                 onMouseUp={() => sendKey('KeyD', false)}
                 onTouchStart={() => sendKey('KeyD', true)}
                 onTouchEnd={() => sendKey('KeyD', false)}
-                aria-label="Girar derecha"
+                aria-label={t('surface.controls.rightAria')}
                 className="px-3 py-2.5 bg-emerald-950/80 hover:bg-emerald-800 border border-emerald-400/80 text-white font-bold text-xs"
               >
                 ►
@@ -594,17 +597,17 @@ export default function SurfaceExplorer({ artifact, onClose }) {
         {/* 3. Footer Bar */}
         <footer className="border-t border-emerald-500/30 bg-black/95 px-3 py-2 text-center sm:text-left text-[11px] text-slate-300 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <span className="font-bold text-emerald-400">CONTROLES:</span>
+            <span className="font-bold text-emerald-400">{t('surface.footer.controls')}</span>
             {isApollo && !apolloLandingDone ? (
-              <span> Maniobra con <strong className="text-white">[W / A / S / D]</strong>. Desciende con <strong className="text-amber-300">[Shift / F]</strong> y activa empuje DPS con <strong className="text-amber-300">[Space / R]</strong>. Aluniza a menos de 0.2 m.</span>
+              <span> {t('surface.footer.lem.pre')} <strong className="text-white">[W / A / S / D]</strong>{t('surface.footer.lem.afterSpeed')} <strong className="text-amber-300">[Shift / F]</strong>{t('surface.footer.lem.afterDescent')} <strong className="text-amber-300">[Space / R]</strong>{t('surface.footer.lem.tail')}</span>
             ) : isApollo && apolloLandingDone ? (
-              <span> Camina con Neil Armstrong usando <strong className="text-white">[W / A / S / D]</strong> (gravedad lunar 1/6 g). Presiona <strong className="text-amber-300">[E]</strong> para interactuar con los experimentos.</span>
+              <span> {t('surface.footer.eva.pre')} <strong className="text-white">[W / A / S / D]</strong>{t('surface.footer.eva.afterSpeed')} <strong className="text-amber-300">[E]</strong>{t('surface.footer.eva.tail')}</span>
             ) : (
-              <span> Conduce con <strong className="text-white">[W / A / S / D]</strong>. Presiona <strong className="text-amber-300">[E]</strong> para perforar rocas en rango.</span>
+              <span> {t('surface.footer.rover.pre')} <strong className="text-white">[W / A / S / D]</strong>{t('surface.footer.rover.afterSpeed')} <strong className="text-amber-300">[E]</strong>{t('surface.footer.rover.tail')}</span>
             )}
           </div>
           <div className="text-slate-400 text-[10px]">
-            {isApollo ? 'Mar de la Tranquilidad // La Tierra visible en el cielo lunar' : 'Cráter Jezero // Dunas Marcianas'}
+            {isApollo ? t('surface.footer.location.moon') : t('surface.footer.location.mars')}
           </div>
         </footer>
 

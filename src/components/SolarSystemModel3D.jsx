@@ -3,8 +3,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { SOLAR_BODIES } from '../data/solarSystemData';
 import { getAssetPath } from '../utils/assets';
+import { useI18n } from '../i18n';
 
 export default function SolarSystemModel3D() {
+  const { t } = useI18n();
   const mountRef = useRef(null);
 
   useEffect(() => {
@@ -81,5 +83,5 @@ export default function SolarSystemModel3D() {
     };
   }, []);
 
-  return <div ref={mountRef} role="img" aria-label="Modelo 3D del sistema solar" className="h-56 w-full sm:h-64" />;
+  return <div ref={mountRef} role="img" aria-label={t('common.model3dSolarSystem')} className="h-56 w-full sm:h-64" />;
 }

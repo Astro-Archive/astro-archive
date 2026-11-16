@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   Compass, Radio, Volume2, VolumeX, Award, ExternalLink, Activity, 
   Sparkles, Layers, Maximize2, ShieldCheck, Terminal, Eye, Info,
   Navigation, Plane, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Zap, Target, Settings, ChevronUp, ChevronDown, Map
 } from 'lucide-react';
-import { SOLAR_BODIES, SPECIAL_PROBES } from '../data/solarSystemData';
+import { getSolarBodies, getSpecialProbes } from '../data/solarSystemData';
+import { useI18n } from '../i18n';
 import CuriosityPanel from './CuriosityPanel';
 import SciFiButton from './ui/SciFiButton';
 import SciFiTag from './ui/SciFiTag';
 import SciFiLoader from './ui/SciFiLoader';
+import LanguageToggle from './LanguageToggle';
 
 export default function SpaceXHUD({
   selectedTarget,
@@ -27,29 +29,33 @@ export default function SpaceXHUD({
   settings,
   onUpdateSettings
 }) {
+  const { t, lang } = useI18n();
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDestinoMenuOpen, setIsDestinoMenuOpen] = useState(false);
 
+  const solarBodies = useMemo(() => getSolarBodies(lang), [lang]);
+  const specialProbes = useMemo(() => getSpecialProbes(lang), [lang]);
+
   // Helper for cardinal compass heading
   const getCardinal = (deg) => {
     const val = ((deg % 360) + 360) % 360;
-    if (val >= 337.5 || val < 22.5) return 'NORTE (N)';
-    if (val >= 22.5 && val < 67.5) return 'NORESTE (NE)';
-    if (val >= 67.5 && val < 112.5) return 'ESTE (E)';
-    if (val >= 112.5 && val < 157.5) return 'SURESTE (SE)';
-    if (val >= 157.5 && val < 202.5) return 'SUR (S)';
-    if (val >= 202.5 && val < 247.5) return 'SUROESTE (SW)';
-    if (val >= 247.5 && val < 292.5) return 'OESTE (W)';
-    return 'NOROESTE (NW)';
+    if (val >= 337.5 || val < 22.5) return t('hud.north');
+    if (val >= 22.5 && val < 67.5) return t('hud.northeast');
+    if (val >= 67.5 && val < 112.5) return t('hud.east');
+    if (val >= 112.5 && val < 157.5) return t('hud.southeast');
+    if (val >= 157.5 && val < 202.5) return t('hud.south');
+    if (val >= 202.5 && val < 247.5) return t('hud.southwest');
+    if (val >= 247.5 && val < 292.5) return t('hud.west');
+    return t('hud.northwest');
   };
 
   const currentHeading = flightTelemetry?.heading ?? 180;
   const currentPitch = flightTelemetry?.pitch ?? 0;
 
   // Look up target
-  const currentBody = SOLAR_BODIES.find(b => b.id.toUpperCase() === selectedTarget.toUpperCase());
-  const currentProbe = SPECIAL_PROBES.find(p => p.id.toUpperCase() === selectedTarget.toUpperCase());
+  const currentBody = solarBodies.find(b => b.id.toUpperCase() === selectedTarget.toUpperCase());
+  const currentProbe = specialProbes.find(p => p.id.toUpperCase() === selectedTarget.toUpperCase());
   const artifactTargetIds = {
     APOLLO: 'apollo11',
     INGENUITY: 'ingenuity',
@@ -62,7 +68,7 @@ export default function SpaceXHUD({
   const currentArtifact = artifacts.find(a => a.id === artifactTargetIds[selectedTarget]);
 
   const activeTitle = currentProbe ? currentProbe.name : currentBody ? currentBody.name : currentArtifact ? currentArtifact.name : selectedTarget;
-  const activeType = currentProbe ? currentProbe.type : currentBody ? currentBody.type : 'Objeto Espacial';
+  const activeType = currentProbe ? currentProbe.type : currentBody ? currentBody.type : t('hud.spaceObject');
 
   return (
     <div className="absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-2 sm:p-4 select-none font-mono">
@@ -81,11 +87,11 @@ export default function SpaceXHUD({
                 shape="cut-edge"
                 showArrow={false}
               >
-                {isFlightMode ? 'Piloto nave' : 'Orbital lock'}
+                {isFlightMode ? t('hud.statusPiloting') : t('hud.statusOrbitalLock')}
               </SciFiTag>
             </div>
             <div className="text-[11px] text-slate-300 mt-0.5">
-              OBJETIVO: <span className="text-cyan-300 font-bold">{activeTitle.toUpperCase()}</span>
+              {t('hud.targetLabel')} <span className="text-cyan-300 font-bold">{activeTitle.toUpperCase()}</span>
             </div>
           </div>
         </div>
@@ -99,7 +105,7 @@ export default function SpaceXHUD({
             showArrow={false}
             className="hidden sm:inline-flex"
           >
-            Sistema
+            {t('hud.system')}
           </SciFiButton>
 
           {/* SPACESHIP FLIGHT MODE TOGGLE */}
@@ -108,14 +114,14 @@ export default function SpaceXHUD({
             onClick={onToggleFlightMode}
             showArrow={false}
           >
-            {isFlightMode ? 'Pilotando' : 'Pilotar nave'}
+            {isFlightMode ? t('hud.pilotingOn') : t('hud.flyShip')}
           </SciFiButton>
 
         </div>
 
         {/* Cadet Log / Badges Button */}
         <SciFiButton onClick={onOpenBadges} showArrow={false}>
-          <span className="hidden sm:inline">Bitácora&nbsp;</span>{scannedCount}/{artifacts.length}
+          <span className="hidden sm:inline">{t('hud.logbook')}&nbsp;</span>{t('hud.logbookCount', { scanned: scannedCount, total: artifacts.length })}
         </SciFiButton>
 
       </div>
@@ -127,7 +133,7 @@ export default function SpaceXHUD({
           {/* Top Compass Heading Tape (Space Engine Style - Dynamic & Functional) */}
           <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 bg-black/90 border border-emerald-500/50 px-4 py-1.5 text-xs text-emerald-300 flex items-center space-x-3 sm:space-x-5 backdrop-blur-md font-mono hidden md:flex shadow-[0_0_20px_rgba(0,0,0,0.9)]">
             <span className="text-[10px] text-slate-400 font-bold border-r border-emerald-500/40 pr-3">
-              🧭 RUMBO: <span className="text-emerald-400">{getCardinal(currentHeading)}</span>
+              {t('hud.heading')} <span className="text-emerald-400">{getCardinal(currentHeading)}</span>
             </span>
             <span className="text-slate-500">{((currentHeading - 30 + 360) % 360)}°</span>
             <span className="text-slate-400">{((currentHeading - 20 + 360) % 360)}°</span>
@@ -139,7 +145,7 @@ export default function SpaceXHUD({
             <span className="text-slate-400">{((currentHeading + 20) % 360)}°</span>
             <span className="text-slate-500">{((currentHeading + 30) % 360)}°</span>
             <span className="text-amber-400 font-bold ml-2 border-l border-emerald-500/40 pl-3">
-              PITCH: {currentPitch > 0 ? `+${currentPitch}°` : `${currentPitch}°`}
+              {t('hud.pitch')} {currentPitch > 0 ? `+${currentPitch}°` : `${currentPitch}°`}
             </span>
           </div>
 
@@ -149,31 +155,31 @@ export default function SpaceXHUD({
             {/* Left Telemetry Column: Real Coordinates & Distance */}
             <div className="bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-64 sm:w-72 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 shadow-[0_0_25px_rgba(0,0,0,0.9)]">
               <div className="text-[10px] uppercase font-bold text-emerald-300 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
-                <span>🛸 NAVEGACIÓN Y COORDENADAS</span>
-                <span className="text-amber-400">ENLACE ACTIVO</span>
+                <span>{t('hud.navigationTitle')}</span>
+                <span className="text-amber-400">{t('hud.linkActive')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Coordenada X:</span>
+                <span className="text-slate-400">{t('hud.coordX')}</span>
                 <span className="text-white font-bold font-mono">{flightTelemetry?.x || '0.0'} Mkm</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Coordenada Y (Cota):</span>
+                <span className="text-slate-400">{t('hud.coordY')}</span>
                 <span className="text-white font-bold font-mono">{flightTelemetry?.y || '0.0'} Mkm</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Coordenada Z:</span>
+                <span className="text-slate-400">{t('hud.coordZ')}</span>
                 <span className="text-white font-bold font-mono">{flightTelemetry?.z || '0.0'} Mkm</span>
               </div>
               <div className="flex justify-between border-t border-slate-800 pt-1">
-                <span className="text-slate-400">Astro de referencia:</span>
+                <span className="text-slate-400">{t('hud.referenceBody')}</span>
                 <span className="text-cyan-300 font-bold truncate max-w-[130px]">{flightTelemetry?.nearestName || activeTitle}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Distancia a referencia:</span>
+                <span className="text-slate-400">{t('hud.referenceDistance')}</span>
                 <span className="text-amber-300 font-bold font-mono">{flightTelemetry?.nearestDist || '12.4'} Mkm</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Velocidad impulso:</span>
+                <span className="text-slate-400">{t('hud.impulseSpeed')}</span>
                 <span className="text-emerald-300 font-bold font-mono">{flightTelemetry?.speed || flightVelocity || '0.0'} km/s</span>
               </div>
             </div>
@@ -181,14 +187,14 @@ export default function SpaceXHUD({
             {/* Right Orbital & Flight Status Column */}
             <div className="bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-56 sm:w-64 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 text-right shadow-[0_0_20px_rgba(0,0,0,0.8)] hidden sm:block">
               <div className="text-[10px] uppercase font-bold text-emerald-300 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
-                <span className="text-cyan-300">ESTADO DE VUELO</span>
-                <span>GIROSCÓPICO 🌐</span>
+                <span className="text-cyan-300">{t('hud.flightStatus')}</span>
+                <span>{t('hud.gyroscopic')}</span>
               </div>
-              <div className="flex justify-between"><span className="text-slate-400">Rumbo (Yaw):</span><span className="text-white font-bold font-mono">{currentHeading}°</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Cabeceo (Pitch):</span><span className="text-amber-300 font-bold font-mono">{currentPitch}°</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Propulsión:</span><span className="text-emerald-300 font-bold">{parseFloat(flightTelemetry?.speed || flightVelocity || '0') > 0 ? 'IMPULSO ACTIVO' : 'DERIVA INERCIAL'}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Sensores RCS:</span><span className="text-cyan-300 font-bold">ARMADOS (4x)</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Modo de vuelo:</span><span className="text-emerald-400 font-bold">Libre 360°</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">{t('hud.yaw')}</span><span className="text-white font-bold font-mono">{currentHeading}°</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">{t('hud.pitchAngle')}</span><span className="text-amber-300 font-bold font-mono">{currentPitch}°</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">{t('hud.propulsion')}</span><span className="text-emerald-300 font-bold">{parseFloat(flightTelemetry?.speed || flightVelocity || '0') > 0 ? t('hud.thrustActive') : t('hud.inertialDrift')}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">{t('hud.rcsSensors')}</span><span className="text-cyan-300 font-bold">{t('hud.rcsArmed')}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">{t('hud.flightMode')}</span><span className="text-emerald-400 font-bold">{t('hud.flightModeFree')}</span></div>
             </div>
 
           </div>
@@ -202,11 +208,11 @@ export default function SpaceXHUD({
               style={{ transform: `translateY(${currentPitch * 2.2}px)` }}
             >
               <div className="space-y-3.5 text-right">
-                <div className="opacity-70 text-[10px]">▲ +15° CABECEO</div>
-                <div className="opacity-90">-- +10°L</div>
-                <div className="text-emerald-300 font-black border-y border-emerald-400/60 py-0.5">── 0° HORIZONTE</div>
-                <div className="opacity-90">-- -10°L</div>
-                <div className="opacity-70 text-[10px]">▼ -15° CABECEO</div>
+                <div className="opacity-70 text-[10px]">{t('hud.ladderPitchPlusLeft')}</div>
+                <div className="opacity-90">{t('hud.ladderPlus10Left')}</div>
+                <div className="text-emerald-300 font-black border-y border-emerald-400/60 py-0.5">{t('hud.ladderHorizonLeft')}</div>
+                <div className="opacity-90">{t('hud.ladderMinus10Left')}</div>
+                <div className="opacity-70 text-[10px]">{t('hud.ladderPitchMinusLeft')}</div>
               </div>
 
               {/* Center Flight Reticle */}
@@ -216,23 +222,23 @@ export default function SpaceXHUD({
                   {flightTelemetry?.speed || flightVelocity || '0.0'} km/s
                 </div>
                 <div className="absolute -bottom-6 text-[9px] text-cyan-300 font-mono bg-black/80 px-1">
-                  HDG: {currentHeading}°
+                  {t('hud.hdg')} {currentHeading}°
                 </div>
               </div>
 
               <div className="space-y-3.5 text-left">
-                <div className="opacity-70 text-[10px]">CABECEO +15° ▲</div>
-                <div className="opacity-90">+10°R --</div>
-                <div className="text-emerald-300 font-black border-y border-emerald-400/60 py-0.5">HORIZONTE 0° ──</div>
-                <div className="opacity-90">-10°R --</div>
-                <div className="opacity-70 text-[10px]">CABECEO -15° ▼</div>
+                <div className="opacity-70 text-[10px]">{t('hud.ladderPitchPlusRight')}</div>
+                <div className="opacity-90">{t('hud.ladderPlus10Right')}</div>
+                <div className="text-emerald-300 font-black border-y border-emerald-400/60 py-0.5">{t('hud.ladderHorizonRight')}</div>
+                <div className="opacity-90">{t('hud.ladderMinus10Right')}</div>
+                <div className="opacity-70 text-[10px]">{t('hud.ladderPitchMinusRight')}</div>
               </div>
             </div>
 
             {/* Simulated Spaceship Cockpit Silhouette at Bottom Center */}
             <div className="absolute bottom-1 flex flex-col items-center">
               <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-b-[28px] border-b-emerald-400/90 shadow-[0_0_20px_rgba(16,185,129,0.5)]"></div>
-              <span className="text-[9px] text-emerald-400 font-mono tracking-widest mt-1">VECTOR PROA // RCS</span>
+              <span className="text-[9px] text-emerald-400 font-mono tracking-widest mt-1">{t('hud.vectorBow')}</span>
             </div>
 
           </div>
@@ -240,7 +246,7 @@ export default function SpaceXHUD({
           {/* On-Screen Mobile/Touch Controls for Flight Mode */}
           <div className="pointer-events-auto flex justify-center pb-2">
             <div className="bg-black/90 border border-emerald-500/60 p-2 rounded-none flex items-center space-x-2 text-xs text-emerald-300 shadow-[0_0_20px_rgba(0,0,0,0.9)]">
-              <span className="font-bold hidden md:inline px-2">CONTROLES: [W/S] Impulso // [A/D] Girar // [R/F] Elevación // [Shift] Warp</span>
+              <span className="font-bold hidden md:inline px-2">{t('hud.controlsHelp')}</span>
               
               {/* Touch buttons for mobile/mouse */}
               <div className="flex items-center space-x-1.5 md:hidden">
@@ -251,7 +257,7 @@ export default function SpaceXHUD({
                   onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' }))}
                   className="px-3 py-1.5 bg-emerald-950 border border-emerald-400 text-white font-bold"
                 >
-                  ▲ IMPULSO
+                  {t('hud.thrust')}
                 </button>
                 <button
                   onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS' }))}
@@ -260,7 +266,7 @@ export default function SpaceXHUD({
                   onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyS' }))}
                   className="px-3 py-1.5 bg-emerald-950 border border-emerald-400 text-white font-bold"
                 >
-                  ▼ FRENAR
+                  {t('hud.brake')}
                 </button>
                 <button
                   onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }))}
@@ -294,7 +300,7 @@ export default function SpaceXHUD({
           </div>
           <div className="absolute bottom-16 text-center">
             <div className="text-[11px] sm:text-xs text-slate-300 font-mono tracking-widest bg-black/80 px-4 py-1 border border-slate-700 rounded-none backdrop-blur-md">
-              Arrastra el ratón para rotar en 360° // Rueda para zoom // Clic en astro para seguimiento
+              {t('hud.orbitHint')}
             </div>
           </div>
         </div>
@@ -311,7 +317,7 @@ export default function SpaceXHUD({
             showArrow={false}
             icon={isDestinoMenuOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           >
-            Destino: {activeTitle}
+            {t('hud.destinationValue', { target: activeTitle })}
           </SciFiButton>
 
           {/* ELEVATED CUSTOM DROPDOWN MENU */}
@@ -322,7 +328,7 @@ export default function SpaceXHUD({
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/40 pb-2">
                 <span className="font-bold uppercase tracking-wider text-cyan-300 text-xs flex items-center gap-1.5">
                   <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Navegación del Sistema</span>
+                  <span>{t('hud.systemNavigation')}</span>
                 </span>
                 <div className="flex items-center gap-2">
                   <SciFiTag type="information" shape="cut-edge" showArrow={false}>
@@ -331,7 +337,7 @@ export default function SpaceXHUD({
                   <button
                     onClick={() => setIsDestinoMenuOpen(false)}
                     className="text-slate-400 hover:text-white px-1 font-bold text-xs"
-                    aria-label="Cerrar menú"
+                    aria-label={t('hud.closeMenu')}
                   >
                     ✕
                   </button>
@@ -342,16 +348,16 @@ export default function SpaceXHUD({
               <SciFiButton
                 onClick={() => { onSelectTarget('OVERVIEW'); setIsDestinoMenuOpen(false); }}
               >
-                Sistema completo
+                {t('hud.fullSystem')}
               </SciFiButton>
 
               {/* 1. Astros del Sistema Solar — variante transparent / secondary */}
               <div>
                 <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 flex items-center gap-1">
-                  <span>🪐 Astros &amp; Cuerpos Celestes</span>
+                  <span>{t('hud.sectionBodies')}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {SOLAR_BODIES.map((body) => {
+                  {solarBodies.map((body) => {
                     const isSelected = selectedTarget.toUpperCase() === body.id.toUpperCase();
                     return (
                       <SciFiButton
@@ -377,7 +383,7 @@ export default function SpaceXHUD({
               {/* 2. Sondas, telescopios y estación — variante single-stroke */}
               <div>
                 <div className="text-[10px] uppercase font-bold text-amber-400 tracking-wider mb-1.5 flex items-center gap-1">
-                  <span>🛰️ Sondas, Telescopios y Estación</span>
+                  <span>{t('hud.sectionProbes')}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {[
@@ -407,7 +413,7 @@ export default function SpaceXHUD({
               {/* 3. Reliquias históricas — variante transparent con la superficie */}
               <div>
                 <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider mb-1.5 flex items-center gap-1">
-                  <span>🚀 Reliquias Históricas en Superficie</span>
+                  <span>{t('hud.sectionArtifacts')}</span>
                 </div>
                 <div className="space-y-1.5">
                   {artifacts.map((artifact) => {
@@ -423,7 +429,7 @@ export default function SpaceXHUD({
                         <span className="flex w-full items-center justify-between gap-2">
                           <span className="truncate">{artifact.name.split(' (')[0]}</span>
                           <span className="flex-none text-[10px] uppercase tracking-wider opacity-60">
-                            {artifact.body}
+                            {artifact.bodyLabel || artifact.body}
                           </span>
                         </span>
                       </SciFiButton>
@@ -444,18 +450,18 @@ export default function SpaceXHUD({
             onClick={onToggleAudio}
             showArrow={false}
             icon={isPlayingAudio ? <SciFiLoader size="sm" /> : <Volume2 className="w-4 h-4" />}
-            title="Audio histórico de la NASA"
+            title={t('hud.audioTitle')}
           >
-            {isPlayingAudio ? 'Silenciar' : 'Audio NASA'}
+            {isPlayingAudio ? t('hud.mute') : t('hud.nasaAudio')}
           </SciFiButton>
 
           {currentArtifact && ['Moon', 'Mars'].includes(currentArtifact.body) && (
             <SciFiButton
               onClick={onOpenSurface}
               showArrow={false}
-              title="Explorar Superficie 3D con Rover o Dron"
+              title={t('hud.surfaceTitle')}
             >
-              Explorar superficie
+              {t('hud.exploreSurface')}
             </SciFiButton>
           )}
 
@@ -464,9 +470,9 @@ export default function SpaceXHUD({
               onClick={() => onOpenHubble(selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'jwst' : 'hubble')}
               showArrow={false}
               icon={<Eye className="w-4 h-4" />}
-              title="Operar Telescopio Espacial y apuntar a astros de espacio profundo"
+              title={t('hud.telescopeTitle')}
             >
-              {selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? 'Operar James Webb' : 'Operar Hubble'}
+              {selectedTarget.toUpperCase() === 'JWST' || currentArtifact?.id === 'jwst' || currentProbe?.id === 'jwst' ? t('hud.operateJwst') : t('hud.operateHubble')}
             </SciFiButton>
           )}
 
@@ -475,15 +481,17 @@ export default function SpaceXHUD({
             variant={isTelemetryOpen ? 'secondary' : 'transparent'}
             onClick={() => setIsTelemetryOpen(!isTelemetryOpen)}
             showArrow={false}
-            title="Ficha y Curiosidades"
+            title={t('hud.curiosityTitle')}
           >
-            {isTelemetryOpen ? 'Ocultar' : 'Curiosidades'}
+            {isTelemetryOpen ? t('hud.hide') : t('hud.curiosities')}
           </SciFiButton>
+
+          <LanguageToggle />
 
           <button
             onClick={() => setIsSettingsOpen((value) => !value)}
-            aria-label="Abrir configuración"
-            title="Configuración"
+            aria-label={t('hud.openSettings')}
+            title={t('hud.settings')}
             className={`p-2 border transition-all ${
               isSettingsOpen ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-slate-700 bg-space-900 text-slate-300 hover:border-amber-400'
             }`}
@@ -514,11 +522,11 @@ export default function SpaceXHUD({
           <div className="mb-3 flex items-center justify-between border-b border-slate-700 pb-2">
             <span className="font-bold uppercase tracking-wider text-amber-300 flex items-center space-x-1.5">
               <Settings className="w-4 h-4 text-amber-400" />
-              <span>Configuración del Simulador</span>
+              <span>{t('hud.settingsTitle')}</span>
             </span>
             <button
               onClick={() => setIsSettingsOpen(false)}
-              aria-label="Cerrar configuración"
+              aria-label={t('hud.closeSettings')}
               className="text-slate-400 hover:text-white px-1 font-bold text-sm"
             >
               ✕
@@ -527,7 +535,7 @@ export default function SpaceXHUD({
 
           {/* Velocidad Orbital de Simulación */}
           <div className="mb-4">
-            <span className="text-slate-300 font-bold block mb-1.5">Velocidad Orbital del Sistema:</span>
+            <span className="text-slate-300 font-bold block mb-1.5">{t('hud.simSpeed')}</span>
             <div className="grid grid-cols-4 gap-1.5">
               {[0.5, 1, 2, 5].map((spd) => (
                 <button
@@ -547,8 +555,13 @@ export default function SpaceXHUD({
 
           {/* Toggles */}
           <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 text-slate-200">
+              <span>{t('hud.language')}</span>
+              <LanguageToggle />
+            </div>
+
             <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">
-              <span>Mostrar órbitas de planetas</span>
+              <span>{t('hud.showOrbits')}</span>
               <input
                 type="checkbox"
                 checked={settings.showOrbits !== false}
@@ -558,7 +571,7 @@ export default function SpaceXHUD({
             </label>
 
             <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">
-              <span>Mostrar trazos y balizas Voyager</span>
+              <span>{t('hud.showTrails')}</span>
               <input
                 type="checkbox"
                 checked={settings.showTrails !== false}
@@ -568,7 +581,7 @@ export default function SpaceXHUD({
             </label>
 
             <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">
-              <span>Pausar órbitas (Reducir movimiento)</span>
+              <span>{t('hud.reducedMotion')}</span>
               <input
                 type="checkbox"
                 checked={settings.reducedMotion}
@@ -578,7 +591,7 @@ export default function SpaceXHUD({
             </label>
 
             <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">
-              <span>Modo Alto Contraste</span>
+              <span>{t('hud.highContrast')}</span>
               <input
                 type="checkbox"
                 checked={settings.highContrast}
@@ -588,7 +601,7 @@ export default function SpaceXHUD({
             </label>
 
             <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">
-              <span>Sonidos de interfaz (hover y click)</span>
+              <span>{t('hud.uiSound')}</span>
               <input
                 type="checkbox"
                 checked={settings.uiSound !== false}
@@ -599,8 +612,8 @@ export default function SpaceXHUD({
           </div>
 
           <div className="mt-4 border-t border-slate-800 pt-2 text-[10px] leading-relaxed text-slate-400 flex items-center justify-between">
-            <span>Render: WebGL Three.js</span>
-            <span className="text-emerald-400 font-bold">● 60 FPS Nominal</span>
+            <span>{t('hud.renderer')}</span>
+            <span className="text-emerald-400 font-bold">{t('hud.fpsNominal')}</span>
           </div>
 
         </div>

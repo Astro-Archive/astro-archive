@@ -6,45 +6,74 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { getAssetPath } from '../utils/assets';
 
 // NASA Jezero Crater Science Mission Targets (Mars)
+// Text fields are bilingual; numeric/visual fields stay plain so the scene logic
+// and the props consumed by SurfaceExplorer keep their exact shape.
 export const MARS_SAMPLE_TARGETS = [
   {
     id: 'seitah',
-    name: 'Roca Séítah',
-    type: 'Basalto Volcánico Rico en Olivino',
+    name: { en: 'Séítah Rock', es: 'Roca Séítah' },
+    type: { en: 'Olivine-Rich Volcanic Basalt', es: 'Basalto Volcánico Rico en Olivino' },
     x: 28,
     z: 22,
     color: '#34d399',
-    tubeId: '#08 (Séítah Core)',
-    summary: 'Roca ígnea enfriada de magma primigenio en el lecho del cráter Jezero. Sus cristales de olivino preservan burbujas de la atmósfera primordial marciana y revelan interacción histórica con agua subterránea.',
-    mineralogy: 'Olivino (42%), Piroxeno (35%), Plagioclasa (18%), Sulfatos hidratados',
-    scienceValue: 'Permite datar con precisión cronológica la edad geológica del cráter Jezero.',
-    tool: 'Broca Diamantada & RIMFAX'
+    tubeId: { en: '#08 (Séítah Core)', es: '#08 (Séítah Core)' },
+    summary: {
+      en: 'Igneous rock cooled from primordial magma on the floor of Jezero Crater. Its olivine crystals preserve bubbles of the primordial Martian atmosphere and reveal a historical interaction with groundwater.',
+      es: 'Roca ígnea enfriada de magma primigenio en el lecho del cráter Jezero. Sus cristales de olivino preservan burbujas de la atmósfera primordial marciana y revelan interacción histórica con agua subterránea.'
+    },
+    mineralogy: {
+      en: 'Olivine (42%), Pyroxene (35%), Plagioclase (18%), Hydrated sulfates',
+      es: 'Olivino (42%), Piroxeno (35%), Plagioclasa (18%), Sulfatos hidratados'
+    },
+    scienceValue: {
+      en: 'Enables precise chronological dating of the geological age of Jezero Crater.',
+      es: 'Permite datar con precisión cronológica la edad geológica del cráter Jezero.'
+    },
+    tool: { en: 'Diamond Drill Bit & RIMFAX', es: 'Broca Diamantada & RIMFAX' }
   },
   {
     id: 'belva',
-    name: 'Delta Belva',
-    type: 'Conglomerado Lacustre Sedimentario',
+    name: { en: 'Belva Delta', es: 'Delta Belva' },
+    type: { en: 'Sedimentary Lacustrine Conglomerate', es: 'Conglomerado Lacustre Sedimentario' },
     x: -32,
     z: 34,
     color: '#38bdf8',
-    tubeId: '#14 (Delta Belva Core)',
-    summary: 'Láminas finas de arcilla y lodo depositadas por el antiguo río marciano Neretva al desembocar en el lago Jezero hace 3.500 millones de años. Entorno ideal para la preservación de microfósiles y biofirmas.',
-    mineralogy: 'Esmectitas arcillosas (48%), Sílice hidratada (28%), Carbonatos (14%)',
-    scienceValue: 'Máxima prioridad astrobiológica de la NASA: capacidad excepcional de atrapar materia orgánica.',
-    tool: 'Espectrómetro PIXL & SHERLOC'
+    tubeId: { en: '#14 (Belva Delta Core)', es: '#14 (Delta Belva Core)' },
+    summary: {
+      en: 'Thin sheets of clay and mud deposited by the ancient Martian river Neretva where it emptied into Lake Jezero 3.5 billion years ago. An ideal environment for the preservation of microfossils and biosignatures.',
+      es: 'Láminas finas de arcilla y lodo depositadas por el antiguo río marciano Neretva al desembocar en el lago Jezero hace 3.500 millones de años. Entorno ideal para la preservación de microfósiles y biofirmas.'
+    },
+    mineralogy: {
+      en: 'Clay smectites (48%), Hydrated silica (28%), Carbonates (14%)',
+      es: 'Esmectitas arcillosas (48%), Sílice hidratada (28%), Carbonatos (14%)'
+    },
+    scienceValue: {
+      en: "NASA's highest astrobiological priority: an exceptional capacity to trap organic matter.",
+      es: 'Máxima prioridad astrobiológica de la NASA: capacidad excepcional de atrapar materia orgánica.'
+    },
+    tool: { en: 'PIXL & SHERLOC Spectrometer', es: 'Espectrómetro PIXL & SHERLOC' }
   },
   {
     id: 'maaz',
-    name: 'Afloramiento Máaz',
-    type: 'Roca Pizarrosa con Pátina Eólica',
+    name: { en: 'Máaz Outcrop', es: 'Afloramiento Máaz' },
+    type: { en: 'Shaly Rock with Aeolian Patina', es: 'Roca Pizarrosa con Pátina Eólica' },
     x: -24,
     z: -32,
     color: '#fbbf24',
-    tubeId: '#21 (Máaz Surface Core)',
-    summary: 'Afloramiento de roca basáltica expuesto al viento marciano. SuperCam disparó pulsos de láser infrarrojo a 1.064 nm vaporizando la corteza exterior para medir espectros de emisión atómica de plasma (LIBS).',
-    mineralogy: 'Basalto toleítico (55%), Óxidos de hierro/hematita (25%), Titanomagnetita',
-    scienceValue: 'Estudio de la meteorización química y la transición de Marte hacia un desierto frío.',
-    tool: 'SuperCam Láser LIBS & Abrasión'
+    tubeId: { en: '#21 (Máaz Surface Core)', es: '#21 (Máaz Surface Core)' },
+    summary: {
+      en: 'Basaltic rock outcrop exposed to the Martian wind. SuperCam fired infrared laser pulses at 1,064 nm, vaporizing the outer crust to measure atomic plasma emission spectra (LIBS).',
+      es: 'Afloramiento de roca basáltica expuesto al viento marciano. SuperCam disparó pulsos de láser infrarrojo a 1.064 nm vaporizando la corteza exterior para medir espectros de emisión atómica de plasma (LIBS).'
+    },
+    mineralogy: {
+      en: 'Tholeiitic basalt (55%), Iron oxides/hematite (25%), Titanomagnetite',
+      es: 'Basalto toleítico (55%), Óxidos de hierro/hematita (25%), Titanomagnetita'
+    },
+    scienceValue: {
+      en: "A study of chemical weathering and Mars's transition into a cold desert.",
+      es: 'Estudio de la meteorización química y la transición de Marte hacia un desierto frío.'
+    },
+    tool: { en: 'SuperCam LIBS Laser & Abrasion', es: 'SuperCam Láser LIBS & Abrasión' }
   }
 ];
 
@@ -52,62 +81,125 @@ export const MARS_SAMPLE_TARGETS = [
 export const MOON_APOLLO_TARGETS = [
   {
     id: 'apollo_flag',
-    name: 'Plantar Bandera de EE.UU.',
-    type: 'Lunar Flag Assembly',
+    name: { en: 'Plant the U.S. Flag', es: 'Plantar Bandera de EE.UU.' },
+    type: { en: 'Lunar Flag Assembly', es: 'Lunar Flag Assembly' },
     x: 10,
     z: 8,
     color: '#ef4444',
-    tubeId: 'Bandera Lunar Desplegada',
-    summary: 'Diseñada con una varilla horizontal superior para que se mantuviera desplegada y ondeando en el vacío del espacio sin atmósfera ni viento.',
-    mineralogy: 'Estructura de aluminio anodizado y tejido de nylon reforzado.',
-    scienceValue: 'Símbolo pacífico de exploración de la humanidad: colocada a 8 metros del módulo lunar.',
-    tool: 'Mástil con pestillo telescópico horizontal'
+    tubeId: { en: 'Lunar Flag Deployed', es: 'Bandera Lunar Desplegada' },
+    summary: {
+      en: 'Designed with an upper horizontal rod so it would stay deployed and appear to wave in the vacuum of space, with no atmosphere or wind.',
+      es: 'Diseñada con una varilla horizontal superior para que se mantuviera desplegada y ondeando en el vacío del espacio sin atmósfera ni viento.'
+    },
+    mineralogy: {
+      en: 'Anodized aluminum structure and reinforced nylon fabric.',
+      es: 'Estructura de aluminio anodizado y tejido de nylon reforzado.'
+    },
+    scienceValue: {
+      en: "A peaceful symbol of humanity's exploration: placed 8 meters from the lunar module.",
+      es: 'Símbolo pacífico de exploración de la humanidad: colocada a 8 metros del módulo lunar.'
+    },
+    tool: { en: 'Mast with horizontal telescopic latch', es: 'Mástil con pestillo telescópico horizontal' }
   },
   {
     id: 'apollo_easep',
-    name: 'Desplegar Experimento EASEP',
-    type: 'Sismómetro Pasivo y Retrorreflector Láser (LRRR)',
+    name: { en: 'Deploy the EASEP Experiment', es: 'Desplegar Experimento EASEP' },
+    type: {
+      en: 'Passive Seismometer and Laser Retroreflector (LRRR)',
+      es: 'Sismómetro Pasivo y Retrorreflector Láser (LRRR)'
+    },
     x: -16,
     z: 14,
     color: '#38bdf8',
-    tubeId: 'Estación Científica EASEP Activa',
-    summary: 'El único experimento científico del Apolo 11 que sigue operativo hoy en día. Observatorios terrestres disparan rayos láser a sus 100 prismas de cuarzo para medir la distancia exacta a la Luna al milímetro.',
-    mineralogy: 'Prismas de cuarzo suprasil de alta pureza y sensores térmicos de berilio.',
-    scienceValue: 'Confirmó que la Luna se aleja de la Tierra 3.8 cm por año y detectó los primeros terremotos lunares.',
-    tool: 'Conjunto de 100 prismas retrorreflectores'
+    tubeId: { en: 'EASEP Science Station Active', es: 'Estación Científica EASEP Activa' },
+    summary: {
+      en: 'The only Apollo 11 science experiment still operating today. Ground observatories fire laser beams at its 100 quartz prisms to measure the exact distance to the Moon to the millimeter.',
+      es: 'El único experimento científico del Apolo 11 que sigue operativo hoy en día. Observatorios terrestres disparan rayos láser a sus 100 prismas de cuarzo para medir la distancia exacta a la Luna al milímetro.'
+    },
+    mineralogy: {
+      en: 'High-purity suprasil quartz prisms and beryllium thermal sensors.',
+      es: 'Prismas de cuarzo suprasil de alta pureza y sensores térmicos de berilio.'
+    },
+    scienceValue: {
+      en: 'Confirmed that the Moon drifts 3.8 cm away from Earth each year and detected the first moonquakes.',
+      es: 'Confirmó que la Luna se aleja de la Tierra 3.8 cm por año y detectó los primeros terremotos lunares.'
+    },
+    tool: { en: 'Array of 100 retroreflector prisms', es: 'Conjunto de 100 prismas retrorreflectores' }
   },
   {
     id: 'apollo_samples',
-    name: 'Muestra de Contingencia (Rocas Lunares)',
-    type: 'Anortosita y Regolito Lunar',
+    name: { en: 'Contingency Sample (Lunar Rocks)', es: 'Muestra de Contingencia (Rocas Lunares)' },
+    type: { en: 'Anorthosite and Lunar Regolith', es: 'Anortosita y Regolito Lunar' },
     x: -10,
     z: -16,
     color: '#e2e8f0',
-    tubeId: 'Muestra Lunar Sellada (21.5 kg)',
-    summary: 'Neil Armstrong recogió 21.55 kg de material lunar antes de cualquier otra actividad para asegurar muestras científicas ante un eventual despegue de emergencia.',
-    mineralogy: 'Armalcolita (mineral inédito en la Tierra), Ilmenita, Anortosita y Basalto de titanio.',
-    scienceValue: 'Permitió datar el Mar de la Tranquilidad en 3.700 millones de años.',
-    tool: 'Pinzas de muestreo y contenedor sellado al vacío'
+    tubeId: { en: 'Sealed Lunar Sample (21.5 kg)', es: 'Muestra Lunar Sellada (21.5 kg)' },
+    summary: {
+      en: 'Neil Armstrong collected 21.55 kg of lunar material before any other activity to secure scientific samples in the event of an emergency liftoff.',
+      es: 'Neil Armstrong recogió 21.55 kg de material lunar antes de cualquier otra actividad para asegurar muestras científicas ante un eventual despegue de emergencia.'
+    },
+    mineralogy: {
+      en: 'Armalcolite (a mineral unknown on Earth), Ilmenite, Anorthosite and Titanium basalt.',
+      es: 'Armalcolita (mineral inédito en la Tierra), Ilmenita, Anortosita y Basalto de titanio.'
+    },
+    scienceValue: {
+      en: 'Made it possible to date the Sea of Tranquility at 3.7 billion years old.',
+      es: 'Permitió datar el Mar de la Tranquilidad en 3.700 millones de años.'
+    },
+    tool: { en: 'Sampling tongs and vacuum-sealed container', es: 'Pinzas de muestreo y contenedor sellado al vacío' }
   },
   {
     id: 'apollo_plaque',
-    name: 'Placa Conmemorativa del LEM',
-    type: 'Placa de Acero Inoxidable en la Escalera',
+    name: { en: 'LEM Commemorative Plaque', es: 'Placa Conmemorativa del LEM' },
+    type: { en: 'Stainless Steel Plaque on the Ladder', es: 'Placa de Acero Inoxidable en la Escalera' },
     x: 0,
     z: 2.2,
     color: '#fbbf24',
-    tubeId: 'Placa Histórica Conmemorativa',
-    summary: '"HERE MEN FROM THE PLANET EARTH FIRST SET FOOT UPON THE MOON. JULY 1969, A.D. WE CAME IN PEACE FOR ALL MANKIND."',
-    mineralogy: 'Grabado en acero inoxidable con mapa de los dos hemisferios terrestres.',
-    scienceValue: 'Firma de Neil Armstrong, Buzz Aldrin, Michael Collins y el presidente Richard Nixon fijada permanentemente en la base de descenso.',
-    tool: 'Inspección visual de inscripción histórica'
+    tubeId: { en: 'Historic Commemorative Plaque', es: 'Placa Histórica Conmemorativa' },
+    summary: {
+      en: '"HERE MEN FROM THE PLANET EARTH FIRST SET FOOT UPON THE MOON. JULY 1969, A.D. WE CAME IN PEACE FOR ALL MANKIND."',
+      es: '"HERE MEN FROM THE PLANET EARTH FIRST SET FOOT UPON THE MOON. JULY 1969, A.D. WE CAME IN PEACE FOR ALL MANKIND."'
+    },
+    mineralogy: {
+      en: 'Engraved stainless steel with a map of both Earth hemispheres.',
+      es: 'Grabado en acero inoxidable con mapa de los dos hemisferios terrestres.'
+    },
+    scienceValue: {
+      en: 'Signatures of Neil Armstrong, Buzz Aldrin, Michael Collins and President Richard Nixon permanently fixed to the descent stage.',
+      es: 'Firma de Neil Armstrong, Buzz Aldrin, Michael Collins y el presidente Richard Nixon fijada permanentemente en la base de descenso.'
+    },
+    tool: { en: 'Visual inspection of the historic inscription', es: 'Inspección visual de inscripción histórica' }
   }
 ];
 
 export const INGENUITY_AERIAL_WAYPOINTS = [
-  { id: 'wp1', name: 'Waypoint Alpha (Dunas Séítah)', x: 22, y: 5.2, z: 20, color: '#34d399', desc: 'Reconocimiento aéreo de dunas para trazar ruta segura' },
-  { id: 'wp2', name: 'Waypoint Beta (Cresta Delta)', x: -26, y: 6.5, z: 28, color: '#38bdf8', desc: 'Topografía del frente deltaico para navegación del rover' },
-  { id: 'wp3', name: 'Waypoint Gamma (Cañón Máaz)', x: -20, y: 5.5, z: -26, color: '#fbbf24', desc: 'Inspección de alta resolución con cámara RTE' }
+  {
+    id: 'wp1',
+    name: { en: 'Waypoint Alpha (Séítah Dunes)', es: 'Waypoint Alpha (Dunas Séítah)' },
+    x: 22,
+    y: 5.2,
+    z: 20,
+    color: '#34d399',
+    desc: { en: 'Aerial reconnaissance of the dunes to plot a safe route', es: 'Reconocimiento aéreo de dunas para trazar ruta segura' }
+  },
+  {
+    id: 'wp2',
+    name: { en: 'Waypoint Beta (Delta Ridge)', es: 'Waypoint Beta (Cresta Delta)' },
+    x: -26,
+    y: 6.5,
+    z: 28,
+    color: '#38bdf8',
+    desc: { en: 'Topography of the delta front for rover navigation', es: 'Topografía del frente deltaico para navegación del rover' }
+  },
+  {
+    id: 'wp3',
+    name: { en: 'Waypoint Gamma (Máaz Canyon)', es: 'Waypoint Gamma (Cañón Máaz)' },
+    x: -20,
+    y: 5.5,
+    z: -26,
+    color: '#fbbf24',
+    desc: { en: 'High-resolution inspection with the RTE camera', es: 'Inspección de alta resolución con cámara RTE' }
+  }
 ];
 
 function createMartianRockGeometry(baseRadius, seed = 0) {

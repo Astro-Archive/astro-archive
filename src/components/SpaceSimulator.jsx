@@ -9,6 +9,8 @@ import { ARTIFACTS } from '../data/artifactsData';
 import { getAssetPath } from '../utils/assets';
 import { createJamesWebbModel } from '../utils/jamesWebbModel';
 import { playClickSound } from '../utils/uiSound';
+import { useI18n } from '../i18n';
+import { localize } from '../i18n/localize';
 
 function createRockyRingGeometry(innerRadius, outerRadius, radialSegments = 28, angularSegments = 256) {
   const positions = [];
@@ -72,6 +74,8 @@ export default function SpaceSimulator({
   const cameraRef = useRef(null);
   const controlsRef = useRef(null);
   const rendererRef = useRef(null);
+  const { lang } = useI18n();
+  const langRef = useRef(lang);
 
   // Entities dictionaries
   const planetMeshes = useRef({});
@@ -103,6 +107,10 @@ export default function SpaceSimulator({
   useEffect(() => {
     onFlightTelemetryRef.current = onFlightTelemetry;
   }, [onFlightTelemetry]);
+
+  useEffect(() => {
+    langRef.current = lang;
+  }, [lang]);
 
   useEffect(() => {
     selectedTargetRef.current = selectedTarget;
@@ -356,7 +364,7 @@ export default function SpaceSimulator({
     moonMesh.userData.targetId = 'moon';
     moonMesh.position.set(initialEarthPos.x + 7.2, 0, initialEarthPos.z);
     scene.add(moonMesh);
-    planetMeshes.current['moon'] = { mesh: moonMesh, data: { radius: 0.75, name: 'La Luna', type: 'Satélite Natural' } };
+    planetMeshes.current['moon'] = { mesh: moonMesh, data: { radius: 0.75, name: { en: 'The Moon', es: 'La Luna' }, type: { en: 'Natural satellite', es: 'Satélite natural' } } };
     orbitalAngles.current['moon'] = 0.5;
 
     // 10. LOAD 3D MODELS: VOYAGER 1, VOYAGER 2, ISS, APOLLO, INGENUITY, HUBBLE
@@ -901,9 +909,9 @@ export default function SpaceSimulator({
       mesh: cometGroup,
       data: {
         id: 'halley',
-        name: 'Cometa 1P/Halley',
-        type: 'Cometa Periódico Excéntrico',
-        speedKmH: '70,560 km/h (Perihelio)'
+        name: { en: 'Comet 1P/Halley', es: 'Cometa 1P/Halley' },
+        type: { en: 'Eccentric periodic comet', es: 'Cometa periódico excéntrico' },
+        speedKmH: '70,560 km/h (perihelion)'
       }
     };
     orbitalAngles.current['halley'] = 0.6;
@@ -1232,14 +1240,14 @@ export default function SpaceSimulator({
           const headingDeg = Math.round(((((-flightYaw.current * 180 / Math.PI) % 360) + 360) % 360));
           const pitchDeg = Math.round(((-flightPitch.current * 180 / Math.PI)));
 
-          let nearestName = 'SOL';
+          let nearestName = langRef.current === 'es' ? 'Sol' : 'Sun';
           let nearestDist = camera.position.length();
           Object.entries(planetMeshes.current).forEach(([k, item]) => {
             if (item?.mesh && k !== 'sun') {
               const d = camera.position.distanceTo(item.mesh.position);
               if (d < nearestDist) {
                 nearestDist = d;
-                nearestName = item.data?.shortName || item.data?.name || k.toUpperCase();
+                nearestName = localize(item.data?.shortName || item.data?.name, langRef.current) || k.toUpperCase();
               }
             }
           });
@@ -1268,14 +1276,14 @@ export default function SpaceSimulator({
             const headingDeg = Math.round((((Math.atan2(camDir.x, camDir.z) * 180 / Math.PI) % 360) + 360) % 360);
             const pitchDeg = Math.round(Math.asin(Math.max(-1, Math.min(1, camDir.y))) * 180 / Math.PI);
 
-            let nearestName = 'SOL';
+            let nearestName = langRef.current === 'es' ? 'Sol' : 'Sun';
             let nearestDist = camera.position.length();
             Object.entries(planetMeshes.current).forEach(([k, item]) => {
               if (item?.mesh && k !== 'sun') {
                 const d = camera.position.distanceTo(item.mesh.position);
                 if (d < nearestDist) {
                   nearestDist = d;
-                  nearestName = item.data?.shortName || item.data?.name || k.toUpperCase();
+                  nearestName = localize(item.data?.shortName || item.data?.name, langRef.current) || k.toUpperCase();
                 }
               }
             });

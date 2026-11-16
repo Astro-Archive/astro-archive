@@ -3,8 +3,11 @@ import { X, Award, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import SciFiButton from './ui/SciFiButton';
 import SciFiTag from './ui/SciFiTag';
+import { useI18n } from '../i18n';
 
 export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) {
+  const { t } = useI18n();
+
   if (!isOpen) return null;
 
   const isCompleted = scannedIds.length === artifacts.length;
@@ -24,7 +27,7 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
         {/* Close Button */}
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('badges.close')}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-space-900 transition-colors"
         >
           <X className="w-5 h-5" />
@@ -36,8 +39,8 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
             <Award className="w-6 h-6" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-bold text-white tracking-wider">CADET LOG: SPACE ARCHAEOLOGIST</h2>
-            <p className="text-xs text-slate-400">Field Telemetry Progress // Team Eclipse</p>
+            <h2 className="text-lg font-bold text-white tracking-wider">{t('badges.title')}</h2>
+            <p className="text-xs text-slate-400">{t('badges.subtitle')}</p>
           </div>
           <SciFiTag
             type={isCompleted ? 'success' : 'neutral'}
@@ -52,8 +55,8 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
         {/* Progress Bar */}
         <div className="mb-6 bg-space-900 p-3 rounded-xl border border-slate-800">
           <div className="flex justify-between items-center text-xs text-slate-300 mb-1.5">
-            <span>Hardware Diagnostic Progress</span>
-            <span className="font-bold text-cyan-400">{scannedIds.length} / {artifacts.length} Complete</span>
+            <span>{t('badges.diagnosticsTitle')}</span>
+            <span className="font-bold text-cyan-400">{t('badges.progress', { scanned: scannedIds.length, total: artifacts.length })}</span>
           </div>
           <div className="w-full h-2 bg-space-950 rounded-full overflow-hidden border border-slate-800">
             <div
@@ -80,7 +83,7 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
                   <span className={`text-xs font-bold truncate block ${isScanned ? 'text-slate-100' : 'text-slate-400'}`}>
                     {art.name}
                   </span>
-                  <span className="text-[10px] text-slate-500 block truncate">{art.body}</span>
+                  <span className="text-[10px] text-slate-500 block truncate">{art.bodyLabel || art.body}</span>
                 </div>
                 <SciFiTag
                   type={isScanned ? 'success' : 'neutral'}
@@ -88,7 +91,7 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
                   showArrow={false}
                   className="flex-none"
                 >
-                  {isScanned ? 'Done' : 'Locked'}
+                  {isScanned ? t('badges.unlocked') : t('badges.locked')}
                 </SciFiTag>
               </div>
             );
@@ -100,18 +103,18 @@ export default function BadgesModal({ isOpen, onClose, artifacts, scannedIds }) 
           <div className="bg-gradient-to-r from-amber-500/10 via-cyan-500/10 to-transparent p-4 rounded-xl border border-amber-500/30 flex flex-col items-center text-center space-y-2">
             <div className="flex items-center space-x-2 text-amber-300 text-sm font-bold">
               <Sparkles className="w-4 h-4" />
-              <span>OFFICIAL CLEARANCE: JUNIOR ARTIFACT CURATOR</span>
+              <span>{t('badges.clearance')}</span>
             </div>
             <p className="text-xs text-slate-300 font-sans max-w-md">
-              Congratulations! You have completed the technical diagnostics of NASA's lunar and Martian legacy hardware.
+              {t('badges.certificateMessage')}
             </p>
             <SciFiButton size="lg" onClick={triggerCertificate} className="mt-2">
-              Celebrate Certification
+              {t('badges.celebrate')}
             </SciFiButton>
           </div>
         ) : (
           <p className="text-center text-xs text-slate-500">
-            Inspect all relics in the 3D viewer to earn your certification seal.
+            {t('badges.hint')}
           </p>
         )}
 

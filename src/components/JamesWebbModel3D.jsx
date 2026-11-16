@@ -4,10 +4,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { useI18n } from '../i18n';
 import { getAssetPath } from '../utils/assets';
 import { createJamesWebbModel } from '../utils/jamesWebbModel';
 
 export default function JamesWebbModel3D({ autoRotate = true }) {
+  const { t } = useI18n();
   const mountRef = useRef(null);
   const autoRotateRef = useRef(autoRotate);
 
@@ -93,5 +95,5 @@ export default function JamesWebbModel3D({ autoRotate = true }) {
     };
   }, []);
 
-  return <div ref={mountRef} role="img" aria-label="Modelo 3D oficial del telescopio James Webb" className="h-56 w-full sm:h-64" />;
+  return <div ref={mountRef} role="img" aria-label={t('common.model3dWebb')} className="h-56 w-full sm:h-64" />;
 }

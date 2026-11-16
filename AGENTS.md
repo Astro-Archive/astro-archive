@@ -106,6 +106,26 @@ every variant (sizes × states) is rendered there.
   next to the component (see `components/ui/*.css`).
 - Keep 3D/scene work out of the UI components; they must stay render-cheap.
 
+## Internationalization (EN/ES)
+
+The app is bilingual; **English is the default language**.
+
+- UI copy lives in `src/i18n/messages/<namespace>.js` (`common`, `hud`,
+  `badges`, `curiosity`, `observatory`, `surface`). Add the key to **both**
+  `en` and `es`; `t()` falls back to English, then to the key itself.
+- In components: `const { t, lang } = useI18n()` from `src/i18n`, then
+  `t('hud.destination')`. Variables use `{name}` placeholders:
+  `t('hud.progress', { scanned: 3, total: 7 })`.
+- Content data (missions, planets, curiosities…) keeps each natural-language
+  value as `{ en, es }` and exports a getter, e.g.
+  `getArtifacts(lang)`; resolve it with `useMemo(() => getArtifacts(lang), [lang])`
+  or `localize(value, lang)` from `src/i18n/localize.js`. Numbers, ids, URLs,
+  colors and coordinates stay plain strings/numbers.
+- Never hardcode visible copy outside the dictionaries, and keep
+  `<html lang>` in sync (the provider does it automatically).
+- The EN/ES switch is `LanguageToggle` in the HUD; it persists to
+  `localStorage` under `astro-archive:lang`.
+
 ## Before finishing a task
 
 1. `npm run build` passes.

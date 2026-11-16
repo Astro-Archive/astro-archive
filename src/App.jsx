@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import SpaceSimulator from './components/SpaceSimulator';
 import SpaceXHUD from './components/SpaceXHUD';
 import BadgesModal from './components/BadgesModal';
@@ -6,9 +6,12 @@ import SurfaceExplorer from './components/SurfaceExplorer';
 import HubbleObservatory from './components/HubbleObservatory';
 import { getAssetPath } from './utils/assets';
 import { isUISoundEnabled, setUISoundEnabled } from './utils/uiSound';
-import { ARTIFACTS } from './data/artifactsData';
+import { useI18n } from './i18n';
+import { getArtifacts } from './data/artifactsData';
 
 export default function App() {
+  const { lang } = useI18n();
+  const artifacts = useMemo(() => getArtifacts(lang), [lang]);
   const [selectedTarget, setSelectedTarget] = useState('OVERVIEW');
   const [isFlightMode, setIsFlightMode] = useState(false);
   const [flightVelocity, setFlightVelocity] = useState('0.0');
@@ -111,7 +114,7 @@ export default function App() {
     HUBBLE: 'hubble',
     JWST: 'jwst',
   };
-  const selectedArtifact = ARTIFACTS.find((artifact) => artifact.id === artifactTargetIds[selectedTarget]);
+  const selectedArtifact = artifacts.find((artifact) => artifact.id === artifactTargetIds[selectedTarget]);
   const updateSettings = (changes) => setSettings((current) => ({ ...current, ...changes }));
 
   return (
@@ -136,7 +139,7 @@ export default function App() {
         onToggleFlightMode={handleToggleFlightMode}
         flightVelocity={flightVelocity}
         flightTelemetry={flightTelemetry}
-        artifacts={ARTIFACTS}
+        artifacts={artifacts}
         onOpenBadges={() => setIsBadgesOpen(true)}
         scannedCount={scannedIds.length}
         isPlayingAudio={isPlayingAudio}
@@ -151,7 +154,7 @@ export default function App() {
       <BadgesModal
         isOpen={isBadgesOpen}
         onClose={() => setIsBadgesOpen(false)}
-        artifacts={ARTIFACTS}
+        artifacts={artifacts}
         scannedIds={scannedIds}
       />
 
