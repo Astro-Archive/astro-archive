@@ -313,7 +313,7 @@ export const WEBB_OBSERVATION_TARGETS = [
     distance: { en: '1,150 light-years', es: '1,150 años luz' },
     coordinates: { ra: '00h 04m 11s', dec: '-47° 21′ 38″' },
     targetOffset: { x: 30, y: -45 },
-    image: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01G819JERH8PYTBDTS7YNDSTAB.png?fit=clip&h=1345&w=2000',
+    image: '/textures/webb/wasp-96b-atmosphere.png',
     filter: { en: 'NIRISS Transit Spectroscopy (0.6 – 2.8 µm)', es: 'NIRISS Espectroscopia de Tránsito (0.6 – 2.8 µm)' },
     summary: {
       en: 'A hot gas giant orbiting very close to its host star every 3.4 Earth days.',
@@ -960,7 +960,7 @@ export default function HubbleObservatory({ initialTelescope = 'hubble', onClose
                 }}
               >
                 <img 
-                  src={activeTarget.image.startsWith('http') ? activeTarget.image : getAssetPath(activeTarget.image)} 
+                  src={activeTarget.image.startsWith('http') ? activeTarget.image : getAssetPath(activeTarget.image)}
                   alt={activeTarget.name}
                   className="w-full h-full object-cover transition-transform duration-300"
                   style={{ transform: `scale(${1 + (zoom - 1) * 0.06})` }}
