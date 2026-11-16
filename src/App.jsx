@@ -35,6 +35,18 @@ export default function App() {
     setUISoundEnabled(settings.uiSound);
   }, [settings.uiSound]);
 
+  // Permitir salir del modo de vuelo con la tecla [Escape]
+  useEffect(() => {
+    if (!isFlightMode) return undefined;
+    const handleFlightEsc = (event) => {
+      if (event.key === 'Escape') {
+        setIsFlightMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleFlightEsc);
+    return () => window.removeEventListener('keydown', handleFlightEsc);
+  }, [isFlightMode]);
+
   const getActiveAudio = () => {
     switch (selectedTarget) {
       case 'APOLLO':

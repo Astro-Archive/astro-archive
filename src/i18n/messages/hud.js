@@ -46,7 +46,7 @@ export default {
     'hud.hdg': 'HDG:',
     'hud.vectorBow': 'BOW VECTOR // RCS',
     'hud.controlsHelp':
-      'CONTROLS: [W/S] Thrust // [A/D] Turn // [R/F] Elevation // [Shift] Warp',
+      'CONTROLS: [W/S] Thrust // [A/D] Turn // [R/F] Elevation // [Shift] Warp // [Esc] Exit',
     'hud.thrust': '▲ THRUST',
     'hud.brake': '▼ BRAKE',
     'hud.orbitHint':
@@ -150,7 +150,7 @@ export default {
     'hud.hdg': 'RUMBO:',
     'hud.vectorBow': 'VECTOR PROA // RCS',
     'hud.controlsHelp':
-      'CONTROLES: [W/S] Impulso // [A/D] Girar // [R/F] Elevación // [Shift] Warp',
+      'CONTROLES: [W/S] Impulso // [A/D] Girar // [R/F] Elevación // [Shift] Warp // [Esc] Salir',
     'hud.thrust': '▲ IMPULSO',
     'hud.brake': '▼ FRENAR',
     'hud.orbitHint':
