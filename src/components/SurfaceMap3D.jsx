@@ -77,6 +77,76 @@ export const MARS_SAMPLE_TARGETS = [
   }
 ];
 
+// Objetivos científicos reales del Rover Opportunity (MER-B) en Meridiani Planum y Cráter Endeavour
+export const OPPORTUNITY_MER_TARGETS = [
+  {
+    id: 'blueberries',
+    name: { en: 'Hematite "Blueberries" (Eagle Crater)', es: 'Hematitas «Blueberries» (Cráter Eagle)' },
+    type: { en: 'Iron-Oxide Spherical Concretions', es: 'Concreciones Esféricas de Óxido de Hierro' },
+    x: 24,
+    z: 18,
+    color: '#38bdf8',
+    tubeId: { en: 'MER-B Sol 28 Analysis', es: 'Análisis MER-B Sol 28' },
+    summary: {
+      en: 'Millimeter-sized gray hematite spherules formed by mineral-rich groundwater percolating through porous sedimentary rock in ancient Meridiani Planum.',
+      es: 'Esférulas milimétricas de hematita gris formadas por agua subterránea rica en minerales que se filtró a través de roca sedimentaria porosa en Meridiani Planum.'
+    },
+    mineralogy: {
+      en: 'Crystalline gray hematite (Fe₂O₃), Jarosite sulfates, Acidic evaporites',
+      es: 'Hematita gris cristalina (Fe₂O₃), Sulfatos de jarosita, Evaporitas ácidas'
+    },
+    scienceValue: {
+      en: 'First definitive in-situ evidence that liquid water once soaked the Martian subsurface.',
+      es: 'Primera evidencia definitiva in situ de que el agua líquida empapó el subsuelo marciano.'
+    },
+    tool: { en: 'Mössbauer & Mini-TES Spectrometers', es: 'Espectrómetros Mössbauer y Mini-TES' }
+  },
+  {
+    id: 'homestake',
+    name: { en: 'Homestake Vein (Cape York)', es: 'Veta Homestake (Cabo York)' },
+    type: { en: 'Hydrated Calcium Sulfate (Gypsum)', es: 'Sulfato de Calcio Hidratado (Yeso)' },
+    x: -28,
+    z: 26,
+    color: '#34d399',
+    tubeId: { en: 'MER-B Sol 2769 Analysis', es: 'Análisis MER-B Sol 2769' },
+    summary: {
+      en: 'Bright mineral vein protruding along the rim of Endeavour Crater, deposited by neutral, benign liquid water flowing through underground fractures.',
+      es: 'Veta mineral brillante en el borde del cráter Endeavour, depositada por agua líquida de pH más neutro que circuló por fracturas subterráneas.'
+    },
+    mineralogy: {
+      en: 'Pure hydrated calcium sulfate (CaSO₄·2H₂O — Gypsum)',
+      es: 'Sulfato de calcio hidratado puro (CaSO₄·2H₂O — Yeso)'
+    },
+    scienceValue: {
+      en: 'Proved that Endeavour Crater hosted milder, more habitable neutral-water conditions than the acidic plains.',
+      es: 'Demostró que el cráter Endeavour tuvo aguas más neutras y habitables que las llanuras ácidas.'
+    },
+    tool: { en: 'APXS Alpha Particle X-Ray & Microscopic Imager', es: 'Espectrómetro APXS y Cámara Microscópica' }
+  },
+  {
+    id: 'perseverance_valley',
+    name: { en: 'Perseverance Valley Outcrop', es: 'Afloramiento del Valle Perseverance' },
+    type: { en: 'Ancient Fluid-Carved Spillway Channel', es: 'Canal Antiguo Tallado por Flujo en el Cráter Endeavour' },
+    x: -22,
+    z: -28,
+    color: '#fbbf24',
+    tubeId: { en: 'MER-B Sol 5111 Final Site', es: 'Sitio Final MER-B Sol 5111' },
+    summary: {
+      en: 'Channel network cutting down the inner western rim of Endeavour Crater where Opportunity conducted its final observations before the June 2018 global dust storm.',
+      es: 'Red de canales que desciende por el borde occidental del cráter Endeavour, donde Opportunity realizó sus últimas mediciones antes de la tormenta global de junio de 2018.'
+    },
+    mineralogy: {
+      en: 'Altered impact breccia, Smectite clays, Basaltic regolith',
+      es: 'Brecha de impacto alterada, Arcillas esmectitas, Regolito basáltico'
+    },
+    scienceValue: {
+      en: 'Final resting place of Opportunity after 45.16 km and nearly 15 years of exploration on Mars.',
+      es: 'Lugar de descanso final de Opportunity tras recorrer 45,16 km durante casi 15 años en Marte.'
+    },
+    tool: { en: 'Pancam Multispectral Panorama & RAT Brush', es: 'Panorama Multiespectral Pancam y RAT' }
+  }
+];
+
 // NASA Apollo 11 Lunar EVA Historical Objectives (Moon)
 export const MOON_APOLLO_TARGETS = [
   {
@@ -277,9 +347,14 @@ export default function SurfaceMap3D({
 
   const isMars = !artifact || artifact.body === 'Marte' || ['perseverance', 'ingenuity', 'opportunity', 'viking'].includes(artifact.id);
   const isApollo = artifact?.id === 'apollo11';
+  const isOpportunity = artifact?.id === 'opportunity';
   const isFlying = artifact?.id === 'ingenuity' || (isApollo && !apolloLandingDone);
 
-  const activeMissionTargets = isMars ? MARS_SAMPLE_TARGETS : MOON_APOLLO_TARGETS;
+  const activeMissionTargets = isOpportunity
+    ? OPPORTUNITY_MER_TARGETS
+    : isMars
+    ? MARS_SAMPLE_TARGETS
+    : MOON_APOLLO_TARGETS;
 
   // Physical State for Rover, Drone, LEM Descent or Astronaut Walk
   const craftState = useRef({

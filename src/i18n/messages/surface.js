@@ -3,6 +3,8 @@ export default {
   en: {
     // Header
     'surface.header.mars': '🪐 Martian Surface // Jezero Crater',
+    'surface.header.opportunity': '🪐 Martian Surface // Meridiani Planum & Endeavour Crater',
+    'surface.header.viking': '🪐 Martian Surface // Chryse Planitia',
     'surface.header.moon': '🌕 Lunar Surface // Sea of Tranquility (Tranquility Base)',
     'surface.title.astronaut': 'Neil Armstrong (Apollo 11 EVA)',
     'surface.title.lem': 'LEM Eagle Lunar Module (Apollo 11)',
@@ -37,6 +39,7 @@ export default {
     // Mission tracker
     'surface.mission.moon': 'MISSION: TRANQUILITY BASE',
     'surface.mission.mars': 'MISSION: JEZERO WITNESSES',
+    'surface.mission.opportunity': 'MISSION: MERIDIANI & ENDEAVOUR',
     'surface.mission.objectives': '{collected} / {total} OBJECTIVES',
     'surface.target.completed': 'COMPLETE',
     'surface.target.radar': 'Radar',
@@ -112,10 +115,14 @@ export default {
     'surface.footer.rover.tail': ' to drill rocks in range.',
     'surface.footer.location.moon': 'Sea of Tranquility // Earth visible in the lunar sky',
     'surface.footer.location.mars': 'Jezero Crater // Martian Dunes',
+    'surface.footer.location.opportunity': 'Perseverance Valley, Endeavour Crater // Meridiani Planum',
+    'surface.footer.location.viking': 'Chryse Planitia // Martian Northern Plains',
   },
   es: {
     // Encabezado
     'surface.header.mars': '🪐 Superficie Marciana // Cráter Jezero',
+    'surface.header.opportunity': '🪐 Superficie Marciana // Meridiani Planum y Cráter Endeavour',
+    'surface.header.viking': '🪐 Superficie Marciana // Chryse Planitia',
     'surface.header.moon': '🌕 Superficie Lunar // Mar de la Tranquilidad (Base Tranquilidad)',
     'surface.title.astronaut': 'Neil Armstrong (EVA Apolo 11)',
     'surface.title.lem': 'Módulo Lunar LEM Eagle (Apolo 11)',
@@ -150,6 +157,7 @@ export default {
     // Rastreador de misión
     'surface.mission.moon': 'MISIÓN: BASE TRANQUILIDAD',
     'surface.mission.mars': 'MISIÓN: TESTIGOS DE JEZERO',
+    'surface.mission.opportunity': 'MISIÓN: MERIDIANI Y ENDEAVOUR',
     'surface.mission.objectives': '{collected} / {total} OBJETIVOS',
     'surface.target.completed': 'COMPLETADO',
     'surface.target.radar': 'Radar',
@@ -225,5 +233,7 @@ export default {
     'surface.footer.rover.tail': ' para perforar rocas en rango.',
     'surface.footer.location.moon': 'Mar de la Tranquilidad // La Tierra visible en el cielo lunar',
     'surface.footer.location.mars': 'Cráter Jezero // Dunas Marcianas',
+    'surface.footer.location.opportunity': 'Valle Perseverance, Cráter Endeavour // Meridiani Planum',
+    'surface.footer.location.viking': 'Chryse Planitia // Llanuras del Norte Marciano',
   },
 };

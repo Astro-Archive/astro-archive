@@ -3,7 +3,7 @@ import {
   Compass, Gauge, Map, Navigation, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
   Plane, Wind, CheckCircle2, Circle, AlertCircle, Award, Volume2, VolumeX, Sparkles, Radio
 } from 'lucide-react';
-import SurfaceMap3D, { MARS_SAMPLE_TARGETS, MOON_APOLLO_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
+import SurfaceMap3D, { MARS_SAMPLE_TARGETS, OPPORTUNITY_MER_TARGETS, MOON_APOLLO_TARGETS, INGENUITY_AERIAL_WAYPOINTS } from './SurfaceMap3D';
 import { getAssetPath } from '../utils/assets';
 import SciFiButton from './ui/SciFiButton';
 import { useI18n } from '../i18n';
@@ -66,6 +66,8 @@ export default function SurfaceExplorer({ artifact, onClose }) {
   const { t, lang, localizeValue } = useI18n();
   const isMars = !artifact || artifact.body === 'Marte' || ['perseverance', 'ingenuity', 'opportunity', 'viking'].includes(artifact.id);
   const isApollo = artifact?.id === 'apollo11';
+  const isOpportunity = artifact?.id === 'opportunity';
+  const isViking = artifact?.id === 'viking';
   const isFlying = artifact?.id === 'ingenuity';
 
   const [telemetry, setTelemetry] = useState({
@@ -102,7 +104,11 @@ export default function SurfaceExplorer({ artifact, onClose }) {
   const ambientAudioRef = useRef(null);
   const historicAudioRef = useRef(null);
 
-  const activeMissionTargets = isMars ? MARS_SAMPLE_TARGETS : MOON_APOLLO_TARGETS;
+  const activeMissionTargets = isOpportunity
+    ? OPPORTUNITY_MER_TARGETS
+    : isMars
+    ? MARS_SAMPLE_TARGETS
+    : MOON_APOLLO_TARGETS;
   // Resolved on every language change so the list re-renders translated.
   const missionTargets = useMemo(() => localize(activeMissionTargets, lang), [activeMissionTargets, lang]);
 
@@ -226,7 +232,13 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             }`}></div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-emerald-400">
-                {isMars ? t('surface.header.mars') : t('surface.header.moon')}
+                {isOpportunity
+                  ? t('surface.header.opportunity')
+                  : isViking
+                  ? t('surface.header.viking')
+                  : isMars
+                  ? t('surface.header.mars')
+                  : t('surface.header.moon')}
               </p>
               <h2 className="text-sm font-bold text-white sm:text-base tracking-wide flex items-center space-x-2">
                 <span>{isApollo ? (apolloLandingDone ? t('surface.title.astronaut') : t('surface.title.lem')) : localizeValue(artifact.name)}</span>
@@ -297,7 +309,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
               <span className="text-slate-400">{isApollo ? (apolloLandingDone ? t('surface.telemetry.stepSpeed') : t('surface.telemetry.speed')) : (isFlying ? t('surface.telemetry.flightSpeed') : t('surface.telemetry.speed'))}</span>
               <span className="font-bold text-amber-300">{telemetry.speedKmh} km/h</span>
             </div>
-            {(!apolloLandingDone || isFlying) && (
+            {((isApollo && !apolloLandingDone) || isFlying) && (
               <div className="flex justify-between">
                 <span className="text-slate-400">{t('surface.telemetry.altitude')}</span>
                 <span className="font-bold text-cyan-300">{telemetry.altitude} m {isApollo ? t('surface.telemetry.overRegolith') : t('surface.telemetry.overDunes')}</span>
@@ -327,7 +339,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             <div className="border-b border-cyan-500/30 pb-1 mb-2 flex items-center justify-between">
               <span className="font-bold text-cyan-300 flex items-center space-x-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>{isApollo ? t('surface.mission.moon') : t('surface.mission.mars')}</span>
+                <span>{isApollo ? t('surface.mission.moon') : isOpportunity ? t('surface.mission.opportunity') : t('surface.mission.mars')}</span>
               </span>
               <span className="text-amber-400 font-bold px-1.5 py-0.5 bg-amber-950/60 border border-amber-500/40 text-[10px]">
                 {t('surface.mission.objectives', { collected: collectedSampleIds.length, total: activeMissionTargets.length })}
@@ -517,9 +529,10 @@ export default function SurfaceExplorer({ artifact, onClose }) {
           )}
 
           {/* Touch / Mouse On-Screen Controls */}
-          <div className="absolute bottom-4 right-4 flex items-end space-x-2 pointer-events-auto">
+          {!dossierTarget && !isSamplingActive && (
+            <div className="absolute bottom-4 right-4 flex items-end space-x-2 pointer-events-auto">
             {/* Descent / Climb controls (For LEM Landing or Ingenuity Drone) */}
-            {(!apolloLandingDone || isFlying) && (
+            {((isApollo && !apolloLandingDone) || isFlying) && (
               <div className="flex flex-col space-y-1 bg-black/90 p-2 border border-amber-500/50">
                 <span className="text-[9px] text-amber-300 text-center font-bold">{isApollo ? t('surface.controls.dpsThrust') : t('surface.controls.altitude')}</span>
                 <button
@@ -589,8 +602,9 @@ export default function SurfaceExplorer({ artifact, onClose }) {
               >
                 ►
               </button>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
@@ -607,7 +621,7 @@ export default function SurfaceExplorer({ artifact, onClose }) {
             )}
           </div>
           <div className="text-slate-400 text-[10px]">
-            {isApollo ? t('surface.footer.location.moon') : t('surface.footer.location.mars')}
+            {isApollo ? t('surface.footer.location.moon') : isOpportunity ? t('surface.footer.location.opportunity') : isViking ? t('surface.footer.location.viking') : t('surface.footer.location.mars')}
           </div>
         </footer>
 

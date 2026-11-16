@@ -86,7 +86,10 @@ function playSound(name) {
   getPool(name).cursor = cursor + 1;
 
   try {
-    audio.currentTime = 0;
+    // Evitar reiniciar currentTime mientras el recurso aún no ha cargado datos (previene net::ERR_ABORTED)
+    if (audio.readyState >= 2) {
+      audio.currentTime = 0;
+    }
     const result = audio.play();
     if (result && typeof result.catch === 'function') result.catch(() => {});
   } catch {

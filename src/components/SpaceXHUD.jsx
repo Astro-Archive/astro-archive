@@ -320,11 +320,13 @@ export default function SpaceXHUD({
             <div className="w-4 h-4 border border-cyan-400/60 rounded-none absolute"></div>
             <div className="w-1.5 h-1.5 bg-cyan-400 rounded-none"></div>
           </div>
-          <div className="absolute bottom-16 text-center">
-            <div className="text-[11px] sm:text-xs text-slate-300 font-mono tracking-widest bg-black/80 px-4 py-1 border border-slate-700 rounded-none backdrop-blur-md">
-              {t('hud.orbitHint')}
+          {!isTelemetryOpen && !isDestinoMenuOpen && !isSettingsOpen && (
+            <div className="absolute bottom-16 text-center">
+              <div className="text-[11px] sm:text-xs text-slate-300 font-mono tracking-widest bg-black/80 px-4 py-1 border border-slate-700 rounded-none backdrop-blur-md">
+                {t('hud.orbitHint')}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
