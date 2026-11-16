@@ -147,10 +147,18 @@ export default function SpaceSimulator({
     camera.position.set(0, 240, 580);
     cameraRef.current = camera;
 
+    // Device Performance Tier Detection (Mobile vs Desktop)
+    const isMobile = typeof window !== 'undefined' && (
+      window.innerWidth < 768 ||
+      ('ontouchstart' in window) ||
+      (navigator.maxTouchPoints > 0)
+    );
+
     // 3. Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // On mobile Retina/OLED screens, 1.25x is crisp while cutting fragment shader fill-rate load by 60%+!
+    renderer.setPixelRatio(isMobile ? Math.min(window.devicePixelRatio, 1.25) : Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.35;
     container.appendChild(renderer.domElement);
@@ -383,6 +391,9 @@ export default function SpaceSimulator({
     dracoLoader.setDecoderPath(getAssetPath('/draco/gltf/'));
     loader.setDRACOLoader(dracoLoader);
 
+    // Staggered loading timers array to prevent concurrent WebGL decomp freeze
+    const loadTimers = [];
+
     // 10-0. SATURN (Official NASA 3D Model with Cassini Rings - https://solarsystem.nasa.gov/gltf_embed/2355/)
     loader.load(
       getAssetPath('/models/saturn.glb'),
@@ -439,10 +450,12 @@ export default function SpaceSimulator({
       v1.position.set(340, 120, 200);
       v1.rotation.set(0.6, 0.4, 0.2);
 
-      // Light up Voyager in deep space
-      const vLight = new THREE.PointLight('#fff', 2.5, 30);
-      vLight.position.set(2, 3, 4);
-      v1.add(vLight);
+      // Light up Voyager in deep space (disabled on mobile to conserve GPU fill rate)
+      if (!isMobile) {
+        const vLight = new THREE.PointLight('#fff', 2.5, 30);
+        vLight.position.set(2, 3, 4);
+        v1.add(vLight);
+      }
 
       scene.add(v1);
       probesMeshes.current['voyager1'] = { mesh: v1, data: SPECIAL_PROBES[0] };
@@ -472,9 +485,11 @@ export default function SpaceSimulator({
       v2.position.set(310, -140, 240);
       v2.rotation.set(-0.8, -0.2, 0.5);
 
-      const vLight = new THREE.PointLight('#fff', 2.5, 30);
-      vLight.position.set(2, 3, 4);
-      v2.add(vLight);
+      if (!isMobile) {
+        const vLight = new THREE.PointLight('#fff', 2.5, 30);
+        vLight.position.set(2, 3, 4);
+        v2.add(vLight);
+      }
 
       scene.add(v2);
       probesMeshes.current['voyager2'] = { mesh: v2, data: SPECIAL_PROBES[1] };
@@ -509,9 +524,11 @@ export default function SpaceSimulator({
       issWrapper.userData.targetId = 'iss';
       issWrapper.add(iss);
 
-      const issLight = new THREE.PointLight('#fff', 2.5, 20);
-      issLight.position.set(1.5, 2, 2);
-      issWrapper.add(issLight);
+      if (!isMobile) {
+        const issLight = new THREE.PointLight('#fff', 2.5, 20);
+        issLight.position.set(1.5, 2, 2);
+        issWrapper.add(issLight);
+      }
 
       // Start at safe altitude 4.4 units from Earth center (Earth radius is 2.7)
       issWrapper.position.set(initialEarthPos.x + 4.4, 0, initialEarthPos.z);
@@ -551,221 +568,238 @@ export default function SpaceSimulator({
       model.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
     };
 
-    // 1. Perseverance Rover (Jezero Crater - Mars)
-    loader.load(getAssetPath('/models/perseverance-rover.glb'), (gltf) => {
-      const model = gltf.scene;
-      model.userData.targetId = 'perseverance';
-      const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.28 / (box.getSize(new THREE.Vector3()).length() || 1);
-      model.scale.set(scale, scale, scale);
-      placeOnMars(model, 18.38, 77.58, 0.03);
-      if (marsObj && marsObj.mesh) {
-        marsObj.mesh.add(model);
-        probesMeshes.current['perseverance'] = {
-          mesh: model,
-          parentMesh: marsObj.mesh,
-          basePos: model.position.clone()
-        };
-      }
-    });
-
-    // 2. Ingenuity Mars Helicopter (Wright Field - Dedicated Airspace on Mars)
-    loader.load(getAssetPath('/models/ingenuity-mars-helicopter.glb'), (gltf) => {
-      const model = gltf.scene;
-      model.userData.targetId = 'ingenuity';
-      const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.22 / (box.getSize(new THREE.Vector3()).length() || 1);
-      model.scale.set(scale, scale, scale);
-      // Separated cleanly by ~25 degrees so they never overlap
-      placeOnMars(model, 34.2, 52.4, 0.10);
-      if (marsObj && marsObj.mesh) {
-        marsObj.mesh.add(model);
-        probesMeshes.current['ingenuity'] = {
-          mesh: model,
-          parentMesh: marsObj.mesh,
-          basePos: model.position.clone()
-        };
-      }
-    });
-
-    // 3. Opportunity Rover (Meridiani Planum - Mars)
-    loader.load(getAssetPath('/models/opportunity-rover.glb'), (gltf) => {
-      const model = gltf.scene;
-      model.userData.targetId = 'opportunity';
-      const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
-      model.scale.set(scale, scale, scale);
-      placeOnMars(model, -2.0, -18.5, 0.03);
-      if (marsObj && marsObj.mesh) {
-        marsObj.mesh.add(model);
-        probesMeshes.current['opportunity'] = {
-          mesh: model,
-          parentMesh: marsObj.mesh,
-          basePos: model.position.clone()
-        };
-      }
-    });
-
-    // 4. Viking 1 Lander (Chryse Planitia - Mars)
-    loader.load(getAssetPath('/models/viking-lander.glb'), (gltf) => {
-      const model = gltf.scene;
-      model.userData.targetId = 'viking';
-      const box = new THREE.Box3().setFromObject(model);
-      const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
-      model.scale.set(scale, scale, scale);
-      placeOnMars(model, 22.5, -62.0, 0.03);
-      if (marsObj && marsObj.mesh) {
-        marsObj.mesh.add(model);
-        probesMeshes.current['viking'] = {
-          mesh: model,
-          parentMesh: marsObj.mesh,
-          basePos: model.position.clone()
-        };
-      }
-    });
-
-    // 10C. HUBBLE SPACE TELESCOPE (Official 3D GLB in Low Earth Orbit - 28.5° inclination)
-    loader.load(
-      getAssetPath('/models/hubble.glb'),
-      (gltf) => {
-        const hst = gltf.scene;
-        hst.userData.targetId = 'hubble';
-
-        // Properly center mesh pivot using scaled offset
-        const box = new THREE.Box3().setFromObject(hst);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3()).length() || 1;
-        const scale = 0.85 / size;
-        hst.scale.set(scale, scale, scale);
-        hst.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
-
-        // Adjust metallic PBR materials so they don't reflect pitch-black void
-        hst.traverse((child) => {
-          if (child.isMesh && child.material) {
-            child.material.metalness = Math.min(child.material.metalness ?? 0, 0.65);
-            child.material.roughness = Math.max(child.material.roughness ?? 0.5, 0.35);
+    // 10B. MARS RELICS: PERSEVERANCE, INGENUITY, OPPORTUNITY, VIKING 1 (Staggered to keep main-thread responsive)
+    loadTimers.push(
+      setTimeout(() => {
+        // 1. Perseverance Rover (Jezero Crater - Mars)
+        loader.load(getAssetPath('/models/perseverance-rover.glb'), (gltf) => {
+          const model = gltf.scene;
+          model.userData.targetId = 'perseverance';
+          const box = new THREE.Box3().setFromObject(model);
+          const scale = 0.28 / (box.getSize(new THREE.Vector3()).length() || 1);
+          model.scale.set(scale, scale, scale);
+          placeOnMars(model, 18.38, 77.58, 0.03);
+          if (marsObj && marsObj.mesh) {
+            marsObj.mesh.add(model);
+            probesMeshes.current['perseverance'] = {
+              mesh: model,
+              parentMesh: marsObj.mesh,
+              basePos: model.position.clone()
+            };
           }
         });
 
-        const wrapper = new THREE.Group();
-        wrapper.userData.targetId = 'hubble';
-        wrapper.add(hst);
-
-        // Dedicated solar illumination for Hubble (placed outside the telescope tube!)
-        const hstSunLight = new THREE.DirectionalLight('#ffffff', 3.0);
-        hstSunLight.position.set(3, 4, 3);
-        wrapper.add(hstSunLight);
-        const hstGlow = new THREE.PointLight('#38bdf8', 2.0, 15);
-        hstGlow.position.set(-3, -2, -3);
-        wrapper.add(hstGlow);
-
-        wrapper.position.set(initialEarthPos.x + 5.4, 0, initialEarthPos.z);
-        scene.add(wrapper);
-        probesMeshes.current['hubble'] = { 
-          mesh: wrapper, 
-          data: {
-            id: 'hubble',
-            name: 'Telescopio Espacial Hubble (HST)',
-            type: 'Gran Observatorio Orbital (LEO)',
-            speedKmH: '27,300 km/h'
-          } 
-        };
-        orbitalAngles.current['hubble'] = 1.6;
-
-        // Auto-frame if already selected
-        if (selectedTargetRef.current?.toLowerCase() === 'hubble') {
-          const wp = new THREE.Vector3();
-          wrapper.getWorldPosition(wp);
-          targetCamPos.current.set(wp.x + 2.4 * 0.6, wp.y + 2.4 * 0.4, wp.z + 2.4);
-          targetLookAt.current.copy(wp);
-          lastTargetPos.current.copy(wp);
-          isTransitioning.current = true;
-        }
-      },
-      undefined,
-      (err) => {
-        console.error('Error loading Hubble HST:', err);
-      }
-    );
-
-    // 10D. JAMES WEBB SPACE TELESCOPE (Official 3D GLB - Halo Orbit at Sun-Earth L2)
-    loader.load(
-      getAssetPath('/models/jwst.glb'),
-      (gltf) => {
-        const webb = gltf.scene;
-        webb.userData.targetId = 'jwst';
-
-        // Properly center mesh pivot using scaled offset
-        const box = new THREE.Box3().setFromObject(webb);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3()).length() || 1;
-        const scale = 1.15 / size;
-        webb.scale.set(scale, scale, scale);
-        webb.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
-
-        webb.traverse((child) => {
-          if (child.isMesh && child.material) {
-            child.material.metalness = Math.min(child.material.metalness ?? 0, 0.70);
-            child.material.roughness = Math.max(child.material.roughness ?? 0.5, 0.30);
+        // 2. Ingenuity Mars Helicopter (Wright Field - Dedicated Airspace on Mars)
+        loader.load(getAssetPath('/models/ingenuity-mars-helicopter.glb'), (gltf) => {
+          const model = gltf.scene;
+          model.userData.targetId = 'ingenuity';
+          const box = new THREE.Box3().setFromObject(model);
+          const scale = 0.22 / (box.getSize(new THREE.Vector3()).length() || 1);
+          model.scale.set(scale, scale, scale);
+          // Separated cleanly by ~25 degrees so they never overlap
+          placeOnMars(model, 34.2, 52.4, 0.10);
+          if (marsObj && marsObj.mesh) {
+            marsObj.mesh.add(model);
+            probesMeshes.current['ingenuity'] = {
+              mesh: model,
+              parentMesh: marsObj.mesh,
+              basePos: model.position.clone()
+            };
           }
         });
 
-        const wrapper = new THREE.Group();
-        wrapper.userData.targetId = 'jwst';
-        wrapper.add(webb);
-
-        // Warm golden illumination highlighting the 18 beryllium-gold mirror segments
-        const webbRimLight = new THREE.PointLight('#ffe7a3', 3.5, 25);
-        webbRimLight.position.set(2, 3, 3);
-        wrapper.add(webbRimLight);
-        const webbSunLight = new THREE.DirectionalLight('#ffffff', 2.0);
-        webbSunLight.position.set(-3, -2, -3);
-        wrapper.add(webbSunLight);
-
-        scene.add(wrapper);
-        probesMeshes.current['jwst'] = {
-          mesh: wrapper,
-          data: {
-            id: 'jwst',
-            name: 'Telescopio Espacial James Webb (JWST)',
-            type: 'Gran Observatorio Infrarrojo (Punto L2)',
-            speedKmH: 'Órbita de Halo en L2'
+        // 3. Opportunity Rover (Meridiani Planum - Mars)
+        loader.load(getAssetPath('/models/opportunity-rover.glb'), (gltf) => {
+          const model = gltf.scene;
+          model.userData.targetId = 'opportunity';
+          const box = new THREE.Box3().setFromObject(model);
+          const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
+          model.scale.set(scale, scale, scale);
+          placeOnMars(model, -2.0, -18.5, 0.03);
+          if (marsObj && marsObj.mesh) {
+            marsObj.mesh.add(model);
+            probesMeshes.current['opportunity'] = {
+              mesh: model,
+              parentMesh: marsObj.mesh,
+              basePos: model.position.clone()
+            };
           }
-        };
-        orbitalAngles.current['jwst'] = 0;
+        });
 
-        // Auto-frame if already selected
-        if (selectedTargetRef.current?.toLowerCase() === 'jwst') {
-          const wp = new THREE.Vector3();
-          wrapper.getWorldPosition(wp);
-          targetCamPos.current.set(wp.x + 2.6 * 0.6, wp.y + 2.6 * 0.4, wp.z + 2.6);
-          targetLookAt.current.copy(wp);
-          lastTargetPos.current.copy(wp);
-          isTransitioning.current = true;
-        }
-      },
-      undefined,
-      (err) => {
-        console.warn('Fallback to procedural Webb model:', err);
-        const webb = createJamesWebbModel();
-        webb.userData.targetId = 'jwst';
-        webb.scale.setScalar(0.7);
-        scene.add(webb);
-        probesMeshes.current['jwst'] = {
-          mesh: webb,
-          data: {
-            id: 'jwst',
-            name: 'Telescopio Espacial James Webb (JWST)',
-            type: 'Gran Observatorio Infrarrojo (Punto L2)',
-            speedKmH: 'Órbita de Halo en L2'
+        // 4. Viking 1 Lander (Chryse Planitia - Mars)
+        loader.load(getAssetPath('/models/viking-lander.glb'), (gltf) => {
+          const model = gltf.scene;
+          model.userData.targetId = 'viking';
+          const box = new THREE.Box3().setFromObject(model);
+          const scale = 0.26 / (box.getSize(new THREE.Vector3()).length() || 1);
+          model.scale.set(scale, scale, scale);
+          placeOnMars(model, 22.5, -62.0, 0.03);
+          if (marsObj && marsObj.mesh) {
+            marsObj.mesh.add(model);
+            probesMeshes.current['viking'] = {
+              mesh: model,
+              parentMesh: marsObj.mesh,
+              basePos: model.position.clone()
+            };
           }
-        };
-        orbitalAngles.current['jwst'] = 0;
-      }
+        });
+      }, 120)
     );
 
-    // 10D. MAIN ASTEROID BELT (Rugged, faceted space rocks - NOT smooth balls!)
-    const asteroidCount = 1300;
+    // 10C. HUBBLE SPACE TELESCOPE (Official 3D GLB - Staggered load to protect mobile memory)
+    loadTimers.push(
+      setTimeout(() => {
+        loader.load(
+          getAssetPath('/models/hubble.glb'),
+          (gltf) => {
+            const hst = gltf.scene;
+            hst.userData.targetId = 'hubble';
+
+            // Properly center mesh pivot using scaled offset
+            const box = new THREE.Box3().setFromObject(hst);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3()).length() || 1;
+            const scale = 0.85 / size;
+            hst.scale.set(scale, scale, scale);
+            hst.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+            // Adjust metallic PBR materials so they don't reflect pitch-black void
+            hst.traverse((child) => {
+              if (child.isMesh && child.material) {
+                child.material.metalness = Math.min(child.material.metalness ?? 0, 0.65);
+                child.material.roughness = Math.max(child.material.roughness ?? 0.5, 0.35);
+              }
+            });
+
+            const wrapper = new THREE.Group();
+            wrapper.userData.targetId = 'hubble';
+            wrapper.add(hst);
+
+            // Dedicated solar illumination for Hubble
+            const hstSunLight = new THREE.DirectionalLight('#ffffff', 3.0);
+            hstSunLight.position.set(3, 4, 3);
+            wrapper.add(hstSunLight);
+            if (!isMobile) {
+              const hstGlow = new THREE.PointLight('#38bdf8', 2.0, 15);
+              hstGlow.position.set(-3, -2, -3);
+              wrapper.add(hstGlow);
+            }
+
+            wrapper.position.set(initialEarthPos.x + 5.4, 0, initialEarthPos.z);
+            scene.add(wrapper);
+            probesMeshes.current['hubble'] = { 
+              mesh: wrapper, 
+              data: {
+                id: 'hubble',
+                name: 'Telescopio Espacial Hubble (HST)',
+                type: 'Gran Observatorio Orbital (LEO)',
+                speedKmH: '27,300 km/h'
+              } 
+            };
+            orbitalAngles.current['hubble'] = 1.6;
+
+            // Auto-frame if already selected
+            if (selectedTargetRef.current?.toLowerCase() === 'hubble') {
+              const wp = new THREE.Vector3();
+              wrapper.getWorldPosition(wp);
+              targetCamPos.current.set(wp.x + 2.4 * 0.6, wp.y + 2.4 * 0.4, wp.z + 2.4);
+              targetLookAt.current.copy(wp);
+              lastTargetPos.current.copy(wp);
+              isTransitioning.current = true;
+            }
+          },
+          undefined,
+          (err) => {
+            console.error('Error loading Hubble HST:', err);
+          }
+        );
+      }, 260)
+    );
+
+    // 10D. JAMES WEBB SPACE TELESCOPE (Official 3D GLB - Staggered load to protect mobile memory)
+    loadTimers.push(
+      setTimeout(() => {
+        loader.load(
+          getAssetPath('/models/jwst.glb'),
+          (gltf) => {
+            const webb = gltf.scene;
+            webb.userData.targetId = 'jwst';
+
+            // Properly center mesh pivot using scaled offset
+            const box = new THREE.Box3().setFromObject(webb);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3()).length() || 1;
+            const scale = 1.15 / size;
+            webb.scale.set(scale, scale, scale);
+            webb.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+            webb.traverse((child) => {
+              if (child.isMesh && child.material) {
+                child.material.metalness = Math.min(child.material.metalness ?? 0, 0.70);
+                child.material.roughness = Math.max(child.material.roughness ?? 0.5, 0.30);
+              }
+            });
+
+            const wrapper = new THREE.Group();
+            wrapper.userData.targetId = 'jwst';
+            wrapper.add(webb);
+
+            // Illumination for mirrors
+            if (!isMobile) {
+              const webbRimLight = new THREE.PointLight('#ffe7a3', 3.5, 25);
+              webbRimLight.position.set(2, 3, 3);
+              wrapper.add(webbRimLight);
+            }
+            const webbSunLight = new THREE.DirectionalLight('#ffffff', 2.0);
+            webbSunLight.position.set(-3, -2, -3);
+            wrapper.add(webbSunLight);
+
+            scene.add(wrapper);
+            probesMeshes.current['jwst'] = {
+              mesh: wrapper,
+              data: {
+                id: 'jwst',
+                name: 'Telescopio Espacial James Webb (JWST)',
+                type: 'Gran Observatorio Infrarrojo (Punto L2)',
+                speedKmH: 'Órbita de Halo en L2'
+              }
+            };
+            orbitalAngles.current['jwst'] = 0;
+
+            // Auto-frame if already selected
+            if (selectedTargetRef.current?.toLowerCase() === 'jwst') {
+              const wp = new THREE.Vector3();
+              wrapper.getWorldPosition(wp);
+              targetCamPos.current.set(wp.x + 2.6 * 0.6, wp.y + 2.6 * 0.4, wp.z + 2.6);
+              targetLookAt.current.copy(wp);
+              lastTargetPos.current.copy(wp);
+              isTransitioning.current = true;
+            }
+          },
+          undefined,
+          (err) => {
+            console.warn('Fallback to procedural Webb model:', err);
+            const webb = createJamesWebbModel();
+            webb.userData.targetId = 'jwst';
+            webb.scale.setScalar(0.7);
+            scene.add(webb);
+            probesMeshes.current['jwst'] = {
+              mesh: webb,
+              data: {
+                id: 'jwst',
+                name: 'Telescopio Espacial James Webb (JWST)',
+                type: 'Gran Observatorio Infrarrojo (Punto L2)',
+                speedKmH: 'Órbita de Halo en L2'
+              }
+            };
+            orbitalAngles.current['jwst'] = 0;
+          }
+        );
+      }, 440)
+    );
+
+    // 10D. MAIN ASTEROID BELT (Rugged, faceted space rocks - Dynamically throttled for mobile 60 FPS)
+    const asteroidCount = isMobile ? 260 : 1300;
 
     const createRuggedRockGeometry = (baseRadius = 0.5) => {
       const geo = new THREE.IcosahedronGeometry(baseRadius, 1);
@@ -817,8 +851,8 @@ export default function SpaceSimulator({
     asteroidBelt.instanceMatrix.needsUpdate = true;
     scene.add(asteroidBelt);
 
-    // 10E. KUIPER BELT (Icy outer asteroids)
-    const kuiperCount = 750;
+    // 10E. KUIPER BELT (Icy outer asteroids - Dynamically throttled for mobile 60 FPS)
+    const kuiperCount = isMobile ? 150 : 750;
     const kuiperGeo = createRuggedRockGeometry(0.5);
     const kuiperMat = new THREE.MeshStandardMaterial({
       color: '#64748b',
@@ -847,49 +881,53 @@ export default function SpaceSimulator({
     cometGroup.userData.targetId = 'halley';
 
     // Nucleus (Authentic Giotto 1986 3D Model: peanut/potato bi-lobed shape, 15x8x8km, dark crust & active jets)
-    loader.load(
-      getAssetPath('/models/halley-nucleus.glb'),
-      (gltf) => {
-        const nucleus = gltf.scene;
-        nucleus.userData.targetId = 'halley';
+    loadTimers.push(
+      setTimeout(() => {
+        loader.load(
+          getAssetPath('/models/halley-nucleus.glb'),
+          (gltf) => {
+            const nucleus = gltf.scene;
+            nucleus.userData.targetId = 'halley';
 
-        const box = new THREE.Box3().setFromObject(nucleus);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3()).length() || 1;
-        const scale = 1.6 / size;
-        nucleus.scale.set(scale, scale, scale);
-        nucleus.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+            const box = new THREE.Box3().setFromObject(nucleus);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3()).length() || 1;
+            const scale = 1.6 / size;
+            nucleus.scale.set(scale, scale, scale);
+            nucleus.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
 
-        // Giotto observed active jets spraying from sunward vents
-        const jetGeo = new THREE.ConeGeometry(0.12, 1.4, 16);
-        const jetMat = new THREE.MeshBasicMaterial({
-          color: '#a5f3fc',
-          transparent: true,
-          opacity: 0.55,
-          side: THREE.DoubleSide,
-        });
-        const jet1 = new THREE.Mesh(jetGeo, jetMat);
-        jet1.position.set(0.4, 0.35, 0.2);
-        jet1.rotation.z = Math.PI / 4;
-        nucleus.add(jet1);
+            // Giotto observed active jets spraying from sunward vents
+            const jetGeo = new THREE.ConeGeometry(0.12, 1.4, 16);
+            const jetMat = new THREE.MeshBasicMaterial({
+              color: '#a5f3fc',
+              transparent: true,
+              opacity: 0.55,
+              side: THREE.DoubleSide,
+            });
+            const jet1 = new THREE.Mesh(jetGeo, jetMat);
+            jet1.position.set(0.4, 0.35, 0.2);
+            jet1.rotation.z = Math.PI / 4;
+            nucleus.add(jet1);
 
-        const jet2 = new THREE.Mesh(jetGeo, jetMat);
-        jet2.position.set(-0.35, 0.4, -0.15);
-        jet2.rotation.z = -Math.PI / 3;
-        nucleus.add(jet2);
+            const jet2 = new THREE.Mesh(jetGeo, jetMat);
+            jet2.position.set(-0.35, 0.4, -0.15);
+            jet2.rotation.z = -Math.PI / 3;
+            nucleus.add(jet2);
 
-        cometGroup.add(nucleus);
-      },
-      undefined,
-      (err) => {
-        console.warn('Fallback to procedural nucleus for Halley:', err);
-        const fallbackNucleus = new THREE.Mesh(
-          createRuggedRockGeometry(0.65),
-          new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.95, flatShading: true })
+            cometGroup.add(nucleus);
+          },
+          undefined,
+          (err) => {
+            console.warn('Fallback to procedural nucleus for Halley:', err);
+            const fallbackNucleus = new THREE.Mesh(
+              createRuggedRockGeometry(0.65),
+              new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.95, flatShading: true })
+            );
+            fallbackNucleus.userData.targetId = 'halley';
+            cometGroup.add(fallbackNucleus);
+          }
         );
-        fallbackNucleus.userData.targetId = 'halley';
-        cometGroup.add(fallbackNucleus);
-      }
+      }, 160)
     );
 
     // Glowing Coma Texture (soft atmospheric sublimation halo around nucleus)
@@ -1072,11 +1110,13 @@ export default function SpaceSimulator({
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(isMobile ? Math.min(window.devicePixelRatio, 1.25) : Math.min(window.devicePixelRatio, 2));
     };
     window.addEventListener('resize', handleResize);
 
     // 13. MAIN 60 FPS SIMULATION LOOP
     let animationId;
+    const cachedCamDir = new THREE.Vector3();
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
@@ -1353,15 +1393,14 @@ export default function SpaceSimulator({
       } else {
         controls.enabled = true;
 
-        // Telemetry in orbit / overview mode (throttled to 80ms)
+        // Telemetry in orbit / overview mode (throttled to keep mobile React loop smooth)
         if (onFlightTelemetryRef.current) {
           const now = performance.now();
-          if (now - telemetryThrottleRef.current > 80) {
+          if (now - telemetryThrottleRef.current > (isMobile ? 240 : 80)) {
             telemetryThrottleRef.current = now;
-            const camDir = new THREE.Vector3();
-            camera.getWorldDirection(camDir);
-            const headingDeg = Math.round((((Math.atan2(camDir.x, camDir.z) * 180 / Math.PI) % 360) + 360) % 360);
-            const pitchDeg = Math.round(Math.asin(Math.max(-1, Math.min(1, camDir.y))) * 180 / Math.PI);
+            camera.getWorldDirection(cachedCamDir);
+            const headingDeg = Math.round((((Math.atan2(cachedCamDir.x, cachedCamDir.z) * 180 / Math.PI) % 360) + 360) % 360);
+            const pitchDeg = Math.round(Math.asin(Math.max(-1, Math.min(1, cachedCamDir.y))) * 180 / Math.PI);
 
             let nearestName = langRef.current === 'es' ? 'Sol' : 'Sun';
             let nearestDist = camera.position.length();
@@ -1397,6 +1436,7 @@ export default function SpaceSimulator({
 
     return () => {
       cancelAnimationFrame(animationId);
+      loadTimers.forEach((t) => clearTimeout(t));
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('mousedown', handleMouseDown);
