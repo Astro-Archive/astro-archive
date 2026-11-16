@@ -189,22 +189,29 @@ export default function SpaceSimulator({
 
     // 8. BUILD SOLAR SYSTEM BODIES
     SOLAR_BODIES.forEach((body, idx) => {
-      const geo = new THREE.SphereGeometry(body.radius, 48, 48);
-      const tex = textureLoader.load(getAssetPath(body.texture));
-
-      let mat;
-      if (body.emissive) {
-        mat = new THREE.MeshBasicMaterial({ map: tex, color: '#ffffff' });
+      let mesh;
+      if (body.id === 'saturn') {
+        // Saturn is represented by NASA's official 3D GLB model with authentic Cassini rings
+        mesh = new THREE.Group();
+        mesh.userData.targetId = 'saturn';
       } else {
-        mat = new THREE.MeshStandardMaterial({
-          map: tex,
-          roughness: 0.85,
-          metalness: 0.1,
-        });
-      }
+        const geo = new THREE.SphereGeometry(body.radius, 48, 48);
+        const tex = textureLoader.load(getAssetPath(body.texture));
 
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.userData.targetId = body.id;
+        let mat;
+        if (body.emissive) {
+          mat = new THREE.MeshBasicMaterial({ map: tex, color: '#ffffff' });
+        } else {
+          mat = new THREE.MeshStandardMaterial({
+            map: tex,
+            roughness: 0.85,
+            metalness: 0.1,
+          });
+        }
+
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.userData.targetId = body.id;
+      }
 
       // Stagger initial orbit angles so planets are nicely spread out
       const initialAngle = (idx * (Math.PI * 2 / 10)) + 0.3;
@@ -266,8 +273,8 @@ export default function SpaceSimulator({
         mesh.add(new THREE.Mesh(outerFlareGeo, outerFlareMat));
       }
 
-      // Saturn 3D Rings
-      if (body.hasRings) {
+      // Procedural 3D Rings for other ringed planets (Saturn uses official NASA 3D Cassini model)
+      if (body.hasRings && body.id !== 'saturn') {
         const ringTex = textureLoader.load(getAssetPath(body.ringTexture));
         ringTex.wrapS = THREE.RepeatWrapping;
         ringTex.wrapT = THREE.ClampToEdgeWrapping;
@@ -367,6 +374,52 @@ export default function SpaceSimulator({
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(getAssetPath('/draco/gltf/'));
     loader.setDRACOLoader(dracoLoader);
+
+    // 10-0. SATURN (Official NASA 3D Model with Cassini Rings - https://solarsystem.nasa.gov/gltf_embed/2355/)
+    loader.load(
+      getAssetPath('/models/saturn.glb'),
+      (gltf) => {
+        const saturnModel = gltf.scene;
+        saturnModel.userData.targetId = 'saturn';
+
+        // Proportional scale: NASA model planet body radius is 500 units.
+        // In our simulation body.radius is 6.0 (matching Jupiter at 7.2 and Earth at 2.7).
+        // 6.0 / 500 = 0.012 -> perfect proportional scaling!
+        const saturnScale = 6.0 / 500;
+        saturnModel.scale.set(saturnScale, saturnScale, saturnScale);
+
+        // Authentic Saturn axial tilt: 26.73°
+        saturnModel.rotation.z = (26.73 * Math.PI) / 180;
+
+        saturnModel.traverse((child) => {
+          if (child.isMesh) {
+            child.userData.targetId = 'saturn';
+            if (child.material) {
+              child.material.side = THREE.DoubleSide;
+              const matName = (child.material.name || child.name || '').toLowerCase();
+              if (matName.includes('ring')) {
+                child.material.transparent = true;
+                child.material.depthWrite = false;
+                child.material.roughness = 0.95;
+                child.material.metalness = 0.05;
+              } else {
+                child.material.roughness = 0.85;
+                child.material.metalness = 0.08;
+              }
+            }
+          }
+        });
+
+        const saturnObj = planetMeshes.current['saturn'];
+        if (saturnObj && saturnObj.mesh) {
+          saturnObj.mesh.add(saturnModel);
+        }
+      },
+      undefined,
+      (err) => {
+        console.error('Error loading NASA Saturn GLB:', err);
+      }
+    );
 
     // VOYAGER 1 (Positioned in deep space with dedicated light)
     loader.load(getAssetPath('/models/voyager.glb'), (gltf) => {
@@ -831,7 +884,7 @@ export default function SpaceSimulator({
       }
     );
 
-    // Glowing Coma Texture (soft radial atmospheric glow)
+    // Glowing Coma Texture (soft atmospheric sublimation halo around nucleus)
     const createComaTexture = () => {
       const canvas = document.createElement('canvas');
       canvas.width = 128;
@@ -839,8 +892,8 @@ export default function SpaceSimulator({
       const ctx = canvas.getContext('2d');
       const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
       grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
-      grad.addColorStop(0.2, 'rgba(103, 232, 249, 0.9)');
-      grad.addColorStop(0.5, 'rgba(56, 189, 248, 0.35)');
+      grad.addColorStop(0.2, 'rgba(125, 211, 252, 0.85)');
+      grad.addColorStop(0.5, 'rgba(56, 189, 248, 0.3)');
       grad.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 128, 128);
@@ -854,47 +907,80 @@ export default function SpaceSimulator({
       transparent: true,
     });
     const comaSprite = new THREE.Sprite(comaMat);
-    comaSprite.scale.set(7.5, 7.5, 1);
+    // Proportionate coma halo (3.2 units, letting the Giotto nucleus and active vents stay crisp)
+    comaSprite.scale.set(3.2, 3.2, 1);
     cometGroup.add(comaSprite);
 
     const cometLight = new THREE.PointLight('#67e8f9', 2.8, 35);
     cometGroup.add(cometLight);
 
-    // Ethereal Tapering Gradient Tail (Soft billboard ribbons with alpha gradient)
-    const createTailTexture = () => {
+    // REAL ASTRONOMICAL DUAL-TAIL (3D Volumetric Cones with Additive Blending - Eliminates Boomerang planes)
+    // 1. ION TAIL (Brilliant, straight, narrow electric cyan gas stream)
+    const createIonTailTexture = () => {
       const canvas = document.createElement('canvas');
       canvas.width = 128;
       canvas.height = 512;
       const ctx = canvas.getContext('2d');
-      const grad = ctx.createLinearGradient(64, 0, 64, 512);
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
       grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-      grad.addColorStop(0.12, 'rgba(103, 232, 249, 0.75)');
-      grad.addColorStop(0.4, 'rgba(56, 189, 248, 0.30)');
-      grad.addColorStop(0.75, 'rgba(14, 165, 233, 0.12)');
-      grad.addColorStop(1, 'rgba(2, 132, 199, 0.0)');
+      grad.addColorStop(0.08, 'rgba(103, 232, 249, 0.80)');
+      grad.addColorStop(0.35, 'rgba(14, 165, 233, 0.40)');
+      grad.addColorStop(0.70, 'rgba(2, 132, 199, 0.15)');
+      grad.addColorStop(1.0, 'rgba(2, 132, 199, 0.0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 128, 512);
       return new THREE.CanvasTexture(canvas);
     };
 
-    const tailMaterial = new THREE.MeshBasicMaterial({
-      map: createTailTexture(),
+    const ionTailLength = 26; // Moderate, elegant length (not 65!)
+    const ionTailGeo = new THREE.CylinderGeometry(0.35, 2.5, ionTailLength, 32, 1, true);
+    ionTailGeo.translate(0, -ionTailLength / 2, 0);
+    ionTailGeo.rotateX(-Math.PI / 2); // Extends along +Z from z=0 to z=26
+    const ionTailMat = new THREE.MeshBasicMaterial({
+      map: createIonTailTexture(),
       transparent: true,
+      opacity: 0.65,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
       depthWrite: false,
     });
+    const ionTailMesh = new THREE.Mesh(ionTailGeo, ionTailMat);
+    cometGroup.add(ionTailMesh);
 
-    const tailGeo1 = new THREE.PlaneGeometry(8, 65);
-    tailGeo1.translate(0, 32.5, 0); // Tail extends back from head
-    const tailMesh1 = new THREE.Mesh(tailGeo1, tailMaterial);
-    tailMesh1.rotation.x = -Math.PI / 2;
-    cometGroup.add(tailMesh1);
+    // 2. DUST TAIL (Wider, slightly curved, warm silvery-opal tint trailing behind)
+    const createDustTailTexture = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.90)');
+      grad.addColorStop(0.12, 'rgba(224, 242, 254, 0.65)');
+      grad.addColorStop(0.40, 'rgba(186, 230, 253, 0.30)');
+      grad.addColorStop(0.75, 'rgba(125, 211, 252, 0.10)');
+      grad.addColorStop(1.0, 'rgba(14, 165, 233, 0.0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 512);
+      return new THREE.CanvasTexture(canvas);
+    };
 
-    const tailMesh2 = new THREE.Mesh(tailGeo1, tailMaterial);
-    tailMesh2.rotation.x = -Math.PI / 2;
-    tailMesh2.rotation.z = Math.PI / 2;
-    cometGroup.add(tailMesh2);
+    const dustTailLength = 20; // Slightly shorter, fanning out wider
+    const dustTailGeo = new THREE.CylinderGeometry(0.5, 4.6, dustTailLength, 32, 1, true);
+    dustTailGeo.translate(0, -dustTailLength / 2, 0);
+    dustTailGeo.rotateX(-Math.PI / 2);
+    const dustTailMat = new THREE.MeshBasicMaterial({
+      map: createDustTailTexture(),
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const dustTailMesh = new THREE.Mesh(dustTailGeo, dustTailMat);
+    // Slight angular tilt (lagging behind orbit) for authentic dust tail curvature
+    dustTailMesh.rotation.y = 0.07;
+    dustTailMesh.rotation.x = 0.04;
+    cometGroup.add(dustTailMesh);
 
     scene.add(cometGroup);
     probesMeshes.current['halley'] = {
