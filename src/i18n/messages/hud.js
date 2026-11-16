@@ -103,7 +103,6 @@ export default {
 
     // Conmutador de idioma
     'hud.language': 'Language',
-    'hud.languageSwitch': 'Switch to Spanish',
   },
   es: {
     // Barra superior
@@ -208,6 +207,5 @@ export default {
 
     // Conmutador de idioma
     'hud.language': 'Idioma',
-    'hud.languageSwitch': 'Cambiar a inglés',
   },
 };

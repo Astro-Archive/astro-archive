@@ -10,7 +10,6 @@ import CuriosityPanel from './CuriosityPanel';
 import SciFiButton from './ui/SciFiButton';
 import SciFiTag from './ui/SciFiTag';
 import SciFiLoader from './ui/SciFiLoader';
-import LanguageToggle from './LanguageToggle';
 
 export default function SpaceXHUD({
   selectedTarget,
@@ -29,7 +28,7 @@ export default function SpaceXHUD({
   settings,
   onUpdateSettings
 }) {
-  const { t, lang } = useI18n();
+  const { t, lang, setLanguage } = useI18n();
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDestinoMenuOpen, setIsDestinoMenuOpen] = useState(false);
@@ -487,8 +486,6 @@ export default function SpaceXHUD({
             {isTelemetryOpen ? t('hud.hide') : t('hud.curiosities')}
           </SciFiButton>
 
-          <LanguageToggle />
-
           <button
             onClick={() => setIsSettingsOpen((value) => !value)}
             aria-label={t('hud.openSettings')}
@@ -558,7 +555,24 @@ export default function SpaceXHUD({
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3 text-slate-200">
               <span>{t('hud.language')}</span>
-              <LanguageToggle />
+              <div className="flex gap-1.5">
+                {['en', 'es'].map((code) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => setLanguage(code)}
+                    aria-pressed={lang === code}
+                    lang={code}
+                    className={`px-2.5 py-1 text-[11px] font-bold border transition-all ${
+                      lang === code
+                        ? 'bg-amber-500 text-black border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                        : 'bg-black/60 border-slate-700 text-slate-300 hover:border-amber-400'
+                    }`}
+                  >
+                    {code === 'en' ? 'English' : 'Español'}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <label className="flex items-center justify-between gap-3 text-slate-200 cursor-pointer">

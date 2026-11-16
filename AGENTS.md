@@ -123,8 +123,8 @@ The app is bilingual; **English is the default language**.
   colors and coordinates stay plain strings/numbers.
 - Never hardcode visible copy outside the dictionaries, and keep
   `<html lang>` in sync (the provider does it automatically).
-- The EN/ES switch is `LanguageToggle` in the HUD; it persists to
-  `localStorage` under `astro-archive:lang`.
+- The EN/ES switch lives only in the HUD settings panel (next to the other
+  preferences); it persists to `localStorage` under `astro-archive:lang`.
 
 ## Before finishing a task
 
