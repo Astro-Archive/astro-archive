@@ -32,6 +32,7 @@ export default function SpaceXHUD({
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDestinoMenuOpen, setIsDestinoMenuOpen] = useState(false);
+  const [isMobileFlightInfoOpen, setIsMobileFlightInfoOpen] = useState(false);
 
   const solarBodies = useMemo(() => getSolarBodies(lang), [lang]);
   const specialProbes = useMemo(() => getSpecialProbes(lang), [lang]);
@@ -52,6 +53,31 @@ export default function SpaceXHUD({
   const currentHeading = flightTelemetry?.heading ?? 180;
   const currentPitch = flightTelemetry?.pitch ?? 0;
 
+  const dispatchFlightKey = (code, type) => {
+    window.dispatchEvent(new KeyboardEvent(type, { code, bubbles: true }));
+  };
+
+  const renderFlightControl = (code, label, extraClass = '') => (
+    <button
+      type="button"
+      className={`flight-control-button ${extraClass}`}
+      onPointerDown={(event) => {
+        event.preventDefault();
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        dispatchFlightKey(code, 'keydown');
+      }}
+      onPointerUp={(event) => {
+        event.preventDefault();
+        dispatchFlightKey(code, 'keyup');
+      }}
+      onPointerCancel={() => dispatchFlightKey(code, 'keyup')}
+      onContextMenu={(event) => event.preventDefault()}
+      aria-label={label}
+    >
+      {label}
+    </button>
+  );
+
   // Look up target
   const currentBody = solarBodies.find(b => b.id.toUpperCase() === selectedTarget.toUpperCase());
   const currentProbe = specialProbes.find(p => p.id.toUpperCase() === selectedTarget.toUpperCase());
@@ -71,10 +97,10 @@ export default function SpaceXHUD({
   const activeType = currentProbe ? currentProbe.type : currentBody ? currentBody.type : t('hud.spaceObject');
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-2 sm:p-4 select-none font-mono">
+    <div className="flight-hud-root absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-2 sm:p-4 select-none font-mono">
       
       {/* 1. TOP BAR: Sharp Sci-Fi Header */}
-      <div className="relative z-40 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+      <div className="flight-hud-header relative z-40 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
         
         {/* Brand & Tracking Status (Renamed from SIMULADOR ESPACIAL to ASTRO ARCHIVE) */}
         <div className="flex items-center gap-3 bg-black/90 backdrop-blur-md border border-cyan-500/50 px-4 py-2 rounded-none shadow-[0_0_15px_rgba(0,240,255,0.2)]">
@@ -128,7 +154,7 @@ export default function SpaceXHUD({
 
       {/* 2. CENTER: SPACE ENGINE FLIGHT HUD (When Flight Mode Active - Clean Separation, NO Overlaps!) */}
       {isFlightMode ? (
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between pt-28 sm:pt-20 pb-16 px-3 sm:px-6">
+        <div className="flight-overlay absolute inset-0 pointer-events-none flex flex-col justify-between pt-28 sm:pt-20 pb-16 px-3 sm:px-6">
           
           {/* Top Compass Heading Tape (Space Engine Style - Dynamic & Functional) */}
           <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 bg-black/90 border border-emerald-500/50 px-4 py-1.5 text-xs text-emerald-300 flex items-center space-x-3 sm:space-x-5 backdrop-blur-md font-mono hidden md:flex shadow-[0_0_20px_rgba(0,0,0,0.9)]">
@@ -149,11 +175,27 @@ export default function SpaceXHUD({
             </span>
           </div>
 
+          {/* Mobile-only flight information drawer trigger */}
+          <div className="mobile-flight-info-toggle pointer-events-auto">
+            <button
+              type="button"
+              onClick={() => setIsMobileFlightInfoOpen((value) => !value)}
+              className="border border-emerald-400/70 bg-black/90 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-300 shadow-[0_0_14px_rgba(0,0,0,0.8)]"
+              aria-expanded={isMobileFlightInfoOpen}
+              aria-controls="mobile-flight-information"
+            >
+              {isMobileFlightInfoOpen ? 'Ocultar datos' : 'Datos de vuelo'}
+            </button>
+          </div>
+
           {/* Side Telemetry Panels: Left Functional Coordinates + Right Navigation */}
-          <div className="flex justify-between items-start mt-4 sm:mt-6">
+          <div
+            id="mobile-flight-information"
+            className={`flight-telemetry-drawer flex justify-between items-start mt-4 sm:mt-6 ${isMobileFlightInfoOpen ? 'is-open' : ''}`}
+          >
             
             {/* Left Telemetry Column: Real Coordinates & Distance */}
-            <div className="bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-64 sm:w-72 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 shadow-[0_0_25px_rgba(0,0,0,0.9)]">
+            <div className="flight-telemetry-panel bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-64 sm:w-72 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 shadow-[0_0_25px_rgba(0,0,0,0.9)]">
               <div className="text-[10px] uppercase font-bold text-emerald-300 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
                 <span>{t('hud.navigationTitle')}</span>
                 <span className="text-amber-400">{t('hud.linkActive')}</span>
@@ -185,7 +227,7 @@ export default function SpaceXHUD({
             </div>
 
             {/* Right Orbital & Flight Status Column */}
-            <div className="bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-56 sm:w-64 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 text-right shadow-[0_0_20px_rgba(0,0,0,0.8)] hidden sm:block">
+            <div className="flight-status-panel bg-black/90 backdrop-blur-md p-3 border border-emerald-500/50 rounded-none w-56 sm:w-64 space-y-1.5 text-[11px] sm:text-xs text-emerald-400 text-right shadow-[0_0_20px_rgba(0,0,0,0.8)] hidden sm:block">
               <div className="text-[10px] uppercase font-bold text-emerald-300 border-b border-emerald-500/30 pb-1 flex items-center justify-between">
                 <span className="text-cyan-300">{t('hud.flightStatus')}</span>
                 <span>{t('hud.gyroscopic')}</span>
@@ -200,7 +242,7 @@ export default function SpaceXHUD({
           </div>
 
           {/* Center: Dynamic Pitch Ladder & Reticle (Artificial Horizon) */}
-          <div className="flex-1 flex items-center justify-center relative my-2">
+          <div className="flight-reticle-area flex-1 flex items-center justify-center relative my-2">
             
             {/* Left & Right Pitch Degree Ladder (Translates with flight pitch!) */}
             <div 
@@ -244,48 +286,28 @@ export default function SpaceXHUD({
           </div>
 
           {/* On-Screen Mobile/Touch Controls for Flight Mode */}
-          <div className="pointer-events-auto flex justify-center pb-2">
-            <div className="bg-black/90 border border-emerald-500/60 p-2 rounded-none flex items-center space-x-2 text-xs text-emerald-300 shadow-[0_0_20px_rgba(0,0,0,0.9)]">
-              <span className="font-bold hidden md:inline px-2">{t('hud.controlsHelp')}</span>
-              
-              {/* Touch buttons for mobile/mouse */}
-              <div className="flex items-center space-x-1.5 md:hidden">
-                <button
-                  onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' }))}
-                  onMouseUp={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' }))}
-                  onTouchStart={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' }))}
-                  onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' }))}
-                  className="px-3 py-1.5 bg-emerald-950 border border-emerald-400 text-white font-bold"
-                >
-                  {t('hud.thrust')}
-                </button>
-                <button
-                  onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS' }))}
-                  onMouseUp={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyS' }))}
-                  onTouchStart={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS' }))}
-                  onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyS' }))}
-                  className="px-3 py-1.5 bg-emerald-950 border border-emerald-400 text-white font-bold"
-                >
-                  {t('hud.brake')}
-                </button>
-                <button
-                  onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }))}
-                  onMouseUp={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyA' }))}
-                  onTouchStart={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }))}
-                  onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyA' }))}
-                  className="px-3 py-1.5 bg-emerald-950 border border-emerald-400 text-white font-bold"
-                >
-                  ◄
-                </button>
-                <button
-                  onMouseDown={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }))}
-                  onMouseUp={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyD' }))}
-                  onTouchStart={() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }))}
-                  onTouchEnd={() => window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyD' }))}
-                  className="px-3 py-1.5 bg-emerald-950 border border-emerald-400 text-white font-bold"
-                >
-                  ►
-                </button>
+          <div className="flight-controls pointer-events-auto flex justify-center pb-2">
+            <div className="flight-controls-panel bg-black/90 border border-emerald-500/60 p-2 rounded-none flex items-center space-x-2 text-xs text-emerald-300 shadow-[0_0_20px_rgba(0,0,0,0.9)]">
+              <span className="flight-controls-hint font-bold hidden md:inline px-2">{t('hud.controlsHelp')}</span>
+
+              <div className="flight-touch-controls md:hidden">
+                <div className="flight-dpad" aria-label="Controles de dirección">
+                  <span className="flight-control-spacer" aria-hidden="true" />
+                  {renderFlightControl('KeyW', 'IMPULSO', 'flight-control-primary')}
+                  <span className="flight-control-spacer" aria-hidden="true" />
+                  {renderFlightControl('KeyA', 'IZQ')}
+                  {renderFlightControl('Space', 'ESTABILIZAR')}
+                  {renderFlightControl('KeyD', 'DER')}
+                  <span className="flight-control-spacer" aria-hidden="true" />
+                  {renderFlightControl('KeyS', 'FRENAR')}
+                  <span className="flight-control-spacer" aria-hidden="true" />
+                </div>
+
+                <div className="flight-action-pad" aria-label="Controles de maniobra">
+                  {renderFlightControl('KeyR', 'SUBIR', 'flight-control-action')}
+                  {renderFlightControl('KeyF', 'BAJAR', 'flight-control-action')}
+                  {renderFlightControl('ShiftLeft', 'TURBO', 'flight-control-warp flight-control-action')}
+                </div>
               </div>
             </div>
           </div>
@@ -307,7 +329,7 @@ export default function SpaceXHUD({
       )}
 
       {/* 3. BOTTOM PANEL: CLEAN DESKTOP & MOBILE BAR (No Redundant Bar! Dropdown Menu Houses Everything) */}
-      <div className="relative flex items-center justify-between gap-2 pointer-events-auto w-full pt-2">
+      <div className="flight-bottom-panel relative flex items-center justify-between gap-2 pointer-events-auto w-full pt-2">
 
         {/* Custom Interactive Destino Menu Trigger Button */}
         <div className="relative">
